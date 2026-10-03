@@ -311,6 +311,26 @@ body {
   color: var(--teal);
 }
 
+.tab-badge {
+  position: absolute;
+  transform: translate(14px, -8px);
+  background: var(--danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 5px;
+}
+
+.tab {
+  position: relative;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .phase-note {
   font-size: 12px;
   color: var(--muted);

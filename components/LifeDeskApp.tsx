@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLifeDesk } from "@/lib/useLifeDesk";
 import { daysUntil } from "@/lib/risk";
-import type { LifeLevel } from "@/lib/status";
+import ThingEditor, {
+  fromEditorValues,
+  toEditorValues,
+  type EditorPreset,
+  type EditorValues,
+} from "@/components/ThingEditor";
 import type { Alert, Category, Priority, Thing, ThingKind } from "@/lib/types";
 
 type Tab = "home" | "things" | "alerts" | "household" | "profile";
@@ -49,17 +54,17 @@ const KIND_ICO: Record<string, string> = {
   "service-provider": "🔧",
 };
 
-const LEVEL_STYLE: Record<LifeLevel, string> = {
+const LEVEL_STYLE = {
   stable: "level-stable",
   "needs-attention": "level-attention",
   immediate: "level-immediate",
-};
+} as const;
 
-const QUICK_ADD: { label: string; ico: string; kind: ThingKind; category: Category }[] = [
-  { label: "Reminder", ico: "🔔", kind: "reminder", category: "family" },
-  { label: "Bill", ico: "🧾", kind: "bill", category: "money" },
-  { label: "Document", ico: "📄", kind: "document", category: "documents" },
-  { label: "Asset", ico: "📦", kind: "asset", category: "home" },
+const QUICK_ADD: EditorPreset[] = [
+  { label: "Reminder", kind: "reminder", category: "family" },
+  { label: "Bill", kind: "bill", category: "money" },
+  { label: "Document", kind: "document", category: "documents" },
+  { label: "Asset", kind: "asset", category: "home" },
 ];
 
 export default function LifeDeskApp() {
@@ -124,11 +129,18 @@ export default function LifeDeskApp() {
 type Desk = ReturnType<typeof useLifeDesk>;
 
 function HomeScreen({ desk }: { desk: Desk }) {
-  const [adding, setAdding] = useState<ThingKind | null>(null);
-  const [dismissed, setDismissed] = useState<string[]>([]);
+  const [adding, setAdding] = useState<EditorPreset | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const visible = desk.alerts.filter((a) => !dismissed.includes(a.id));
-  const top = visible.slice(0, 3);
+  const top = desk.alerts.slice(0, 3);
+
+  async function save(values: EditorValues) {
+    if (!adding) return;
+    setBusy(true);
+    await desk.addThing(fromEditorValues(values));
+    setBusy(false);
+    setAdding(null);
+  }
 
   return (
     <>
@@ -151,14 +163,7 @@ function HomeScreen({ desk }: { desk: Desk }) {
           top.map((a) => (
             <div key={a.id} style={{ marginBottom: 14 }}>
               <AlertBody alert={a} />
-              <AlertActions
-                alert={a}
-                desk={desk}
-                onDismiss={() => {
-                  void desk.dismissAlert(a);
-                  setDismissed((d) => [...d, a.id]);
-                }}
-              />
+              <AlertActions alert={a} desk={desk} />
             </div>
           ))
         )}
@@ -190,171 +195,183 @@ function HomeScreen({ desk }: { desk: Desk }) {
             <button
               key={q.kind}
               className="btn btn-secondary"
-              onClick={() => setAdding(q.kind)}
+              onClick={() => setAdding(q)}
             >
-              {q.ico} {q.label}
+              {KIND_ICO[q.kind]} {q.label}
             </button>
           ))}
         </div>
       </section>
 
-      {adding && <AddForm desk={desk} kind={adding} onClose={() => setAdding(null)} />}
+      {adding && (
+        <section className="card">
+          <ThingEditor
+            preset={adding}
+            onSave={save}
+            onCancel={() => setAdding(null)}
+            busy={busy}
+          />
+        </section>
+      )}
     </>
   );
 }
 
-function AddForm({
-  desk,
-  kind,
-  onClose,
-}: {
-  desk: Desk;
-  kind: ThingKind;
-  onClose: () => void;
-}) {
-  const preset = QUICK_ADD.find((q) => q.kind === kind)!;
-  const [name, setName] = useState("");
-  const [amount, setAmount] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [recurring, setRecurring] = useState(false);
+function ThingsScreen({ desk }: { desk: Desk }) {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<Category | "all">("all");
+  const [showDone, setShowDone] = useState(false);
+  const [editing, setEditing] = useState<Thing | null>(null);
+  const [adding, setAdding] = useState<EditorPreset | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function save() {
-    const trimmed = name.trim();
-    if (!trimmed) return;
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return desk.things
+      .filter((t) => (showDone ? true : t.status === "active"))
+      .filter((t) => (category === "all" ? true : t.category === category))
+      .filter((t) =>
+        q === ""
+          ? true
+          : t.name.toLowerCase().includes(q) ||
+            (t.notes ?? "").toLowerCase().includes(q),
+      )
+      .sort((a, b) => {
+        if (a.dueDate === null) return 1;
+        if (b.dueDate === null) return -1;
+        return a.dueDate.localeCompare(b.dueDate);
+      });
+  }, [desk.things, query, category, showDone]);
+
+  async function saveEdit(values: EditorValues) {
+    if (!editing) return;
     setBusy(true);
-    await desk.addThing({
-      name: trimmed,
-      category: preset.category,
-      kind,
-      amount: amount ? Number(amount) : null,
-      dueDate: dueDate || null,
-      recurrence: recurring ? { frequency: "monthly", interval: 1 } : null,
-    });
+    await desk.updateThing(editing, fromEditorValues(values));
     setBusy(false);
-    onClose();
+    setEditing(null);
   }
 
-  return (
-    <section className="card accent-teal">
-      <p className="section-label">
-        New {preset.label.toLowerCase()}
-      </p>
-      <div className="field">
-        <label htmlFor="f-name">What is it?</label>
-        <input
-          id="f-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={
-            kind === "document"
-              ? "e.g. Driver's licence"
-              : kind === "asset"
-                ? "e.g. Refrigerator"
-                : kind === "bill"
-                  ? "e.g. Water bill"
-                  : "e.g. Dentist appointment"
-          }
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="f-amount">Amount (optional)</label>
-        <input
-          id="f-amount"
-          inputMode="numeric"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="e.g. 45000"
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="f-due">Due or expiry date</label>
-        <input
-          id="f-due"
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-        />
-        <div className="hint">Leave empty if there is no date yet.</div>
-      </div>
-      {kind !== "document" && kind !== "asset" && (
-        <div className="field">
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={recurring}
-              onChange={(e) => setRecurring(e.target.checked)}
-            />
-            Repeats every month
-          </label>
-        </div>
-      )}
-      <div className="quick-grid">
-        <button className="btn btn-secondary" onClick={onClose}>
-          Cancel
-        </button>
-        <button
-          className="btn btn-primary"
-          onClick={save}
-          disabled={!name.trim() || busy}
-        >
-          Save
-        </button>
-      </div>
-    </section>
-  );
-}
+  async function saveAdd(values: EditorValues) {
+    if (!adding) return;
+    setBusy(true);
+    await desk.addThing(fromEditorValues(values));
+    setBusy(false);
+    setAdding(null);
+  }
 
-function ThingsScreen({ desk }: { desk: Desk }) {
-  const [openId, setOpenId] = useState<string | null>(null);
+  async function remove(t: Thing) {
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm(`Delete "${t.name}"? This cannot be undone.`)
+    ) {
+      return;
+    }
+    await desk.removeThing(t.id);
+  }
+
+  const completedCount = desk.things.filter((t) => t.status === "completed").length;
 
   return (
     <>
-      <p className="section-label">Categories</p>
-      {CATEGORIES.map((c) => {
-        const items = desk.byCategory(c.id);
-        return (
-          <section className="card" key={c.id}>
-            <div className="row">
-              <span className="lead" style={{ color: c.color }}>
-                {c.ico}
-              </span>
-              <span className="grow">
-                <div className="name">{c.label}</div>
-                <div className="sub">
-                  {items.length} thing{items.length === 1 ? "" : "s"}
-                </div>
-              </span>
-              <span className="badge b-routine">{items.length}</span>
-            </div>
-            {items.map((t) => (
-              <div key={t.id}>
+      <section className="card">
+        <div className="field" style={{ marginBottom: 10 }}>
+          <label htmlFor="t-search">Search</label>
+          <input
+            id="t-search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search things and notes"
+          />
+        </div>
+        <div className="chips">
+          <button
+            className={category === "all" ? "chip on" : "chip"}
+            onClick={() => setCategory("all")}
+          >
+            All
+          </button>
+          {CATEGORIES.map((c) => (
+            <button
+              key={c.id}
+              className={category === c.id ? "chip on" : "chip"}
+              onClick={() => setCategory(c.id)}
+            >
+              {c.ico} {c.label}
+            </button>
+          ))}
+        </div>
+        <label className="check" style={{ marginTop: 10 }}>
+          <input
+            type="checkbox"
+            checked={showDone}
+            onChange={(e) => setShowDone(e.target.checked)}
+          />
+          Show completed ({completedCount})
+        </label>
+      </section>
+
+      <section className="card">
+        <p className="section-label">
+          {filtered.length} thing{filtered.length === 1 ? "" : "s"}
+        </p>
+        {filtered.map((t) => (
+          <div className="thing-block" key={t.id}>
+            <ThingRow thing={t} />
+            <div className="thing-actions">
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => setEditing(t)}
+              >
+                Edit
+              </button>
+              {t.status === "active" && (
                 <button
-                  className="row-btn"
-                  onClick={() => setOpenId(openId === t.id ? null : t.id)}
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => void desk.completeThing(t)}
                 >
-                  <ThingRow thing={t} />
+                  Mark handled
                 </button>
-                {openId === t.id && (
-                  <div className="inline-actions">
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => void desk.completeThing(t)}
-                    >
-                      Mark handled
-                    </button>
-                    <span className="sub">
-                      {t.recurrence
-                        ? "Recurring — will roll to the next due date."
-                        : "Will be marked completed."}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </section>
-        );
-      })}
+              )}
+              <button
+                className="btn btn-danger btn-sm"
+                onClick={() => void remove(t)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+        {filtered.length === 0 && (
+          <p className="card-meta">Nothing matches those filters.</p>
+        )}
+      </section>
+
+      {adding && (
+        <section className="card">
+          <ThingEditor
+            preset={adding}
+            onSave={saveAdd}
+            onCancel={() => setAdding(null)}
+            busy={busy}
+          />
+        </section>
+      )}
+
+      {editing && (
+        <section className="card">
+          <ThingEditor
+            preset={{
+              label: KIND_ICO[editing.kind] ?? "Thing",
+              kind: editing.kind,
+              category: editing.category,
+            }}
+            initial={toEditorValues(editing)}
+            onSave={saveEdit}
+            onCancel={() => setEditing(null)}
+            busy={busy}
+          />
+        </section>
+      )}
     </>
   );
 }
@@ -364,7 +381,7 @@ function AlertsScreen({ desk }: { desk: Desk }) {
     <>
       <p className="section-label">
         {desk.alerts.length} alert{desk.alerts.length === 1 ? "" : "s"} ·{" "}
-        {desk.status.level}
+        {desk.status.label}
       </p>
       {desk.alerts.map((a) => (
         <section
@@ -378,16 +395,20 @@ function AlertsScreen({ desk }: { desk: Desk }) {
           key={a.id}
         >
           <AlertBody alert={a} />
-          <AlertActions
-            alert={a}
-            desk={desk}
-            onDismiss={() => void desk.dismissAlert(a)}
-          />
+          <AlertActions alert={a} desk={desk} />
         </section>
       ))}
       {desk.alerts.length === 0 && (
         <section className="card">
           <p className="card-meta">No alerts. Nothing needs attention.</p>
+          <div style={{ marginTop: 12 }}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => void desk.restoreAlerts()}
+            >
+              Restore dismissed alerts
+            </button>
+          </div>
         </section>
       )}
     </>
@@ -442,22 +463,14 @@ function AlertBody({ alert }: { alert: Alert }) {
   );
 }
 
-function AlertActions({
-  alert,
-  desk,
-  onDismiss,
-}: {
-  alert: Alert;
-  desk: Desk;
-  onDismiss: () => void;
-}) {
+function AlertActions({ alert, desk }: { alert: Alert; desk: Desk }) {
   const thing = desk.things.find((t) => t.id === alert.thingId);
 
   return (
     <div className="quick-grid" style={{ marginTop: 12 }}>
       <button
         className="btn btn-secondary btn-sm"
-        onClick={onDismiss}
+        onClick={() => void desk.dismissAlert(alert)}
       >
         Remind me later
       </button>
@@ -475,11 +488,13 @@ function AlertActions({
 function ThingRow({ thing }: { thing: Thing }) {
   const days = thing.dueDate ? daysUntil(thing.dueDate) : null;
   const sub =
-    days === null
-      ? thing.notes ?? "No date set"
-      : days < 0
-        ? `Overdue by ${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"}`
-        : `Due in ${days} day${days === 1 ? "" : "s"}`;
+    thing.status === "completed"
+      ? "Completed"
+      : days === null
+        ? thing.notes ?? "No date set"
+        : days < 0
+          ? `Overdue by ${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"}`
+          : `Due in ${days} day${days === 1 ? "" : "s"}`;
 
   return (
     <div className="row">

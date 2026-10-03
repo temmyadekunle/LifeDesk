@@ -408,6 +408,67 @@ button:disabled {
   font-weight: 500;
 }
 
+/* ---------- Phase 3: search, filters, CRUD ---------- */
+
+.field select {
+  width: 100%;
+  font: inherit;
+  padding: 10px 13px;
+  border: 1px solid var(--softgray);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--charcoal);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.chip {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  background: var(--offwhite);
+  border: 1px solid var(--softgray);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.chip.on {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+
+.thing-block {
+  border-bottom: 1px solid var(--softgray);
+}
+
+.thing-block:last-of-type {
+  border-bottom: 0;
+}
+
+.thing-actions {
+  display: flex;
+  gap: 8px;
+  padding: 0 0 12px;
+  flex-wrap: wrap;
+}
+
+.btn-danger {
+  background: #fff;
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.editor {
+  width: 100%;
+}
+
 .phase-note {
   font-size: 12px;
   color: var(--muted);

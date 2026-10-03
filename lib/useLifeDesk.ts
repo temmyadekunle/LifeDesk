@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { buildAlerts, daysUntil, derivePriority, formatNaira } from "./risk";
 import { computeLifeStatus } from "./status";
-import { deleteAlert, getAllThings, putAlert, putThing } from "./db";
+import { deleteThing, getAllAlerts, putAlert, putThing } from "./db";
 import { seedIfEmpty } from "./seed";
 import type { Alert, Category, Thing, ThingKind } from "./types";
 
@@ -36,6 +36,8 @@ export function useLifeDesk() {
     try {
       const seeded = await seedIfEmpty();
       setThings(seeded);
+      const stored = await getAllAlerts();
+      setDismissedIds(new Set(stored.filter((a) => a.dismissed).map((a) => a.id)));
       setError(null);
     } catch (e) {
       setError(
@@ -112,26 +114,43 @@ export function useLifeDesk() {
     [refresh],
   );
 
-  const dismissAlert = useCallback(
-    async (alert: Alert) => {
-      setDismissedIds((prev) => {
-        const next = new Set(prev);
-        next.add(alert.id);
-        return next;
-      });
-      const stored: Alert = { ...alert, dismissed: true };
-      try {
-        await putAlert(stored);
-      } catch {
-        await deleteAlert(alert.id).catch(() => undefined);
-      }
+  const dismissAlert = useCallback(async (alert: Alert) => {
+    setDismissedIds((prev) => {
+      const next = new Set(prev);
+      next.add(alert.id);
+      return next;
+    });
+    await putAlert({ ...alert, dismissed: true });
+  }, []);
+
+  const restoreAlerts = useCallback(async () => {
+    setDismissedIds(new Set());
+    const stored = await getAllAlerts();
+    for (const a of stored) await putAlert({ ...a, dismissed: false });
+  }, []);
+
+  const updateThing = useCallback(
+    async (thing: Thing, patch: Partial<Thing>) => {
+      const updated: Thing = {
+        ...thing,
+        ...patch,
+        updatedAt: new Date().toISOString(),
+      };
+      updated.priority = derivePriority(updated);
+      await putThing(updated);
+      await refresh();
+      return updated;
     },
-    [],
+    [refresh],
   );
 
-  const restoreAlerts = useCallback(() => {
-    setDismissedIds(new Set());
-  }, []);
+  const removeThing = useCallback(
+    async (id: string) => {
+      await deleteThing(id);
+      await refresh();
+    },
+    [refresh],
+  );
 
   const byCategory = useCallback(
     (category: Category) => things.filter((t) => t.category === category),
@@ -166,6 +185,8 @@ export function useLifeDesk() {
     completeThing,
     dismissAlert,
     restoreAlerts,
+    updateThing,
+    removeThing,
     byCategory,
     formatNaira,
   };

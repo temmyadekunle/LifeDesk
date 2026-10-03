@@ -1,6 +1,6 @@
-import { daysUntil } from "./risk";
-import type { Alert, Thing } from "./types";
-import type { Settings } from "./settings";
+import { daysUntil } from "./risk.ts";
+import type { Alert, Thing } from "./types.ts";
+import type { Settings } from "./settings.ts";
 
 export type PermissionState =
   | "unsupported"

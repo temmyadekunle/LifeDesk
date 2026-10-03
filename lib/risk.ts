@@ -1,4 +1,4 @@
-import type { Alert, Frequency, Priority, Thing } from "./types";
+import type { Alert, Frequency, Priority, Thing } from "./types.ts";
 
 const MS_PER_DAY = 86_400_000;
 

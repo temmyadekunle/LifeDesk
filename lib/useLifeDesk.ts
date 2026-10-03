@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { buildAlerts, daysUntil, derivePriority, formatNaira } from "./risk";
-import { computeLifeStatus } from "./status";
-import { deleteThing, getAllAlerts, getAllThings, putAlert, putThing, clearAllStores } from "./db";
-import { seedIfEmpty } from "./seed";
-import { DEFAULT_SETTINGS, loadSettings, saveSettings, type Settings } from "./settings";
-import type { Alert, Category, Thing, ThingKind } from "./types";
+import { buildAlerts, daysUntil, derivePriority, formatNaira } from "./risk.ts";
+import { computeLifeStatus } from "./status.ts";
+import { deleteThing, getAllAlerts, getAllThings, putAlert, putThing, clearAllStores } from "./db.ts";
+import { seedIfEmpty } from "./seed.ts";
+import { DEFAULT_SETTINGS, loadSettings, saveSettings, type Settings } from "./settings.ts";
+import type { Alert, Category, Thing, ThingKind } from "./types.ts";
 
 export interface NewThingInput {
   name: string;
@@ -75,7 +75,7 @@ export function useLifeDesk() {
       firstThing: { name: string; amount: string; dueDate: string } | null;
       loadSample: boolean;
     }) => {
-      let next: Settings = {
+      const next: Settings = {
         ...settings,
         onboarded: true,
         displayName: input.displayName || settings.displayName,

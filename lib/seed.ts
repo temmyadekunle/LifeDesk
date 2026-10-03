@@ -1,6 +1,6 @@
-import { buildAlerts, derivePriority } from "./risk";
-import { newId, putAlert, putThing } from "./db";
-import type { HouseholdMember, Thing } from "./types";
+import { buildAlerts, derivePriority } from "./risk.ts";
+import { newId, putAlert, putThing } from "./db.ts";
+import type { HouseholdMember, Thing } from "./types.ts";
 
 function iso(daysFromNow: number): string {
   const d = new Date();
@@ -213,13 +213,13 @@ export const SEED_MEMBERS: HouseholdMember[] = [
 ];
 
 export async function seedIfEmpty(): Promise<Thing[]> {
-  const existing = await import("./db").then((m) => m.getAllThings());
+  const existing = await import("./db.ts").then((m) => m.getAllThings());
   if (existing.length > 0) return existing;
 
   const things = SEED_THINGS.map(make);
   for (const thing of things) await putThing(thing);
 
-  const { putMember } = await import("./db");
+  const { putMember } = await import("./db.ts");
   for (const member of SEED_MEMBERS) await putMember(member);
 
   const alerts = buildAlerts(things);

@@ -1,4 +1,4 @@
-import type { Alert, HouseholdMember, Thing } from "./types";
+import type { Alert, HouseholdMember, Thing } from "./types.ts";
 
 const DB_NAME = "lifedesk";
 const DB_VERSION = 2;

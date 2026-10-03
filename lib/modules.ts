@@ -1,5 +1,5 @@
-import { daysUntil } from "./risk";
-import type { Thing } from "./types";
+import { daysUntil } from "./risk.ts";
+import type { Thing } from "./types.ts";
 
 /* ---------------- warranty ---------------- */
 

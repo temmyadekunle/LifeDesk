@@ -22,7 +22,7 @@ import ThingEditor, {
   type EditorValues,
 } from "@/components/ThingEditor";
 import ModuleScreen, { MODULES, type ModuleId } from "@/components/ModuleScreen";
-import type { Alert, Category, Priority, Thing, ThingKind } from "@/lib/types";
+import type { Alert, Category, Priority, Thing } from "@/lib/types";
 
 type Tab = "home" | "things" | "alerts" | "household" | "profile";
 

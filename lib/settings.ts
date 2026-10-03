@@ -1,5 +1,5 @@
-import { getSetting, putSetting } from "./db";
-import type { Category } from "./types";
+import { getSetting, putSetting } from "./db.ts";
+import type { Category } from "./types.ts";
 
 export interface Settings {
   onboarded: boolean;

@@ -1,5 +1,5 @@
-import type { Alert, Thing } from "./types";
-import { daysUntil } from "./risk";
+import type { Alert, Thing } from "./types.ts";
+import { daysUntil } from "./risk.ts";
 
 export type LifeLevel = "stable" | "needs-attention" | "immediate";
 

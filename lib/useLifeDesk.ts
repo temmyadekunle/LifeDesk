@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { buildAlerts, daysUntil, derivePriority, formatNaira } from "./risk";
 import { computeLifeStatus } from "./status";
-import { deleteThing, getAllAlerts, putAlert, putThing } from "./db";
+import { deleteThing, getAllAlerts, getAllThings, putAlert, putThing, clearAllStores } from "./db";
 import { seedIfEmpty } from "./seed";
+import { DEFAULT_SETTINGS, loadSettings, saveSettings, type Settings } from "./settings";
 import type { Alert, Category, Thing, ThingKind } from "./types";
 
 export interface NewThingInput {
@@ -29,15 +30,23 @@ function makeId(): string {
 export function useLifeDesk() {
   const [things, setThings] = useState<Thing[]>([]);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const loadThings = useCallback(async () => {
+    const all = await getAllThings();
+    setThings(all);
+    const stored = await getAllAlerts();
+    setDismissedIds(new Set(stored.filter((a) => a.dismissed).map((a) => a.id)));
+  }, []);
+
   const refresh = useCallback(async () => {
     try {
-      const seeded = await seedIfEmpty();
-      setThings(seeded);
-      const stored = await getAllAlerts();
-      setDismissedIds(new Set(stored.filter((a) => a.dismissed).map((a) => a.id)));
+      const loaded = await loadSettings();
+      setSettings(loaded);
+      await loadThings();
       setError(null);
     } catch (e) {
       setError(
@@ -45,12 +54,88 @@ export function useLifeDesk() {
       );
     } finally {
       setLoading(false);
+      setReady(true);
     }
-  }, []);
+  }, [loadThings]);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  const updateSettings = useCallback(async (patch: Partial<Settings>) => {
+    const next = { ...settings, ...patch };
+    setSettings(next);
+    await saveSettings(next);
+  }, [settings]);
+
+  const completeOnboarding = useCallback(
+    async (input: {
+      displayName: string;
+      categories: Settings["managedCategories"];
+      firstThing: { name: string; amount: string; dueDate: string } | null;
+      loadSample: boolean;
+    }) => {
+      let next: Settings = {
+        ...settings,
+        onboarded: true,
+        displayName: input.displayName || settings.displayName,
+        managedCategories: input.categories,
+      };
+      setSettings(next);
+      await saveSettings(next);
+
+      if (input.loadSample) {
+        await seedIfEmpty();
+      }
+
+      if (input.firstThing) {
+        const now = new Date().toISOString();
+        const category = input.categories[0] ?? "money";
+        const thing: Thing = {
+          id: makeId(),
+          name: input.firstThing.name,
+          category,
+          kind: input.firstThing.name.toLowerCase().includes("rent")
+            ? "rent"
+            : "bill",
+          amount:
+            input.firstThing.amount.trim() === ""
+              ? null
+              : Number(input.firstThing.amount),
+          currency: "NGN",
+          dueDate: input.firstThing.dueDate || null,
+          lastHandledDate: null,
+          recurrence: null,
+          serviceIntervalDays: null,
+          status: "active",
+          priority: "routine",
+          notes: null,
+          details: {},
+          createdAt: now,
+          updatedAt: now,
+        };
+        thing.priority = derivePriority(thing);
+        await putThing(thing);
+      }
+
+      await loadThings();
+    },
+    [settings, loadThings],
+  );
+
+  const loadSampleData = useCallback(async () => {
+    await seedIfEmpty();
+    await loadThings();
+  }, [loadThings]);
+
+  const deleteEverything = useCallback(async () => {
+    await clearAllStores();
+    const fresh = { ...DEFAULT_SETTINGS };
+    setSettings(fresh);
+    await saveSettings(fresh);
+    setThings([]);
+    setDismissedIds(new Set());
+  }, []);
 
   const alerts = useMemo(() => {
     const built = buildAlerts(things);
@@ -175,12 +260,18 @@ export function useLifeDesk() {
 
   return {
     loading,
+    ready,
     error,
     things,
     alerts,
     status,
     totals,
+    settings,
     refresh,
+    updateSettings,
+    completeOnboarding,
+    loadSampleData,
+    deleteEverything,
     addThing,
     completeThing,
     dismissAlert,

@@ -1,8 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLifeDesk } from "@/lib/useLifeDesk";
 import { daysUntil } from "@/lib/risk";
+import {
+  downloadJson,
+  exportPayload,
+  leadDaysCrossed,
+  notificationPermission,
+  notifyUrgentAlert,
+  reminderCopy,
+  requestNotificationPermission,
+  type PermissionState,
+} from "@/lib/notifications";
+import Onboarding from "@/components/Onboarding";
 import ThingEditor, {
   fromEditorValues,
   toEditorValues,
@@ -73,6 +84,50 @@ export default function LifeDeskApp() {
   const [module, setModule] = useState<ModuleId | null>(null);
   const desk = useLifeDesk();
 
+  const firstName = desk.settings.displayName || "there";
+  const notified = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!desk.ready || !desk.settings.notifyUrgent) return;
+    const urgent = desk.alerts.find((a) => a.priority === "urgent");
+    if (!urgent) return;
+    if (notifyUrgentAlert(urgent, notified.current)) {
+      notified.current.add(urgent.id);
+    }
+  }, [desk.ready, desk.settings.notifyUrgent, desk.alerts]);
+
+  if (desk.ready && !desk.settings.onboarded) {
+    return (
+      <div className="phone">
+        <main className="screen ob-screen">
+          <Onboarding
+            onDone={(result) => void desk.completeOnboarding(result)}
+            onSample={() => {
+              void desk.completeOnboarding({
+                displayName: firstName === "there" ? "Temmy" : firstName,
+                categories: ["home", "money", "transport", "documents"],
+                firstThing: null,
+                loadSample: true,
+              });
+            }}
+          />
+        </main>
+      </div>
+    );
+  }
+
+  if (!desk.ready) {
+    return (
+      <div className="phone">
+        <main className="screen">
+          <section className="card">
+            <p className="card-meta">Opening your LifeDesk…</p>
+          </section>
+        </main>
+      </div>
+    );
+  }
+
   if (module) {
     return (
       <div className="phone">
@@ -117,7 +172,7 @@ export default function LifeDeskApp() {
   return (
     <div className="phone">
       <header className="app-header">
-        <h1>Good morning, Temmy 👋</h1>
+        <h1>Good morning, {desk.settings.displayName || "Temmy"} 👋</h1>
         <p>{desk.loading ? "Opening your LifeDesk…" : desk.status.headline}</p>
         <div className={`status-pill ${LEVEL_STYLE[desk.status.level]}`}>
           <span className="dot" />
@@ -480,6 +535,23 @@ function AlertsScreen({ desk }: { desk: Desk }) {
 }
 
 function ProfileScreen({ desk }: { desk: Desk }) {
+  const [permission, setPermission] = useState<PermissionState>("default");
+  const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPermission(notificationPermission());
+  }, []);
+
+  const upcoming = useMemo(
+    () =>
+      desk.things
+        .filter((t) => t.status === "active" && t.dueDate)
+        .map((t) => ({ thing: t, leads: leadDaysCrossed(t, desk.settings.leadDays) }))
+        .filter((x) => x.leads.length > 0)
+        .slice(0, 4),
+    [desk.things, desk.settings.leadDays],
+  );
+
   return (
     <>
       <section className="card">
@@ -487,18 +559,148 @@ function ProfileScreen({ desk }: { desk: Desk }) {
         <div className="row">
           <span className="lead">👤</span>
           <span className="grow">
-            <div className="name">Temmy Adekunle</div>
+            <div className="name">{desk.settings.displayName || "Temmy"}</div>
             <div className="sub">Free plan · local only</div>
           </span>
         </div>
       </section>
+
+      <section className="card">
+        <p className="section-label">Notifications</p>
+        {permission === "unsupported" && (
+          <p className="card-meta">
+            This browser does not support notifications. In-app alerts still work.
+          </p>
+        )}
+        {permission === "default" && (
+          <button
+            className="btn btn-secondary"
+            style={{ width: "100%" }}
+            onClick={async () => setPermission(await requestNotificationPermission())}
+          >
+            Enable browser alerts
+          </button>
+        )}
+        {permission === "granted" && (
+          <p className="card-meta">
+            Browser alerts are on. LifeDesk will notify you when something urgent
+            needs attention.
+          </p>
+        )}
+        {permission === "denied" && (
+          <p className="card-meta">
+            Alerts are blocked in your browser settings. You can still use the
+            in-app Alerts tab.
+          </p>
+        )}
+        <label className="check" style={{ marginTop: 12 }}>
+          <input
+            type="checkbox"
+            checked={desk.settings.notifyUrgent}
+            onChange={(e) => void desk.updateSettings({ notifyUrgent: e.target.checked })}
+          />
+          Notify me about urgent alerts
+        </label>
+      </section>
+
+      <section className="card">
+        <p className="section-label">Reminder schedule</p>
+        <div className="chips">
+          {[90, 60, 30, 14, 7, 1].map((n) => (
+            <button
+              key={n}
+              className={
+                desk.settings.leadDays.includes(n) ? "chip on" : "chip"
+              }
+              onClick={() =>
+                void desk.updateSettings({
+                  leadDays: desk.settings.leadDays.includes(n)
+                    ? desk.settings.leadDays.filter((d) => d !== n)
+                    : [...desk.settings.leadDays, n].sort((a, b) => b - a),
+                })
+              }
+            >
+              {n}d
+            </button>
+          ))}
+        </div>
+        {upcoming.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <p className="section-label">Preview</p>
+            {upcoming.map(({ thing, leads }) => {
+              const copy = reminderCopy(thing, leads[0]);
+              return (
+                <div className="row" key={thing.id}>
+                  <span className="grow">
+                    <div className="name">{copy.title}</div>
+                    <div className="sub">{copy.body}</div>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="card">
+        <p className="section-label">Data</p>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={desk.settings.dataSaver}
+            onChange={(e) => void desk.updateSettings({ dataSaver: e.target.checked })}
+          />
+          Data Saver mode
+        </label>
+        <p className="card-meta" style={{ marginTop: 6 }}>
+          Blocks automatic uploads and keeps background sync off. Recommended on
+          metered data.
+        </p>
+        <div className="quick-grid" style={{ marginTop: 12 }}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => {
+              downloadJson(
+                "lifedesk-export.json",
+                exportPayload(desk.things, desk.settings),
+              );
+              setNotice("Export downloaded.");
+            }}
+          >
+            Export my data
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => void desk.loadSampleData()}
+          >
+            Load sample data
+          </button>
+        </div>
+        {notice && <p className="card-meta" style={{ marginTop: 8 }}>{notice}</p>}
+      </section>
+
       <section className="card">
         <p className="section-label">Your data</p>
         <p className="card-meta">
           {desk.things.length} thing{desk.things.length === 1 ? "" : "s"} stored in
-          IndexedDB on this device. Nothing is uploaded. You can delete everything at
-          any time.
+          IndexedDB on this device. Nothing is uploaded. LifeDesk does not sell
+          personal data.
         </p>
+        <button
+          className="btn btn-danger"
+          style={{ width: "100%", marginTop: 12 }}
+          onClick={() => {
+            if (
+              typeof window !== "undefined" &&
+              window.confirm("Delete everything? This cannot be undone.")
+            ) {
+              void desk.deleteEverything();
+              window.location.reload();
+            }
+          }}
+        >
+          Delete all my data
+        </button>
       </section>
     </>
   );

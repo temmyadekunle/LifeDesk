@@ -518,6 +518,60 @@ button:disabled {
   line-height: 1.35;
 }
 
+/* ---------- Phase 5: onboarding ---------- */
+
+.ob-screen {
+  padding-top: 24px;
+}
+
+.ob-brand {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.ob-logo {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.ob-brand h1 {
+  margin: 6px 0 2px;
+  font-size: 24px;
+  color: var(--navy);
+  letter-spacing: -0.02em;
+}
+
+.ob-brand p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.ob-steps {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.ob-step {
+  width: 28px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--softgray);
+}
+
+.ob-step.on {
+  background: var(--teal);
+}
+
+.ob-h {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
 .phase-note {
   font-size: 12px;
   color: var(--muted);

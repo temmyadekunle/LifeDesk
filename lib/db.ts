@@ -1,12 +1,13 @@
 import type { Alert, HouseholdMember, Thing } from "./types";
 
 const DB_NAME = "lifedesk";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export const STORES = {
   things: "things",
   alerts: "alerts",
   members: "members",
+  settings: "settings",
 } as const;
 
 export type StoreName = (typeof STORES)[keyof typeof STORES];
@@ -47,6 +48,10 @@ export function openDatabase(): Promise<IDBDatabase> {
 
       if (!db.objectStoreNames.contains(STORES.members)) {
         db.createObjectStore(STORES.members, { keyPath: "id" });
+      }
+
+      if (!db.objectStoreNames.contains(STORES.settings)) {
+        db.createObjectStore(STORES.settings, { keyPath: "key" });
       }
     };
 
@@ -122,4 +127,38 @@ export function getAllMembers(): Promise<HouseholdMember[]> {
 
 export function putMember(member: HouseholdMember): Promise<IDBValidKey> {
   return run<IDBValidKey>(STORES.members, "readwrite", (s) => s.put(member));
+}
+
+/* ---------------- settings ---------------- */
+
+export interface SettingRow<T> {
+  key: string;
+  value: T;
+}
+
+export async function getSetting<T>(key: string): Promise<T | null> {
+  const row = await run<SettingRow<T> | undefined>(
+    STORES.settings,
+    "readonly",
+    (s) => s.get(key),
+  );
+  return row ? row.value : null;
+}
+
+export function putSetting<T>(key: string, value: T): Promise<IDBValidKey> {
+  return run<IDBValidKey>(STORES.settings, "readwrite", (s) =>
+    s.put({ key, value }),
+  );
+}
+
+/** Wipes every store, including settings. Used by "delete all my data". */
+export async function clearAllStores(): Promise<void> {
+  const db = await openDatabase();
+  const names = Object.values(STORES);
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(names, "readwrite");
+    for (const name of names) tx.objectStore(name).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
 }

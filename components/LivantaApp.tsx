@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useLivanta } from "@/lib/useLivanta";
 import { daysUntil } from "@/lib/risk";
 import { formatNaira, type Locale } from "@/lib/i18n";
@@ -10,11 +10,13 @@ import {
   downloadJson,
   exportPayload,
   leadDaysCrossed,
+  announcePermissionChange,
   notificationPermission,
   notifyUrgentAlert,
   reminderCopy,
   requestNotificationPermission,
-  type PermissionState,
+  serverPermissionSnapshot,
+  subscribeToPermission,
 } from "@/lib/notifications";
 import Onboarding, { LocalePicker } from "@/components/Onboarding";
 import ThingEditor, {
@@ -556,12 +558,12 @@ function AlertsScreen({ desk }: { desk: Desk }) {
 
 function ProfileScreen({ desk }: { desk: Desk }) {
   const { t } = desk;
-  const [permission, setPermission] = useState<PermissionState>("default");
+  const permission = useSyncExternalStore(
+    subscribeToPermission,
+    notificationPermission,
+    serverPermissionSnapshot,
+  );
   const [notice, setNotice] = useState<string | null>(null);
-
-  useEffect(() => {
-    setPermission(notificationPermission());
-  }, []);
 
   const upcoming = useMemo(
     () =>
@@ -607,7 +609,10 @@ function ProfileScreen({ desk }: { desk: Desk }) {
           <button
             className="btn btn-secondary"
             style={{ width: "100%" }}
-            onClick={async () => setPermission(await requestNotificationPermission())}
+            onClick={async () => {
+            await requestNotificationPermission();
+            announcePermissionChange();
+          }}
           >
             {t("profile.enableAlerts")}
           </button>

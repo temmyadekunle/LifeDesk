@@ -17,6 +17,29 @@ export function notificationPermission(): PermissionState {
   return Notification.permission as PermissionState;
 }
 
+const PERMISSION_EVENT = "livanta:permission-change";
+
+/**
+ * Lets React track the browser's notification permission as external
+ * store rather than mirroring it into useState from an effect, which
+ * forces a second render pass on mount. Call announcePermissionChange()
+ * after requesting so subscribers re-read the real value.
+ */
+export function subscribeToPermission(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener(PERMISSION_EVENT, onStoreChange);
+  return () => window.removeEventListener(PERMISSION_EVENT, onStoreChange);
+}
+
+export function announcePermissionChange(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(PERMISSION_EVENT));
+}
+
+export function serverPermissionSnapshot(): PermissionState {
+  return "unsupported";
+}
+
 export async function requestNotificationPermission(): Promise<PermissionState> {
   if (typeof window === "undefined" || !("Notification" in window)) {
     return "unsupported";

@@ -7,6 +7,7 @@ import {
   summariseHome,
   summariseVehicles,
 } from "@/lib/modules";
+  import { useState } from "react";
 import { daysUntil } from "@/lib/risk";
 import { formatNaira, type Translate } from "@/lib/i18n";
 import type { TKey } from "@/lib/locales/en";
@@ -120,6 +121,9 @@ function HomeModule({
   t: Translate;
 }) {
   const s = summariseHome(things);
+  // Read the clock once on mount rather than during render: calling
+  // Date.now() inline makes render impure, so two renders can disagree.
+  const [now] = useState(() => Date.now());
 
   return (
     <>
@@ -168,7 +172,7 @@ function HomeModule({
                 <span className="sub">
                   {t("mod.daysAgo", {
                     n: Math.round(
-                      (Date.now() - new Date(m.lastHandledDate).getTime()) /
+                      (now - new Date(m.lastHandledDate).getTime()) /
                         86_400_000,
                     ),
                   })}

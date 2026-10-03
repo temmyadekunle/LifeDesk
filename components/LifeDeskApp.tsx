@@ -9,6 +9,7 @@ import ThingEditor, {
   type EditorPreset,
   type EditorValues,
 } from "@/components/ThingEditor";
+import ModuleScreen, { MODULES, type ModuleId } from "@/components/ModuleScreen";
 import type { Alert, Category, Priority, Thing, ThingKind } from "@/lib/types";
 
 type Tab = "home" | "things" | "alerts" | "household" | "profile";
@@ -69,7 +70,49 @@ const QUICK_ADD: EditorPreset[] = [
 
 export default function LifeDeskApp() {
   const [tab, setTab] = useState<Tab>("home");
+  const [module, setModule] = useState<ModuleId | null>(null);
   const desk = useLifeDesk();
+
+  if (module) {
+    return (
+      <div className="phone">
+        <header className="app-header">
+          <button className="back" onClick={() => setModule(null)}>
+            ← Back
+          </button>
+          <h1>
+            {MODULES.find((m) => m.id === module)?.ico}{" "}
+            {MODULES.find((m) => m.id === module)?.label}
+          </h1>
+        </header>
+        <main className="screen">
+          <ModuleScreen
+            module={module}
+            things={desk.things}
+            onOpenThing={() => {
+              setModule(null);
+              setTab("things");
+            }}
+          />
+        </main>
+        <nav className="tabbar">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              className="tab"
+              onClick={() => {
+                setModule(null);
+                setTab(t.id);
+              }}
+            >
+              <span className="ico">{t.ico}</span>
+              {t.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+    );
+  }
 
   return (
     <div className="phone">
@@ -91,7 +134,7 @@ export default function LifeDeskApp() {
           </section>
         )}
 
-        {tab === "home" && <HomeScreen desk={desk} />}
+        {tab === "home" && <HomeScreen desk={desk} onOpenModule={setModule} />}
         {tab === "things" && <ThingsScreen desk={desk} />}
         {tab === "alerts" && <AlertsScreen desk={desk} />}
         {tab === "household" && (
@@ -128,7 +171,13 @@ export default function LifeDeskApp() {
 
 type Desk = ReturnType<typeof useLifeDesk>;
 
-function HomeScreen({ desk }: { desk: Desk }) {
+function HomeScreen({
+  desk,
+  onOpenModule,
+}: {
+  desk: Desk;
+  onOpenModule: (id: ModuleId) => void;
+}) {
   const [adding, setAdding] = useState<EditorPreset | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -186,6 +235,21 @@ function HomeScreen({ desk }: { desk: Desk }) {
           Next 30 days · {desk.totals.count} item
           {desk.totals.count === 1 ? "" : "s"}
         </p>
+      </section>
+
+      <section className="card">
+        <p className="section-label">Modules</p>
+        <div className="module-grid">
+          {MODULES.map((m) => (
+            <button key={m.id} className="module" onClick={() => onOpenModule(m.id)}>
+              <span className="module-ico" style={{ color: m.color }}>
+                {m.ico}
+              </span>
+              <span className="module-label">{m.label}</span>
+              <span className="module-blurb">{m.blurb}</span>
+            </button>
+          ))}
+        </div>
       </section>
 
       <section className="card">

@@ -9,7 +9,7 @@ export const yo: Dict = {
   /* ---------- app shell ---------- */
   "app.tagline": "Àyè kan láti ṣàkóso ohun tó n mu ètò ayé rẹ̀ lọ.",
   "app.greeting": "Káàárọ̀, {name}",
-  "app.loading": "Ó ń ṣí LifeDesk rẹ̀...",
+  "app.loading": "Ó ń ṣí Livanta rẹ̀...",
   "app.error.label": "Àkójọ ẹ̀rọ̀",
   "app.error.title": "Kò le ṣí àkójọ ẹ̀rọ̀",
   "app.back": "Padà",
@@ -83,7 +83,7 @@ export const yo: Dict = {
   "alert.service.title": "{name} ti kọjá ọjọ́ iṣẹ́",
   "alert.service.message": "Bí o bá fi àtúnṣe sílẹ̀, wọ́n lè fi inú tọ̀ ọ́.",
   "alert.norecord.title": "{name} kò sí ìrántí rẹ̀",
-  "alert.norecord.message": "Ṣàfikún ọjọ́ kí LifeDesk lè máa ṣàkíyèsí rẹ̀.",
+  "alert.norecord.message": "Ṣàfikún ọjọ́ kí Livanta lè máa ṣàkíyèsí rẹ̀.",
 
   /* ---------- reminder copy (lib/notifications) ---------- */
   "reminder.doc.long.title": "{name} yóò pari ní ó tó oṣù mẹ́ta",
@@ -100,7 +100,7 @@ export const yo: Dict = {
   "reminder.generic.title_one": "{name} yóò tó ọjọ́ ní {n} ọjọ́",
   "reminder.generic.title_many": "{name} yóò tó ọjọ́ ní {n} ọjọ́",
   "reminder.generic.body.note": "{note}",
-  "reminder.generic.body.default": "Ṣí LifeDesk láti múra sí i.",
+  "reminder.generic.body.default": "Ṣí Livanta láti múra sí i.",
 
   /* ---------- home screen ---------- */
   "home.thisWeek": "Ọ̀sẹ̀ yìí",
@@ -148,11 +148,11 @@ export const yo: Dict = {
   "profile.account": "Akàǹtì",
   "profile.freePlan": "Ètò òfẹ́ · lórí ẹ̀rọ̀ nìkan",
   "profile.language": "Èdè",
-  "profile.languageHint": "Yan èdè tó fẹ́ kí LifeDesk máa lo.",
+  "profile.languageHint": "Yan èdè tó fẹ́ kí Livanta máa lo.",
   "profile.notifications": "Ìkìlọ̀",
   "profile.notifUnsupported": "Browser yìí kò fọwọ́ sí ìkìlọ̀. Ìkìlọ̀ inú app kò ní pàṣípàrọ̀.",
   "profile.enableAlerts": "Ṣí ìkìlọ̀ browser",
-  "profile.notifGranted": "Ìkìlọ̀ browser ti wà. LifeDesk yóò fi ọ́ létí nígbà tó nílò.",
+  "profile.notifGranted": "Ìkìlọ̀ browser ti wà. Livanta yóò fi ọ́ létí nígbà tó nílò.",
   "profile.notifDenied": "Ìkìlọ̀ ti dé ní browser rẹ̀. O lè lo ìkìlọ̀ inú app.",
   "profile.notifyUrgent": "Fi mi létí fún ohun pé́lẹ́kẹ́",
   "profile.reminderSchedule": "Ìṣíṣèdá ìrántí",
@@ -164,8 +164,8 @@ export const yo: Dict = {
   "profile.exportDone": "Àkójọ mi ti jáde.",
   "profile.loadSample": "Ṣàfikún àpẹẹrẹ",
   "profile.yourData": "Àkójọ rẹ̀",
-  "profile.yourDataBody_one": "{n} nǹkan wà ní IndexedDB lórí ẹ̀rọ̀ yìí. Kò sí ohun tó gbé sí íńtánẹ́ẹ́tì. LifeDesk kò tà àkójọ ẹni kankan.",
-  "profile.yourDataBody_many": "{n} nǹkan wà ní IndexedDB lórí ẹ̀rọ̀ yìí. Kò sí ohun tó gbé sí íńtánẹ́ẹ́tì. LifeDesk kò tà àkójọ ẹni kankan.",
+  "profile.yourDataBody_one": "{n} nǹkan wà ní IndexedDB lórí ẹ̀rọ̀ yìí. Kò sí ohun tó gbé sí íńtánẹ́ẹ́tì. Livanta kò tà àkójọ ẹni kankan.",
+  "profile.yourDataBody_many": "{n} nǹkan wà ní IndexedDB lórí ẹ̀rọ̀ yìí. Kò sí ohun tó gbé sí íńtánẹ́ẹ́tì. Livanta kò tà àkójọ ẹni kankan.",
   "profile.deleteAll": "Ṣápẹẹrẹ gbogbo àkójọ mi",
   "profile.confirmDeleteAll": "Ṣápẹẹrẹ gbogbo rẹ̀? Kò le yípadà.",
 
@@ -180,7 +180,7 @@ export const yo: Dict = {
   /* ---------- onboarding ---------- */
   "ob.welcome": "Káàbọ̀",
   "ob.whatCallYou": "Kí ló máa jẹ́ orúkọ rẹ̀?",
-  "ob.localOnly": "LifeDesk wà lórí ẹ̀rọ̀ rẹ̀ nìkan. Kò ní gbé sí íńtánẹ́ẹ́tì, kò nílò akàǹtì.",
+  "ob.localOnly": "Livanta wà lórí ẹ̀rọ̀ rẹ̀ nìkan. Kò ní gbé sí íńtánẹ́ẹ́tì, kò nílò akàǹtì.",
   "ob.firstName": "Orúkọ àkọ́kọ́",
   "ob.namePlaceholder": "bí i Tèmí",
   "ob.continue": "Tẹ̀síwájú",
@@ -190,7 +190,7 @@ export const yo: Dict = {
   "ob.back": "Padà",
   "ob.step3": "Ìgbésẹ̀ 3",
   "ob.addFirst": "Ṣàfikún ohun àkọ́kọ́ tó pàtàkì",
-  "ob.willRemind": "LifeDesk yóò máa rántí ọ ní ọjọ́ tó yan.",
+  "ob.willRemind": "Livanta yóò máa rántí ọ ní ọjọ́ tó yan.",
   "ob.whatIsIt": "Kí ni ohun náà?",
   "ob.thingPlaceholder": "bí i Ìyá",
   "ob.amount": "Owó (láìpàárẹ́)",

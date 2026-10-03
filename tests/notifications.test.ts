@@ -106,7 +106,7 @@ test("reminderCopy for other things", async (t) => {
   await t.test("falls back to generic body text", () => {
     assert.equal(
       reminderCopy(makeThing({ notes: null }), 14).body,
-      "Open LifeDesk to prepare for it.",
+      "Open Livanta to prepare for it.",
     );
   });
 });
@@ -117,7 +117,7 @@ test("exportPayload", async (t) => {
 
   await t.test("is valid JSON with the app name and version", () => {
     const parsed = JSON.parse(exportPayload(things, settings));
-    assert.equal(parsed.app, "LifeDesk");
+    assert.equal(parsed.app, "Livanta");
     assert.equal(parsed.version, 1);
   });
 

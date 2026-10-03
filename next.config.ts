@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // LifeDesk keeps everything in the browser (IndexedDB), so there is no
+  // Livanta keeps everything in the browser (IndexedDB), so there is no
   // server to run. A static export gives the fastest possible load on a
   // weak connection: pure CDN delivery with no Node function in the path.
   output: "export",

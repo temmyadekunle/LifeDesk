@@ -1,4 +1,4 @@
-# LifeDesk Color Layout
+# Livanta Color Layout
 
 Trustworthy, intelligent, calm, and modern — not overly corporate and not too "health app."
 
@@ -25,7 +25,7 @@ Trustworthy, intelligent, calm, and modern — not overly corporate and not too 
 
 ## Dashboard color structure
 
-- **Header (LIFEDESK):** Deep Navy
+- **Header (Livanta):** Deep Navy
 - **Needs Attention:** Amber-accented card
 - **Upcoming:** White card, teal icon
 - **Home / Documents:** White cards

@@ -1,4 +1,4 @@
-# LIFEDESK
+# Livanta
 
 ### *One place to manage the things that keep your life running.*
 
@@ -11,7 +11,7 @@
 
 # 1. THE PRODUCT IN ONE SENTENCE
 
-LifeDesk is a personal and household life-maintenance platform that helps Nigerians organize responsibilities, track important dates and expenses, manage documents and assets, and proactively identify what could become a problem before it does.
+Livanta is a personal and household life-maintenance platform that helps Nigerians organize responsibilities, track important dates and expenses, manage documents and assets, and proactively identify what could become a problem before it does.
 
 ---
 
@@ -23,14 +23,14 @@ The information is scattered across WhatsApp, SMS, email, bank apps, paper recei
 
 The result: forgotten renewal → missed deadline → penalty → emergency expense → stress.
 
-LifeDesk brings these responsibilities into one place and adds proactive intelligence.
+Livanta brings these responsibilities into one place and adds proactive intelligence.
 
 ---
 
 # 3. THE BIG IDEA
 
 Most apps ask: "What do you want to record?"
-LifeDesk asks: **"What could become a problem if you don't act?"**
+Livanta asks: **"What could become a problem if you don't act?"**
 
 ---
 
@@ -70,7 +70,7 @@ Generator service overdue — last serviced 4 months ago. [Take action]
 
 # 6. MAIN NAVIGATION
 
-- 🏠 Home — Your overall LifeDesk.
+- 🏠 Home — Your overall Livanta.
 - 📋 Things — Everything you're managing.
 - 🔔 Alerts — Things that need attention.
 - 👨‍👩‍👧 Household — Family and shared responsibilities.
@@ -122,14 +122,14 @@ Example (Document): Driver's licence expires December 15.
 # 11. SMART ALERTS
 
 Instead of: "Reminder: rent."
-LifeDesk says:
+Livanta says:
 > 🏠 **Rent is due in 14 days.** Your last recorded rent amount was ₦1,200,000. Have you started preparing for it? [Mark as prepared] [Remind me later]
 
 ---
 
 # 12. LIFE PREPARATION MODE
 
-When an important event approaches, LifeDesk creates a checklist.
+When an important event approaches, Livanta creates a checklist.
 
 Example (Rent, due in 30 days): Confirm rent amount · Confirm payment details · Review service charges · Set money aside · Contact landlord/agent · Save payment evidence.
 
@@ -169,7 +169,7 @@ Expenses: fuel, maintenance, repairs.
 
 # 17. MONEY MODULE
 
-LifeDesk is not a banking app — it tracks financial obligations.
+Livanta is not a banking app — it tracks financial obligations.
 
 Example October commitments: Rent ₦1,200,000 · School ₦150,000 · Insurance ₦85,000 · Internet ₦20,000 · Electricity ₦45,000 → total ₦1,500,000.
 
@@ -219,7 +219,7 @@ Later: find → compare → book → pay → review verified professionals.
 
 # 25. IMPORTANT: AI SHOULD NOT CONTROL THE USER
 
-LifeDesk should recommend and remind, not decide.
+Livanta should recommend and remind, not decide.
 ❌ "You should cancel this subscription."
 ✅ "Your subscription renews tomorrow for ₦15,000. You haven't recorded using it recently. Would you like to review it?"
 
@@ -263,7 +263,7 @@ AI assistant · Receipt scanning · Warranty tracker · Family management · Adv
 
 # 32. VERSION 3
 
-LifeDesk Marketplace: detect problem → understand → prepare → find solution → complete → record → remember next time.
+Livanta Marketplace: detect problem → understand → prepare → find solution → complete → record → remember next time.
 
 ---
 
@@ -276,7 +276,7 @@ LifeDesk Marketplace: detect problem → understand → prepare → find solutio
 # 34. BUSINESS MODEL
 
 Free: basic reminders, limited items, basic document tracking, basic dashboard.
-LifeDesk Plus: unlimited items, AI assistant, advanced risk intelligence, unlimited documents, household sharing, receipt scanning, warranty management, advanced insights.
+Livanta Plus: unlimited items, AI assistant, advanced risk intelligence, unlimited documents, household sharing, receipt scanning, warranty management, advanced insights.
 Marketplace: commission from bookings.
 Business partnerships: insurance, auto service, property, appliance/service, cleaning, repair. Sponsored recommendations clearly identified.
 
@@ -296,19 +296,19 @@ Activation (% adding ≥3 responsibilities) · Retention (30/90-day) · Engageme
 
 # 37. COMPETITIVE POSITIONING
 
-Calendar tells you when. Finance apps tell you what you spent. Cloud storage stores your documents. Marketplace apps help you find services. LifeDesk connects the responsibilities together and helps you stay ahead.
+Calendar tells you when. Finance apps tell you what you spent. Cloud storage stores your documents. Marketplace apps help you find services. Livanta connects the responsibilities together and helps you stay ahead.
 
 ---
 
 # 38. THE DIFFERENTIATOR
 
-**LifeDesk doesn't just help you remember life. It helps you maintain it.**
+**Livanta doesn't just help you remember life. It helps you maintain it.**
 
 ---
 
 # 39. SAMPLE PRODUCT STORY
 
-User adds Car → LifeDesk learns insurance expiry, service schedule, registration, fuel expenses. One morning:
+User adds Car → Livanta learns insurance expiry, service schedule, registration, fuel expenses. One morning:
 > 🚗 **Your car needs attention.** Insurance expires in 12 days. Last service 6 months ago. Monthly fuel spending up 18%. **3 things may need your attention.**
 
 ---
@@ -323,7 +323,7 @@ It starts with one promise: **"Stay ahead of life."**
 
 ## Final product concept
 
-- **Product:** LifeDesk — One place to manage the things that keep your life running.
+- **Product:** Livanta — One place to manage the things that keep your life running.
 - **Problem:** Everyday responsibilities are fragmented and easy to forget.
 - **Solution:** Centralized platform that organizes, monitors and proactively alerts.
 - **Core innovation:** Predictive life maintenance.

@@ -10,7 +10,7 @@ export const ha: Dict = {
   /* ---------- app shell ---------- */
   "app.tagline": "Wuri ɗaya don gudanar da abubuwan da ke taimakawa rayuwarka.",
   "app.greeting": "Ina kwana, {name}",
-  "app.loading": "Ana buɗe LifeDesk…",
+  "app.loading": "Ana buɗe Livanta…",
   "app.error.label": "Ma'ajiyar gida",
   "app.error.title": "Ba a iya buɗe ma'ajiyar ba",
   "app.back": "Koma baya",
@@ -86,7 +86,7 @@ export const ha: Dict = {
   "alert.service.title": "{name} sabis ya wuce lokaci",
   "alert.service.message": "Jinkirin kulawa na yau da kullum na iya ƙara haɗarin gyara ba zato ba tsammani.",
   "alert.norecord.title": "{name} ba shi da tarihi tukuna",
-  "alert.norecord.message": "Ƙara rana don LifeDesk ya iya lura da shi.",
+  "alert.norecord.message": "Ƙara rana don Livanta ya iya lura da shi.",
 
   /* ---------- reminder copy (lib/notifications) ---------- */
   "reminder.doc.long.title": "{name} zai ƙare cikin kusan wata uku",
@@ -103,7 +103,7 @@ export const ha: Dict = {
   "reminder.generic.title_one": "{name} za shi zo cikin kwana {n}",
   "reminder.generic.title_many": "{name} za shi zo cikin kwanaki {n}",
   "reminder.generic.body.note": "{note}",
-  "reminder.generic.body.default": "Buɗe LifeDesk don shirya masa.",
+  "reminder.generic.body.default": "Buɗe Livanta don shirya masa.",
 
   /* ---------- home screen ---------- */
   "home.thisWeek": "Wannan makon",
@@ -151,11 +151,11 @@ export const ha: Dict = {
   "profile.account": "Asusu",
   "profile.freePlan": "Shirin kyauta · gida kawai",
   "profile.language": "Harshe",
-  "profile.languageHint": "Zaɓi harshen da LifeDesk zai yi amfani da shi.",
+  "profile.languageHint": "Zaɓi harshen da Livanta zai yi amfani da shi.",
   "profile.notifications": "Sanarwa",
   "profile.notifUnsupported": "Wannan burauzar ba ta goyi bayan sanarwa ba. Gargaɗin cikin app har yanzu yana aiki.",
   "profile.enableAlerts": "Kunna sanarwar burauza",
-  "profile.notifGranted": "Sanarwar burauza tana kunne. LifeDesk zai sanar da kai idan akwai abu mai gaggawa.",
+  "profile.notifGranted": "Sanarwar burauza tana kunne. Livanta zai sanar da kai idan akwai abu mai gaggawa.",
   "profile.notifDenied": "An toshe sanarwa a saitunan burauzarka. Har yanzu za ka iya amfani da tab na Gargaɗi a cikin app.",
   "profile.notifyUrgent": "Sanar da ni game da gargaɗi mai gaggawa",
   "profile.reminderSchedule": "Jadawalin tunatarwa",
@@ -167,8 +167,8 @@ export const ha: Dict = {
   "profile.exportDone": "An sauke bayanan da aka fitar.",
   "profile.loadSample": "Loda bayanan misali",
   "profile.yourData": "Bayanan ka",
-  "profile.yourDataBody_one": "{n} abu yana cikin IndexedDB akan wannan na'urar. Ba a ɗora komai ba. LifeDesk ba ya siyar da bayanan sirri.",
-  "profile.yourDataBody_many": "{n} abubuwa suna cikin IndexedDB akan wannan na'urar. Ba a ɗora komai ba. LifeDesk ba ya siyar da bayanan sirri.",
+  "profile.yourDataBody_one": "{n} abu yana cikin IndexedDB akan wannan na'urar. Ba a ɗora komai ba. Livanta ba ya siyar da bayanan sirri.",
+  "profile.yourDataBody_many": "{n} abubuwa suna cikin IndexedDB akan wannan na'urar. Ba a ɗora komai ba. Livanta ba ya siyar da bayanan sirri.",
   "profile.deleteAll": "Goge duk bayanaina",
   "profile.confirmDeleteAll": "Goge duka? Ba za a iya mayar da shi ba.",
 
@@ -183,7 +183,7 @@ export const ha: Dict = {
   /* ---------- onboarding ---------- */
   "ob.welcome": "Barka da zuwa",
   "ob.whatCallYou": "Me za mu kira ka?",
-  "ob.localOnly": "LifeDesk yana kan na'urarka kawai. Ba a ɗora komai ba kuma ba buƙatar asusu.",
+  "ob.localOnly": "Livanta yana kan na'urarka kawai. Ba a ɗora komai ba kuma ba buƙatar asusu.",
   "ob.firstName": "Sunan farko",
   "ob.namePlaceholder": "misali Temmy",
   "ob.continue": "Ci gaba",
@@ -193,7 +193,7 @@ export const ha: Dict = {
   "ob.back": "Koma baya",
   "ob.step3": "Mataki na 3",
   "ob.addFirst": "Ƙara muhimmin abu na farko",
-  "ob.willRemind": "LifeDesk zai ƙirƙiri tunatarwa a kusa da ranar da ka saita.",
+  "ob.willRemind": "Livanta zai ƙirƙiri tunatarwa a kusa da ranar da ka saita.",
   "ob.whatIsIt": "Menene shi?",
   "ob.thingPlaceholder": "misali Hujja",
   "ob.amount": "Adadi (ba dole ba)",

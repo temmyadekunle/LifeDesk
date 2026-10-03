@@ -54,5 +54,5 @@ createServer((req, res) => {
   }
   send(res, join(root, "404.html"), 404);
 }).listen(port, () => {
-  console.log(`LifeDesk static preview: http://localhost:${port}`);
+  console.log(`Livanta static preview: http://localhost:${port}`);
 });

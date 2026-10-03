@@ -17,7 +17,7 @@ export const en = {
   /* ---------- app shell ---------- */
   "app.tagline": "One place to manage the things that keep your life running.",
   "app.greeting": "Good morning, {name}",
-  "app.loading": "Opening your LifeDesk…",
+  "app.loading": "Opening your Livanta…",
   "app.error.label": "Local database",
   "app.error.title": "Could not open storage",
   "app.back": "Back",
@@ -93,7 +93,7 @@ export const en = {
   "alert.service.title": "{name} service is overdue",
   "alert.service.message": "Delaying routine maintenance may increase the likelihood of unexpected repair costs.",
   "alert.norecord.title": "{name} has no record yet",
-  "alert.norecord.message": "Add a date so LifeDesk can watch it for you.",
+  "alert.norecord.message": "Add a date so Livanta can watch it for you.",
 
   /* ---------- reminder copy (lib/notifications) ---------- */
   "reminder.doc.long.title": "{name} expires in about 3 months",
@@ -110,7 +110,7 @@ export const en = {
   "reminder.generic.title_one": "{name} is due in {n} day",
   "reminder.generic.title_many": "{name} is due in {n} days",
   "reminder.generic.body.note": "{note}",
-  "reminder.generic.body.default": "Open LifeDesk to prepare for it.",
+  "reminder.generic.body.default": "Open Livanta to prepare for it.",
 
   /* ---------- home screen ---------- */
   "home.thisWeek": "This week",
@@ -158,11 +158,11 @@ export const en = {
   "profile.account": "Account",
   "profile.freePlan": "Free plan · local only",
   "profile.language": "Language",
-  "profile.languageHint": "Choose the language LifeDesk uses.",
+  "profile.languageHint": "Choose the language Livanta uses.",
   "profile.notifications": "Notifications",
   "profile.notifUnsupported": "This browser does not support notifications. In-app alerts still work.",
   "profile.enableAlerts": "Enable browser alerts",
-  "profile.notifGranted": "Browser alerts are on. LifeDesk will notify you when something urgent needs attention.",
+  "profile.notifGranted": "Browser alerts are on. Livanta will notify you when something urgent needs attention.",
   "profile.notifDenied": "Alerts are blocked in your browser settings. You can still use the in-app Alerts tab.",
   "profile.notifyUrgent": "Notify me about urgent alerts",
   "profile.reminderSchedule": "Reminder schedule",
@@ -174,8 +174,8 @@ export const en = {
   "profile.exportDone": "Export downloaded.",
   "profile.loadSample": "Load sample data",
   "profile.yourData": "Your data",
-  "profile.yourDataBody_one": "{n} thing stored in IndexedDB on this device. Nothing is uploaded. LifeDesk does not sell personal data.",
-  "profile.yourDataBody_many": "{n} things stored in IndexedDB on this device. Nothing is uploaded. LifeDesk does not sell personal data.",
+  "profile.yourDataBody_one": "{n} thing stored in IndexedDB on this device. Nothing is uploaded. Livanta does not sell personal data.",
+  "profile.yourDataBody_many": "{n} things stored in IndexedDB on this device. Nothing is uploaded. Livanta does not sell personal data.",
   "profile.deleteAll": "Delete all my data",
   "profile.confirmDeleteAll": "Delete everything? This cannot be undone.",
 
@@ -190,7 +190,7 @@ export const en = {
   /* ---------- onboarding ---------- */
   "ob.welcome": "Welcome",
   "ob.whatCallYou": "What should we call you?",
-  "ob.localOnly": "LifeDesk lives on your device. Nothing is uploaded and no account is needed.",
+  "ob.localOnly": "Livanta lives on your device. Nothing is uploaded and no account is needed.",
   "ob.firstName": "First name",
   "ob.namePlaceholder": "e.g. Temmy",
   "ob.continue": "Continue",
@@ -200,7 +200,7 @@ export const en = {
   "ob.back": "Back",
   "ob.step3": "Step 3",
   "ob.addFirst": "Add your first important item",
-  "ob.willRemind": "LifeDesk will create reminders around the date you set.",
+  "ob.willRemind": "Livanta will create reminders around the date you set.",
   "ob.whatIsIt": "What is it?",
   "ob.thingPlaceholder": "e.g. Rent",
   "ob.amount": "Amount (optional)",

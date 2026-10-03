@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLifeDesk } from "@/lib/useLifeDesk";
+import { useLivanta } from "@/lib/useLivanta";
 import { daysUntil } from "@/lib/risk";
 import { formatNaira, type Locale } from "@/lib/i18n";
 import type { TKey } from "@/lib/locales/en";
@@ -82,10 +82,10 @@ const QUICK_ADD: { labelKey: TKey; kind: EditorPreset["kind"]; category: Categor
   { labelKey: "kind.asset", kind: "asset", category: "home" },
 ];
 
-export default function LifeDeskApp() {
+export default function LivantaApp() {
   const [tab, setTab] = useState<Tab>("home");
   const [module, setModule] = useState<ModuleId | null>(null);
-  const desk = useLifeDesk();
+  const desk = useLivanta();
   const { t } = desk;
 
   const notified = useRef<Set<string>>(new Set());
@@ -126,7 +126,7 @@ export default function LifeDeskApp() {
       <div className="phone" lang="en">
         <main className="screen">
           <section className="card">
-            <p className="card-meta">Opening your LifeDesk…</p>
+            <p className="card-meta">{desk.t("app.loading")}</p>
           </section>
         </main>
       </div>
@@ -186,7 +186,7 @@ export default function LifeDeskApp() {
             height={720}
             className="header-logo"
           />
-          <span className="header-brand">LifeDesk</span>
+          <span className="header-brand">Livanta</span>
         </div>
         <h1>
           {t("app.greeting", {
@@ -243,7 +243,7 @@ export default function LifeDeskApp() {
   );
 }
 
-type Desk = ReturnType<typeof useLifeDesk>;
+type Desk = ReturnType<typeof useLivanta>;
 
 function HomeScreen({
   desk,
@@ -685,7 +685,7 @@ function ProfileScreen({ desk }: { desk: Desk }) {
             className="btn btn-secondary"
             onClick={() => {
               downloadJson(
-                "lifedesk-export.json",
+                "livanta-export.json",
                 exportPayload(desk.things, desk.settings),
               );
               setNotice(t("profile.exportDone"));
@@ -748,7 +748,7 @@ function AlertBody({
   t,
 }: {
   alert: Alert;
-  t: ReturnType<typeof useLifeDesk>["t"];
+  t: ReturnType<typeof useLivanta>["t"];
 }) {
   return (
     <>
@@ -791,7 +791,7 @@ function ThingRow({
   t,
 }: {
   thing: Thing;
-  t: ReturnType<typeof useLifeDesk>["t"];
+  t: ReturnType<typeof useLivanta>["t"];
 }) {
   const days = thing.dueDate ? daysUntil(thing.dueDate) : null;
   const sub =

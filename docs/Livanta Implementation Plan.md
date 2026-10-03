@@ -1,6 +1,6 @@
-# LifeDesk — Implementation Plan
+# Livanta — Implementation Plan
 
-Goal: take the LifeDesk PRD (mobile-first Nigerian life-management app) to a working MVP, running locally.
+Goal: take the Livanta PRD (mobile-first Nigerian life-management app) to a working MVP, running locally.
 
 ## Proposed stack (runs locally for now)
 
@@ -11,7 +11,7 @@ Goal: take the LifeDesk PRD (mobile-first Nigerian life-management app) to a wor
 - **State/UI:** React, React Navigation, simple local state.
 - **Build target:** Expo Go / local Android emulator. App and database run locally.
 
-**Decision:** We keep Expo (React Native) as the framework. It suits LifeDesk because it gives one codebase for Android and iOS, strong offline-first support (SQLite, local notifications, file storage), and a fast path to a demoable MVP before any backend exists.
+**Decision:** We keep Expo (React Native) as the framework. It suits Livanta because it gives one codebase for Android and iOS, strong offline-first support (SQLite, local notifications, file storage), and a fast path to a demoable MVP before any backend exists.
 
 ## Phase 0 — Setup
 - Create Expo project, navigation skeleton, theme (Deep Navy `#172B4D`, Life Teal `#16A6A0`, Amber `#F4B942`, Off White `#F7F9FC`).

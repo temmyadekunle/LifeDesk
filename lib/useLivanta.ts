@@ -28,7 +28,7 @@ function makeId(): string {
   return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-export function useLifeDesk() {
+export function useLivanta() {
   const [things, setThings] = useState<Thing[]>([]);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);

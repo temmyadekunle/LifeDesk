@@ -1,5 +1,9 @@
 import type { Alert, HouseholdMember, Thing } from "./types.ts";
 
+// Internal storage key, deliberately NOT the product name. It is the
+// IndexedDB database users' records live in, so changing it would orphan
+// existing data with no server copy to recover from. Renamed products must
+// leave this alone unless a migration is written alongside it.
 const DB_NAME = "lifedesk";
 const DB_VERSION = 2;
 
@@ -17,7 +21,7 @@ let dbPromise: Promise<IDBDatabase> | null = null;
 function indexedDBFactory(): IDBFactory {
   if (typeof indexedDB === "undefined") {
     throw new Error(
-      "IndexedDB is unavailable. LifeDesk data is browser-local and requires a client environment.",
+      "IndexedDB is unavailable. Livanta data is browser-local and requires a client environment.",
     );
   }
   return indexedDB;

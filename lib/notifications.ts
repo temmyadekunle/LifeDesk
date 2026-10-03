@@ -114,7 +114,7 @@ export function exportPayload(
 ): string {
   return JSON.stringify(
     {
-      app: "LifeDesk",
+      app: "Livanta",
       version: 1,
       exportedAt: new Date().toISOString(),
       settings,

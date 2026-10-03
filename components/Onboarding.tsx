@@ -97,14 +97,14 @@ export default function Onboarding({
         <div className="ob-logo-box">
           <Image
             src="/logo.jpeg"
-            alt="LifeDesk logo"
+            alt="Livanta logo"
             width={1080}
             height={720}
             priority
             className="ob-logo"
           />
         </div>
-        <h1>LifeDesk</h1>
+        <h1>Livanta</h1>
         <p>{t("app.tagline")}</p>
       </div>
 

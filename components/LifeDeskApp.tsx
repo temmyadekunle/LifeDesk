@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useLifeDesk } from "@/lib/useLifeDesk";
 import { daysUntil } from "@/lib/risk";
-import type { Alert, Category, Priority, Thing } from "@/lib/types";
+import type { LifeLevel } from "@/lib/status";
+import type { Alert, Category, Priority, Thing, ThingKind } from "@/lib/types";
 
 type Tab = "home" | "things" | "alerts" | "household" | "profile";
 
@@ -48,24 +49,31 @@ const KIND_ICO: Record<string, string> = {
   "service-provider": "🔧",
 };
 
+const LEVEL_STYLE: Record<LifeLevel, string> = {
+  stable: "level-stable",
+  "needs-attention": "level-attention",
+  immediate: "level-immediate",
+};
+
+const QUICK_ADD: { label: string; ico: string; kind: ThingKind; category: Category }[] = [
+  { label: "Reminder", ico: "🔔", kind: "reminder", category: "family" },
+  { label: "Bill", ico: "🧾", kind: "bill", category: "money" },
+  { label: "Document", ico: "📄", kind: "document", category: "documents" },
+  { label: "Asset", ico: "📦", kind: "asset", category: "home" },
+];
+
 export default function LifeDeskApp() {
   const [tab, setTab] = useState<Tab>("home");
   const desk = useLifeDesk();
-
-  const urgentCount = desk.alerts.filter((a) => a.priority === "urgent").length;
 
   return (
     <div className="phone">
       <header className="app-header">
         <h1>Good morning, Temmy 👋</h1>
-        <p>Here&apos;s what needs your attention.</p>
-        <div className="status-pill">
+        <p>{desk.loading ? "Opening your LifeDesk…" : desk.status.headline}</p>
+        <div className={`status-pill ${LEVEL_STYLE[desk.status.level]}`}>
           <span className="dot" />
-          {desk.loading
-            ? "Loading your LifeDesk…"
-            : urgentCount > 0
-              ? `${urgentCount} thing${urgentCount === 1 ? "" : "s"} need attention`
-              : "You're mostly on track"}
+          {desk.status.label}
         </div>
       </header>
 
@@ -103,8 +111,8 @@ export default function LifeDeskApp() {
           >
             <span className="ico">{t.ico}</span>
             {t.label}
-            {t.id === "alerts" && urgentCount > 0 && (
-              <span className="tab-badge">{urgentCount}</span>
+            {t.id === "alerts" && desk.status.urgentCount > 0 && (
+              <span className="tab-badge">{desk.status.urgentCount}</span>
             )}
           </button>
         ))}
@@ -116,37 +124,43 @@ export default function LifeDeskApp() {
 type Desk = ReturnType<typeof useLifeDesk>;
 
 function HomeScreen({ desk }: { desk: Desk }) {
-  const [name, setName] = useState("");
-  const [amount, setAmount] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [adding, setAdding] = useState<ThingKind | null>(null);
+  const [dismissed, setDismissed] = useState<string[]>([]);
 
-  const top = desk.alerts.slice(0, 3);
-
-  async function save() {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    await desk.addThing({
-      name: trimmed,
-      category: "money",
-      kind: "reminder",
-      amount: amount ? Number(amount) : null,
-    });
-    setName("");
-    setAmount("");
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-  }
+  const visible = desk.alerts.filter((a) => !dismissed.includes(a.id));
+  const top = visible.slice(0, 3);
 
   return (
     <>
+      <section className="card">
+        <p className="section-label">This week</p>
+        <div className="stat-row">
+          <Stat n={desk.status.urgentCount} label="urgent" tone="urgent" />
+          <Stat n={desk.status.importantCount} label="upcoming" tone="important" />
+          <Stat n={desk.status.onTrackCount} label="on track" tone="routine" />
+        </div>
+      </section>
+
       <section className="card alert-urgent">
         <p className="section-label">Needs attention</p>
         {desk.loading ? (
           <p className="card-meta">Reading your local records…</p>
         ) : top.length === 0 ? (
-          <p className="card-meta">Nothing urgent. You're on track.</p>
+          <p className="card-meta">Nothing urgent. You&apos;re on track.</p>
         ) : (
-          top.map((a) => <AlertRow key={a.id} alert={a} />)
+          top.map((a) => (
+            <div key={a.id} style={{ marginBottom: 14 }}>
+              <AlertBody alert={a} />
+              <AlertActions
+                alert={a}
+                desk={desk}
+                onDismiss={() => {
+                  void desk.dismissAlert(a);
+                  setDismissed((d) => [...d, a.id]);
+                }}
+              />
+            </div>
+          ))
         )}
       </section>
 
@@ -172,44 +186,128 @@ function HomeScreen({ desk }: { desk: Desk }) {
       <section className="card">
         <p className="section-label">Quick add</p>
         <div className="quick-grid">
-          <button className="btn btn-secondary">＋ Reminder</button>
-          <button className="btn btn-secondary">＋ Bill</button>
-          <button className="btn btn-secondary">＋ Document</button>
-          <button className="btn btn-secondary">＋ Asset</button>
+          {QUICK_ADD.map((q) => (
+            <button
+              key={q.kind}
+              className="btn btn-secondary"
+              onClick={() => setAdding(q.kind)}
+            >
+              {q.ico} {q.label}
+            </button>
+          ))}
         </div>
       </section>
 
-      <section className="card">
-        <p className="section-label">Add a responsibility</p>
-        <div className="field">
-          <label htmlFor="new-name">What is it?</label>
-          <input
-            id="new-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Water bill"
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="new-amount">Amount (optional)</label>
-          <input
-            id="new-amount"
-            inputMode="numeric"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="e.g. 45000"
-          />
-          <div className="hint">Stored locally on this device.</div>
-        </div>
-        <button className="btn btn-primary" onClick={save} disabled={!name.trim()}>
-          {saved ? "Saved to LifeDesk ✓" : "Save"}
-        </button>
-      </section>
+      {adding && <AddForm desk={desk} kind={adding} onClose={() => setAdding(null)} />}
     </>
   );
 }
 
+function AddForm({
+  desk,
+  kind,
+  onClose,
+}: {
+  desk: Desk;
+  kind: ThingKind;
+  onClose: () => void;
+}) {
+  const preset = QUICK_ADD.find((q) => q.kind === kind)!;
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [recurring, setRecurring] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function save() {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setBusy(true);
+    await desk.addThing({
+      name: trimmed,
+      category: preset.category,
+      kind,
+      amount: amount ? Number(amount) : null,
+      dueDate: dueDate || null,
+      recurrence: recurring ? { frequency: "monthly", interval: 1 } : null,
+    });
+    setBusy(false);
+    onClose();
+  }
+
+  return (
+    <section className="card accent-teal">
+      <p className="section-label">
+        New {preset.label.toLowerCase()}
+      </p>
+      <div className="field">
+        <label htmlFor="f-name">What is it?</label>
+        <input
+          id="f-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={
+            kind === "document"
+              ? "e.g. Driver's licence"
+              : kind === "asset"
+                ? "e.g. Refrigerator"
+                : kind === "bill"
+                  ? "e.g. Water bill"
+                  : "e.g. Dentist appointment"
+          }
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="f-amount">Amount (optional)</label>
+        <input
+          id="f-amount"
+          inputMode="numeric"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="e.g. 45000"
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="f-due">Due or expiry date</label>
+        <input
+          id="f-due"
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+        />
+        <div className="hint">Leave empty if there is no date yet.</div>
+      </div>
+      {kind !== "document" && kind !== "asset" && (
+        <div className="field">
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={recurring}
+              onChange={(e) => setRecurring(e.target.checked)}
+            />
+            Repeats every month
+          </label>
+        </div>
+      )}
+      <div className="quick-grid">
+        <button className="btn btn-secondary" onClick={onClose}>
+          Cancel
+        </button>
+        <button
+          className="btn btn-primary"
+          onClick={save}
+          disabled={!name.trim() || busy}
+        >
+          Save
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function ThingsScreen({ desk }: { desk: Desk }) {
+  const [openId, setOpenId] = useState<string | null>(null);
+
   return (
     <>
       <p className="section-label">Categories</p>
@@ -230,7 +328,29 @@ function ThingsScreen({ desk }: { desk: Desk }) {
               <span className="badge b-routine">{items.length}</span>
             </div>
             {items.map((t) => (
-              <ThingRow key={t.id} thing={t} />
+              <div key={t.id}>
+                <button
+                  className="row-btn"
+                  onClick={() => setOpenId(openId === t.id ? null : t.id)}
+                >
+                  <ThingRow thing={t} />
+                </button>
+                {openId === t.id && (
+                  <div className="inline-actions">
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => void desk.completeThing(t)}
+                    >
+                      Mark handled
+                    </button>
+                    <span className="sub">
+                      {t.recurrence
+                        ? "Recurring — will roll to the next due date."
+                        : "Will be marked completed."}
+                    </span>
+                  </div>
+                )}
+              </div>
             ))}
           </section>
         );
@@ -243,7 +363,8 @@ function AlertsScreen({ desk }: { desk: Desk }) {
   return (
     <>
       <p className="section-label">
-        {desk.alerts.length} alert{desk.alerts.length === 1 ? "" : "s"}
+        {desk.alerts.length} alert{desk.alerts.length === 1 ? "" : "s"} ·{" "}
+        {desk.status.level}
       </p>
       {desk.alerts.map((a) => (
         <section
@@ -256,7 +377,12 @@ function AlertsScreen({ desk }: { desk: Desk }) {
           }`}
           key={a.id}
         >
-          <AlertRow alert={a} />
+          <AlertBody alert={a} />
+          <AlertActions
+            alert={a}
+            desk={desk}
+            onDismiss={() => void desk.dismissAlert(a)}
+          />
         </section>
       ))}
       {desk.alerts.length === 0 && (
@@ -293,7 +419,16 @@ function ProfileScreen({ desk }: { desk: Desk }) {
   );
 }
 
-function AlertRow({ alert }: { alert: Alert }) {
+function Stat({ n, label, tone }: { n: number; label: string; tone: Priority }) {
+  return (
+    <div className="stat">
+      <div className={`stat-num ${tone}`}>{n}</div>
+      <div className="stat-label">{label}</div>
+    </div>
+  );
+}
+
+function AlertBody({ alert }: { alert: Alert }) {
   return (
     <>
       <h3 className="card-title">{alert.title}</h3>
@@ -304,6 +439,36 @@ function AlertRow({ alert }: { alert: Alert }) {
         </span>
       </div>
     </>
+  );
+}
+
+function AlertActions({
+  alert,
+  desk,
+  onDismiss,
+}: {
+  alert: Alert;
+  desk: Desk;
+  onDismiss: () => void;
+}) {
+  const thing = desk.things.find((t) => t.id === alert.thingId);
+
+  return (
+    <div className="quick-grid" style={{ marginTop: 12 }}>
+      <button
+        className="btn btn-secondary btn-sm"
+        onClick={onDismiss}
+      >
+        Remind me later
+      </button>
+      <button
+        className="btn btn-primary btn-sm"
+        disabled={!thing}
+        onClick={() => thing && void desk.completeThing(thing)}
+      >
+        Mark as handled
+      </button>
+    </div>
   );
 }
 

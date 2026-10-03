@@ -106,6 +106,10 @@ export function putAlert(alert: Alert): Promise<IDBValidKey> {
   return run<IDBValidKey>(STORES.alerts, "readwrite", (s) => s.put(alert));
 }
 
+export function deleteAlert(id: string): Promise<undefined> {
+  return run<undefined>(STORES.alerts, "readwrite", (s) => s.delete(id));
+}
+
 export function clearAlerts(): Promise<undefined> {
   return run<undefined>(STORES.alerts, "readwrite", (s) => s.clear());
 }

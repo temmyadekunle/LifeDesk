@@ -331,6 +331,83 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* ---------- Phase 2: status, stats, inline actions ---------- */
+
+.level-stable {
+  background: rgba(46, 157, 104, 0.22);
+}
+
+.level-attention {
+  background: rgba(244, 185, 66, 0.22);
+}
+
+.level-immediate {
+  background: rgba(224, 82, 82, 0.24);
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  text-align: center;
+}
+
+.stat-num {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.stat-num.urgent {
+  color: var(--danger);
+}
+
+.stat-num.important {
+  color: #b07d10;
+}
+
+.stat-num.routine {
+  color: var(--success);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.btn-sm {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.row-btn {
+  display: block;
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 12px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
 .phase-note {
   font-size: 12px;
   color: var(--muted);

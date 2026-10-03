@@ -1,6 +1,10 @@
+import { makeT, type Translate } from "./i18n.ts";
 import type { Alert, Frequency, Priority, Thing } from "./types.ts";
 
 const MS_PER_DAY = 86_400_000;
+
+/** Default translator, so callers that do not care about locale get English. */
+export const englishT: Translate = makeT("en");
 
 /** Whole days from today until `iso`. Negative when already past. */
 export function daysUntil(iso: string, now: Date = new Date()): number {
@@ -52,46 +56,56 @@ export function derivePriority(thing: Thing, now: Date = new Date()): Priority {
   return "routine";
 }
 
-export function formatNaira(amount: number): string {
-  return `\u20A6${amount.toLocaleString("en-NG")}`;
-}
+export { formatNaira } from "./i18n.ts";
 
 const REASONS: Record<
   Alert["reason"],
-  (t: Thing, days: number | null) => { title: string; message: string }
+  (t: Thing, days: number | null, tr: Translate) => {
+    title: string;
+    message: string;
+  }
 > = {
-  overdue: (t, d) => ({
-    title: `${t.name} is overdue`,
+  overdue: (t, d, tr) => ({
+    title: tr("alert.overdue.title", { name: t.name }),
     message:
       d === null
-        ? "This responsibility has passed its due date."
-        : `This responsibility was due ${Math.abs(d)} day${
-            Math.abs(d) === 1 ? "" : "s"
-          } ago.`,
+        ? tr("alert.overdue.message.none")
+        : d === 1
+          ? tr("alert.overdue.message.days_one", { n: 1 })
+          : tr("alert.overdue.message.days_many", { n: Math.abs(d) }),
   }),
-  expiring: (t, d) => ({
-    title: `${t.name} expires in ${d} day${d === 1 ? "" : "s"}`,
+  expiring: (t, d, tr) => ({
+    title:
+      d === 1
+        ? tr("alert.expiring.title_one", { name: t.name, n: 1 })
+        : tr("alert.expiring.title_many", { name: t.name, n: d ?? 0 }),
     message:
       d !== null && d <= 30
-        ? "Start preparing now to avoid penalties or inconvenience."
-        : "No action needed yet, but it is coming up.",
+        ? tr("alert.expiring.message.soon")
+        : tr("alert.expiring.message.later"),
   }),
-  "recurring-due": (t, d) => ({
-    title: `${t.name} renews in ${d ?? 0} day${d === 1 ? "" : "s"}`,
-    message: "A recurring payment is approaching.",
+  "recurring-due": (t, d, tr) => ({
+    title:
+      d === 1
+        ? tr("alert.recurring.title_one", { name: t.name, n: 1 })
+        : tr("alert.recurring.title_many", { name: t.name, n: d ?? 0 }),
+    message: tr("alert.recurring.message"),
   }),
-  "service-overdue": (t) => ({
-    title: `${t.name} service is overdue`,
-    message:
-      "Delaying routine maintenance may increase the likelihood of unexpected repair costs.",
+  "service-overdue": (t, _d, tr) => ({
+    title: tr("alert.service.title", { name: t.name }),
+    message: tr("alert.service.message"),
   }),
-  "no-record": (t) => ({
-    title: `${t.name} has no record yet`,
-    message: "Add a date so LifeDesk can watch it for you.",
+  "no-record": (t, _d, tr) => ({
+    title: tr("alert.norecord.title", { name: t.name }),
+    message: tr("alert.norecord.message"),
   }),
 };
 
-export function buildAlerts(things: Thing[], now: Date = new Date()): Alert[] {
+export function buildAlerts(
+  things: Thing[],
+  now: Date = new Date(),
+  tr: Translate = englishT,
+): Alert[] {
   const alerts: Alert[] = [];
 
   for (const thing of things) {
@@ -117,7 +131,7 @@ export function buildAlerts(things: Thing[], now: Date = new Date()): Alert[] {
 
     if (!reason) continue;
 
-    const { title, message } = REASONS[reason](thing, days);
+    const { title, message } = REASONS[reason](thing, days, tr);
     alerts.push({
       id: `${thing.id}:${reason}`,
       thingId: thing.id,

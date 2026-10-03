@@ -2,45 +2,47 @@
 
 import { useState } from "react";
 import type { EditorPreset, EditorValues } from "@/lib/editor";
+import type { Translate } from "@/lib/i18n";
+import type { TKey } from "@/lib/locales/en";
 import type { Category, Frequency, ThingKind } from "@/lib/types";
 
 export { fromEditorValues, toEditorValues } from "@/lib/editor";
 export type { EditorPreset, EditorValues } from "@/lib/editor";
 
-const CATEGORY_OPTIONS: { id: Category; label: string }[] = [
-  { id: "home", label: "Home" },
-  { id: "transport", label: "Transport" },
-  { id: "money", label: "Money" },
-  { id: "documents", label: "Documents" },
-  { id: "family", label: "Family" },
-  { id: "services", label: "Services" },
+const CATEGORY_OPTIONS: { id: Category; labelKey: TKey }[] = [
+  { id: "home", labelKey: "cat.home" },
+  { id: "transport", labelKey: "cat.transport" },
+  { id: "money", labelKey: "cat.money" },
+  { id: "documents", labelKey: "cat.documents" },
+  { id: "family", labelKey: "cat.family" },
+  { id: "services", labelKey: "cat.services" },
 ];
 
-const KIND_OPTIONS: { id: ThingKind; label: string }[] = [
-  { id: "rent", label: "Rent" },
-  { id: "utility", label: "Utility" },
-  { id: "bill", label: "Bill" },
-  { id: "subscription", label: "Subscription" },
-  { id: "school-fee", label: "School fee" },
-  { id: "vehicle", label: "Vehicle" },
-  { id: "fuel", label: "Fuel" },
-  { id: "maintenance", label: "Maintenance" },
-  { id: "insurance", label: "Insurance" },
-  { id: "document", label: "Document" },
-  { id: "asset", label: "Asset" },
-  { id: "appointment", label: "Appointment" },
-  { id: "reminder", label: "Reminder" },
-  { id: "service-provider", label: "Service provider" },
+const KIND_OPTIONS: { id: ThingKind; labelKey: TKey }[] = [
+  { id: "rent", labelKey: "kind.rent" },
+  { id: "utility", labelKey: "kind.utility" },
+  { id: "bill", labelKey: "kind.bill" },
+  { id: "subscription", labelKey: "kind.subscription" },
+  { id: "school-fee", labelKey: "kind.school-fee" },
+  { id: "vehicle", labelKey: "kind.vehicle" },
+  { id: "fuel", labelKey: "kind.fuel" },
+  { id: "maintenance", labelKey: "kind.maintenance" },
+  { id: "insurance", labelKey: "kind.insurance" },
+  { id: "document", labelKey: "kind.document" },
+  { id: "asset", labelKey: "kind.asset" },
+  { id: "appointment", labelKey: "kind.appointment" },
+  { id: "reminder", labelKey: "kind.reminder" },
+  { id: "service-provider", labelKey: "kind.service-provider" },
 ];
 
-const FREQUENCY_OPTIONS: { id: Frequency; label: string }[] = [
-  { id: "none", label: "One-off" },
-  { id: "weekly", label: "Weekly" },
-  { id: "biweekly", label: "Every 2 weeks" },
-  { id: "monthly", label: "Monthly" },
-  { id: "quarterly", label: "Quarterly" },
-  { id: "biannual", label: "Twice a year" },
-  { id: "annual", label: "Yearly" },
+const FREQUENCY_OPTIONS: { id: Frequency; labelKey: TKey }[] = [
+  { id: "none", labelKey: "freq.none" },
+  { id: "weekly", labelKey: "freq.weekly" },
+  { id: "biweekly", labelKey: "freq.biweekly" },
+  { id: "monthly", labelKey: "freq.monthly" },
+  { id: "quarterly", labelKey: "freq.quarterly" },
+  { id: "biannual", labelKey: "freq.biannual" },
+  { id: "annual", labelKey: "freq.annual" },
 ];
 
 export default function ThingEditor({
@@ -49,12 +51,14 @@ export default function ThingEditor({
   onSave,
   onCancel,
   busy,
+  t,
 }: {
   preset: EditorPreset;
   initial?: EditorValues;
   onSave: (values: EditorValues) => void;
   onCancel: () => void;
   busy?: boolean;
+  t: Translate;
 }) {
   const [v, setV] = useState<EditorValues>(
     initial ?? {
@@ -73,20 +77,24 @@ export default function ThingEditor({
 
   return (
     <div className="editor">
-      <p className="section-label">{initial ? "Edit" : "New"} {preset.label.toLowerCase()}</p>
+      <p className="section-label">
+        {initial
+          ? t("ed.editPrefix", { label: preset.label.toLowerCase() })
+          : t("ed.newPrefix", { label: preset.label.toLowerCase() })}
+      </p>
 
       <div className="field">
-        <label htmlFor="e-name">What is it?</label>
+        <label htmlFor="e-name">{t("ed.whatIsIt")}</label>
         <input
           id="e-name"
           value={v.name}
           onChange={(e) => set("name", e.target.value)}
-          placeholder="e.g. Water bill"
+          placeholder={t("ed.whatPlaceholder")}
         />
       </div>
 
       <div className="field">
-        <label htmlFor="e-category">Category</label>
+        <label htmlFor="e-category">{t("ed.category")}</label>
         <select
           id="e-category"
           value={v.category}
@@ -94,14 +102,14 @@ export default function ThingEditor({
         >
           {CATEGORY_OPTIONS.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.label}
+              {t(c.labelKey)}
             </option>
           ))}
         </select>
       </div>
 
       <div className="field">
-        <label htmlFor="e-kind">Type</label>
+        <label htmlFor="e-kind">{t("ed.type")}</label>
         <select
           id="e-kind"
           value={v.kind}
@@ -109,36 +117,36 @@ export default function ThingEditor({
         >
           {KIND_OPTIONS.map((k) => (
             <option key={k.id} value={k.id}>
-              {k.label}
+              {t(k.labelKey)}
             </option>
           ))}
         </select>
       </div>
 
       <div className="field">
-        <label htmlFor="e-amount">Amount (optional)</label>
+        <label htmlFor="e-amount">{t("ed.amount")}</label>
         <input
           id="e-amount"
           inputMode="numeric"
           value={v.amount}
           onChange={(e) => set("amount", e.target.value)}
-          placeholder="e.g. 45000"
+          placeholder={t("ed.amountPlaceholder")}
         />
       </div>
 
       <div className="field">
-        <label htmlFor="e-due">Due or expiry date</label>
+        <label htmlFor="e-due">{t("ed.dueDate")}</label>
         <input
           id="e-due"
           type="date"
           value={v.dueDate}
           onChange={(e) => set("dueDate", e.target.value)}
         />
-        <div className="hint">Leave empty if there is no date yet.</div>
+        <div className="hint">{t("ed.dueHint")}</div>
       </div>
 
       <div className="field">
-        <label htmlFor="e-freq">Repeats</label>
+        <label htmlFor="e-freq">{t("ed.repeats")}</label>
         <select
           id="e-freq"
           value={v.frequency}
@@ -146,25 +154,25 @@ export default function ThingEditor({
         >
           {FREQUENCY_OPTIONS.map((f) => (
             <option key={f.id} value={f.id}>
-              {f.label}
+              {t(f.labelKey)}
             </option>
           ))}
         </select>
       </div>
 
       <div className="field">
-        <label htmlFor="e-notes">Note (optional)</label>
+        <label htmlFor="e-notes">{t("ed.note")}</label>
         <input
           id="e-notes"
           value={v.notes}
           onChange={(e) => set("notes", e.target.value)}
-          placeholder="e.g. Pay before the 25th"
+          placeholder={t("ed.notePlaceholder")}
         />
       </div>
 
       <div className="quick-grid">
         <button className="btn btn-secondary" onClick={onCancel} type="button">
-          Cancel
+          {t("ed.cancel")}
         </button>
         <button
           className="btn btn-primary"
@@ -172,7 +180,7 @@ export default function ThingEditor({
           disabled={!v.name.trim() || busy}
           type="button"
         >
-          {busy ? "Saving…" : "Save"}
+          {busy ? t("ed.saving") : t("ed.save")}
         </button>
       </div>
     </div>

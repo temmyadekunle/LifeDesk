@@ -8,6 +8,8 @@ import {
   summariseVehicles,
 } from "@/lib/modules";
 import { daysUntil } from "@/lib/risk";
+import { formatNaira, type Translate } from "@/lib/i18n";
+import type { TKey } from "@/lib/locales/en";
 import type { Thing } from "@/lib/types";
 
 export type ModuleId =
@@ -19,70 +21,70 @@ export type ModuleId =
 
 export const MODULES: {
   id: ModuleId;
-  label: string;
+  labelKey: TKey;
+  blurbKey: TKey;
   ico: string;
-  blurb: string;
   color: string;
 }[] = [
   {
     id: "home",
-    label: "Home",
+    labelKey: "module.home",
+    blurbKey: "module.home.blurb",
     ico: "🏠",
-    blurb: "Rent, utilities and maintenance",
     color: "var(--home)",
   },
   {
     id: "vehicles",
-    label: "Vehicles",
+    labelKey: "module.vehicles",
+    blurbKey: "module.vehicles.blurb",
     ico: "🚗",
-    blurb: "Service, fuel and documents",
     color: "var(--transport)",
   },
   {
     id: "bills",
-    label: "Bills",
+    labelKey: "module.bills",
+    blurbKey: "module.bills.blurb",
     ico: "💳",
-    blurb: "Recurring payments and money due",
     color: "var(--money)",
   },
   {
     id: "documents",
-    label: "Documents",
+    labelKey: "module.documents",
+    blurbKey: "module.documents.blurb",
     ico: "📄",
-    blurb: "Expiry dates and renewals",
     color: "var(--documents)",
   },
   {
     id: "assets",
-    label: "Assets",
+    labelKey: "module.assets",
+    blurbKey: "module.assets.blurb",
     ico: "📦",
-    blurb: "Warranties and what you own",
     color: "var(--assets)",
   },
 ];
-
-const naira = (n: number) => `\u20A6${n.toLocaleString("en-NG")}`;
 
 export default function ModuleScreen({
   module,
   things,
   onOpenThing,
+  t,
 }: {
   module: ModuleId;
   things: Thing[];
   onOpenThing: (thing: Thing) => void;
+  t: Translate;
 }) {
   switch (module) {
     case "home":
-      return <HomeModule things={things} onOpenThing={onOpenThing} />;
+      return <HomeModule things={things} onOpenThing={onOpenThing} t={t} />;
     case "vehicles":
-      return <VehiclesModule things={things} onOpenThing={onOpenThing} />;
+      return <VehiclesModule things={things} onOpenThing={onOpenThing} t={t} />;
     case "bills":
-      return <BillsModule things={things} onOpenThing={onOpenThing} />;
+      return <BillsModule things={things} onOpenThing={onOpenThing} t={t} />;
     case "documents":
-      return <DocumentsModule things={things} onOpenThing={onOpenThing} />;
+      return <DocumentsModule things={things} onOpenThing={onOpenThing} t={t} />;
     case "assets":
-      return <AssetsModule things={things} onOpenThing={onOpenThing} />;
+      return <AssetsModule things={things} onOpenThing={onOpenThing} t={t} />;
   }
 }
 
@@ -111,46 +113,49 @@ function Row({
 function HomeModule({
   things,
   onOpenThing,
+  t,
 }: {
   things: Thing[];
-  onOpenThing: (t: Thing) => void;
+  onOpenThing: (thing: Thing) => void;
+  t: Translate;
 }) {
   const s = summariseHome(things);
 
   return (
     <>
       <section className="card">
-        <p className="section-label">Properties</p>
+        <p className="section-label">{t("mod.properties")}</p>
         {s.properties.map((p) => (
           <div key={p.id}>
             <Row
               thing={p}
               onOpen={() => onOpenThing(p)}
               right={
-                p.amount ? <span className="sub">{naira(p.amount)}</span> : undefined
+                p.amount ? (
+                  <span className="sub">{formatNaira(p.amount)}</span>
+                ) : undefined
               }
             />
             {typeof p.details.landlord === "string" && (
               <p className="sub" style={{ padding: "0 0 10px" }}>
-                Landlord: {p.details.landlord}
+                {t("mod.landlord")}: {p.details.landlord}
                 {typeof p.details.serviceCharge === "number"
-                  ? ` · Service charge ${naira(p.details.serviceCharge)}`
+                  ? ` · ${t("mod.serviceCharge")} ${formatNaira(p.details.serviceCharge)}`
                   : ""}
               </p>
             )}
           </div>
         ))}
         {s.properties.length === 0 && (
-          <p className="card-meta">No property added yet.</p>
+          <p className="card-meta">{t("mod.noProperty")}</p>
         )}
       </section>
 
       <section className="card">
-        <p className="section-label">Home maintenance</p>
+        <p className="section-label">{t("mod.homeMaintenance")}</p>
         {s.overdueMaintenance.length > 0 && (
           <p className="card-meta" style={{ marginBottom: 10 }}>
-            {s.overdueMaintenance.length} item
-            {s.overdueMaintenance.length === 1 ? "" : "s"} need servicing.
+            {t.n("mod.needServicing", s.overdueMaintenance.length)}
           </p>
         )}
         {s.maintenance.map((m) => (
@@ -161,25 +166,26 @@ function HomeModule({
             right={
               m.lastHandledDate ? (
                 <span className="sub">
-                  {Math.round(
-                    (Date.now() - new Date(m.lastHandledDate).getTime()) /
-                      86_400_000,
-                  )}{" "}
-                  d ago
+                  {t("mod.daysAgo", {
+                    n: Math.round(
+                      (Date.now() - new Date(m.lastHandledDate).getTime()) /
+                        86_400_000,
+                    ),
+                  })}
                 </span>
               ) : undefined
             }
           />
         ))}
         {s.maintenance.length === 0 && (
-          <p className="card-meta">Nothing tracked for maintenance.</p>
+          <p className="card-meta">{t("mod.nothingMaintenance")}</p>
         )}
       </section>
 
       <section className="card">
-        <p className="section-label">Next 30 days</p>
-        <div className="amount">{naira(s.monthlyOutgoings)}</div>
-        <p className="card-meta">Known household outgoings.</p>
+        <p className="section-label">{t("mod.next30")}</p>
+        <div className="amount">{formatNaira(s.monthlyOutgoings)}</div>
+        <p className="card-meta">{t("mod.knownOutgoings")}</p>
       </section>
     </>
   );
@@ -188,16 +194,18 @@ function HomeModule({
 function VehiclesModule({
   things,
   onOpenThing,
+  t,
 }: {
   things: Thing[];
-  onOpenThing: (t: Thing) => void;
+  onOpenThing: (thing: Thing) => void;
+  t: Translate;
 }) {
   const groups = summariseVehicles(things);
 
   if (groups.length === 0) {
     return (
       <section className="card">
-        <p className="card-meta">No vehicles added yet.</p>
+        <p className="card-meta">{t("mod.noVehicles")}</p>
       </section>
     );
   }
@@ -209,35 +217,38 @@ function VehiclesModule({
           <p className="section-label">{g.name}</p>
           {g.serviceDue.length > 0 && (
             <p className="card-meta" style={{ marginBottom: 10 }}>
-              {g.serviceDue.length} service item
-              {g.serviceDue.length === 1 ? "" : "s"} due or overdue.
+              {t.n("mod.serviceDue", g.serviceDue.length)}
             </p>
           )}
           {g.nextDue && (
             <p className="card-meta" style={{ marginBottom: 10 }}>
-              Next due: {g.nextDue.name}
+              {t("mod.nextDue", { name: g.nextDue.name })}
               {g.nextDue.dueDate
-                ? ` in ${Math.max(0, daysUntil(g.nextDue.dueDate))} days`
+                ? t("mod.nextDueIn", {
+                    n: Math.max(0, daysUntil(g.nextDue.dueDate)),
+                  })
                 : ""}
               .
             </p>
           )}
-          {g.things.map((t) => (
+          {g.things.map((item) => (
             <Row
-              key={t.id}
-              thing={t}
-              onOpen={() => onOpenThing(t)}
+              key={item.id}
+              thing={item}
+              onOpen={() => onOpenThing(item)}
               right={
-                t.amount ? (
-                  <span className="sub">{naira(t.amount)}</span>
+                item.amount ? (
+                  <span className="sub">{formatNaira(item.amount)}</span>
                 ) : (
-                  <span className="sub">{t.kind}</span>
+                  <span className="sub">
+                    {t(`kind.${item.kind}` as TKey)}
+                  </span>
                 )
               }
             />
           ))}
           <p className="sub" style={{ paddingTop: 10 }}>
-            Recorded spend: {naira(g.totalSpend)}
+            {t("mod.recordedSpend", { amount: formatNaira(g.totalSpend) })}
           </p>
         </section>
       ))}
@@ -248,62 +259,65 @@ function VehiclesModule({
 function BillsModule({
   things,
   onOpenThing,
+  t,
 }: {
   things: Thing[];
-  onOpenThing: (t: Thing) => void;
+  onOpenThing: (thing: Thing) => void;
+  t: Translate;
 }) {
   const s = summariseBills(things);
 
   return (
     <>
       <section className="card">
-        <p className="section-label">Next 30 days</p>
-        <div className="amount">{naira(s.next30Total)}</div>
+        <p className="section-label">{t("mod.next30")}</p>
+        <div className="amount">{formatNaira(s.next30Total)}</div>
         <p className="card-meta">
-          {s.recurring.length} recurring payment
-          {s.recurring.length === 1 ? "" : "s"} · {naira(s.recurringTotal)} total
-          per cycle
+          {t.n("mod.recurringCount", s.recurring.length)}
+          {t("mod.perCycle", { amount: formatNaira(s.recurringTotal) })}
         </p>
       </section>
 
       {s.largest && (
         <section className="card alert-soon">
-          <p className="section-label">Largest commitment</p>
+          <p className="section-label">{t("mod.largestCommitment")}</p>
           <h3 className="card-title">{s.largest.name}</h3>
-          <p className="card-meta">{naira(s.largest.amount ?? 0)}</p>
+          <p className="card-meta">{formatNaira(s.largest.amount ?? 0)}</p>
         </section>
       )}
 
       <section className="card">
-        <p className="section-label">Recurring payments</p>
-        {s.recurring.map((t) => (
+        <p className="section-label">{t("mod.recurringPayments")}</p>
+        {s.recurring.map((item) => (
           <Row
-            key={t.id}
-            thing={t}
-            onOpen={() => onOpenThing(t)}
+            key={item.id}
+            thing={item}
+            onOpen={() => onOpenThing(item)}
             right={
               <span className="sub">
-                {t.amount ? naira(t.amount) : ""}{" "}
-                {t.dueDate ? `· ${daysUntil(t.dueDate)}d` : ""}
+                {item.amount ? formatNaira(item.amount) : ""}{" "}
+                {item.dueDate ? `· ${daysUntil(item.dueDate)}d` : ""}
               </span>
             }
           />
         ))}
         {s.recurring.length === 0 && (
-          <p className="card-meta">No recurring payments.</p>
+          <p className="card-meta">{t("mod.noRecurring")}</p>
         )}
       </section>
 
       {s.oneOff.length > 0 && (
         <section className="card">
-          <p className="section-label">One-off payments</p>
-          {s.oneOff.map((t) => (
+          <p className="section-label">{t("mod.oneOffPayments")}</p>
+          {s.oneOff.map((item) => (
             <Row
-              key={t.id}
-              thing={t}
-              onOpen={() => onOpenThing(t)}
+              key={item.id}
+              thing={item}
+              onOpen={() => onOpenThing(item)}
               right={
-                t.amount ? <span className="sub">{naira(t.amount)}</span> : undefined
+                item.amount ? (
+                  <span className="sub">{formatNaira(item.amount)}</span>
+                ) : undefined
               }
             />
           ))}
@@ -316,24 +330,26 @@ function BillsModule({
 function DocumentsModule({
   things,
   onOpenThing,
+  t,
 }: {
   things: Thing[];
-  onOpenThing: (t: Thing) => void;
+  onOpenThing: (thing: Thing) => void;
+  t: Translate;
 }) {
   const s = summariseDocuments(things);
 
-  const group = (label: string, list: Thing[], tone?: string) =>
+  const group = (labelKey: TKey, list: Thing[], tone?: string) =>
     list.length > 0 && (
-      <section className={`card ${tone ?? ""}`} key={label}>
-        <p className="section-label">{label}</p>
-        {list.map((t) => (
+      <section className={`card ${tone ?? ""}`} key={labelKey}>
+        <p className="section-label">{t(labelKey)}</p>
+        {list.map((item) => (
           <Row
-            key={t.id}
-            thing={t}
-            onOpen={() => onOpenThing(t)}
+            key={item.id}
+            thing={item}
+            onOpen={() => onOpenThing(item)}
             right={
-              t.dueDate ? (
-                <span className="sub">{daysUntil(t.dueDate)}d left</span>
+              item.dueDate ? (
+                <span className="sub">{t("mod.daysLeft", { n: daysUntil(item.dueDate) })}</span>
               ) : undefined
             }
           />
@@ -341,17 +357,18 @@ function DocumentsModule({
       </section>
     );
 
+  const total =
+    s.expiringSoon.length + s.thisYear.length + s.later.length + s.noExpiry.length;
+
   return (
     <>
-      {group("Expiring soon", s.expiringSoon, "alert-soon")}
-      {group("This year", s.thisYear)}
-      {group("Later", s.later)}
-      {s.noExpiry.length > 0 && group("No expiry recorded", s.noExpiry)}
-      {s.expiringSoon.length + s.thisYear.length + s.later.length +
-        s.noExpiry.length ===
-        0 && (
+      {group("mod.expiringSoon", s.expiringSoon, "alert-soon")}
+      {group("mod.thisYear", s.thisYear)}
+      {group("mod.later", s.later)}
+      {group("mod.noExpiryRecorded", s.noExpiry)}
+      {total === 0 && (
         <section className="card">
-          <p className="card-meta">No documents stored yet.</p>
+          <p className="card-meta">{t("mod.noDocuments")}</p>
         </section>
       )}
     </>
@@ -361,55 +378,57 @@ function DocumentsModule({
 function AssetsModule({
   things,
   onOpenThing,
+  t,
 }: {
   things: Thing[];
-  onOpenThing: (t: Thing) => void;
+  onOpenThing: (thing: Thing) => void;
+  t: Translate;
 }) {
   const s = summariseAssets(things);
 
   if (s.rows.length === 0) {
     return (
       <section className="card">
-        <p className="card-meta">No assets registered yet.</p>
+        <p className="card-meta">{t("mod.noAssets")}</p>
       </section>
     );
   }
 
   const badge = (state?: string) =>
     state === "expired" ? (
-      <span className="badge b-urgent">expired</span>
+      <span className="badge b-urgent">{t("mod.expired")}</span>
     ) : state === "expiring" ? (
-      <span className="badge b-important">expiring</span>
+      <span className="badge b-important">{t("mod.expiring")}</span>
     ) : (
-      <span className="badge b-upcoming">covered</span>
+      <span className="badge b-upcoming">{t("mod.covered")}</span>
     );
 
   return (
     <>
       <section className="card">
-        <p className="section-label">Portfolio</p>
+        <p className="section-label">{t("mod.portfolio")}</p>
         <div className="stat-row">
           <div className="stat">
             <div className="stat-num routine">{s.covered.length}</div>
-            <div className="stat-label">covered</div>
+            <div className="stat-label">{t("mod.covered")}</div>
           </div>
           <div className="stat">
             <div className="stat-num important">{s.expiring.length}</div>
-            <div className="stat-label">expiring</div>
+            <div className="stat-label">{t("mod.expiring")}</div>
           </div>
           <div className="stat">
             <div className="stat-num urgent">{s.expired.length}</div>
-            <div className="stat-label">expired</div>
+            <div className="stat-label">{t("mod.expired")}</div>
           </div>
         </div>
         <p className="sub" style={{ paddingTop: 10 }}>
-          Total value {naira(s.totalValue)}
+          {t("mod.totalValue", { amount: formatNaira(s.totalValue) })}
         </p>
       </section>
 
       {s.expired.length > 0 && (
         <section className="card alert-urgent">
-          <p className="section-label">Warranty expired</p>
+          <p className="section-label">{t("mod.warrantyExpired")}</p>
           {s.expired.map((r) => (
             <Row
               key={r.thing.id}
@@ -423,7 +442,7 @@ function AssetsModule({
 
       {s.expiring.length > 0 && (
         <section className="card alert-soon">
-          <p className="section-label">Expiring soon</p>
+          <p className="section-label">{t("mod.expiringSoon")}</p>
           {s.expiring.map((r) => (
             <Row
               key={r.thing.id}
@@ -431,7 +450,7 @@ function AssetsModule({
               onOpen={() => onOpenThing(r.thing)}
               right={
                 <span className="sub">
-                  {r.warranty?.daysLeft}d left
+                  {t("mod.daysLeft", { n: r.warranty?.daysLeft ?? 0 })}
                 </span>
               }
             />
@@ -441,7 +460,7 @@ function AssetsModule({
 
       {s.covered.length > 0 && (
         <section className="card accent-teal">
-          <p className="section-label">Under warranty</p>
+          <p className="section-label">{t("mod.underWarranty")}</p>
           {s.covered.map((r) => (
             <Row
               key={r.thing.id}
@@ -455,7 +474,7 @@ function AssetsModule({
 
       {s.rows.filter((r) => !r.warranty).length > 0 && (
         <section className="card">
-          <p className="section-label">No warranty recorded</p>
+          <p className="section-label">{t("mod.noWarranty")}</p>
           {s.rows
             .filter((r) => !r.warranty)
             .map((r) => (

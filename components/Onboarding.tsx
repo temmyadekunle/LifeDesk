@@ -2,15 +2,17 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { LOCALES, LOCALE_NAMES, makeT, type Locale, type Translate } from "@/lib/i18n";
+import type { TKey } from "@/lib/locales/en";
 import type { Category } from "@/lib/types";
 
-const OPTIONS: { id: Category; label: string; ico: string }[] = [
-  { id: "home", label: "Home", ico: "🏠" },
-  { id: "transport", label: "Vehicle", ico: "🚗" },
-  { id: "money", label: "Bills", ico: "💳" },
-  { id: "documents", label: "Documents", ico: "📄" },
-  { id: "family", label: "Family", ico: "👨‍👩‍👧" },
-  { id: "services", label: "Maintenance", ico: "🔧" },
+const OPTIONS: { id: Category; labelKey: TKey; ico: string }[] = [
+  { id: "home", labelKey: "cat.home", ico: "🏠" },
+  { id: "transport", labelKey: "kind.vehicle", ico: "🚗" },
+  { id: "money", labelKey: "kind.bill", ico: "💳" },
+  { id: "documents", labelKey: "cat.documents", ico: "📄" },
+  { id: "family", labelKey: "cat.family", ico: "👨‍👩‍👧" },
+  { id: "services", labelKey: "cat.services", ico: "🔧" },
 ];
 
 export interface OnboardingResult {
@@ -18,21 +20,54 @@ export interface OnboardingResult {
   categories: Category[];
   firstThing: { name: string; amount: string; dueDate: string } | null;
   loadSample: boolean;
+  locale: Locale;
+}
+
+export function LocalePicker({
+  locale,
+  onChange,
+  t,
+}: {
+  locale: Locale;
+  onChange: (locale: Locale) => void;
+  t: Translate;
+}) {
+  return (
+    <div className="chips" role="group" aria-label={t("ob.language")}>
+      {LOCALES.map((id) => (
+        <button
+          key={id}
+          type="button"
+          lang={id}
+          className={id === locale ? "chip on" : "chip"}
+          aria-pressed={id === locale}
+          onClick={() => onChange(id)}
+        >
+          {LOCALE_NAMES[id]}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export default function Onboarding({
   onDone,
   onSample,
+  locale: initialLocale,
 }: {
   onDone: (result: OnboardingResult) => void;
-  onSample: () => void;
+  onSample: (locale: Locale) => void;
+  locale: Locale;
 }) {
   const [step, setStep] = useState(0);
+  const [locale, setLocale] = useState<Locale>(initialLocale);
   const [name, setName] = useState("");
   const [picked, setPicked] = useState<Category[]>([]);
   const [thingName, setThingName] = useState("");
   const [amount, setAmount] = useState("");
   const [dueDate, setDueDate] = useState("");
+
+  const t = makeT(locale);
 
   function toggle(id: Category) {
     setPicked((prev) =>
@@ -41,18 +76,23 @@ export default function Onboarding({
   }
 
   function finish(loadSample: boolean) {
+    if (loadSample) {
+      onSample(locale);
+      return;
+    }
     onDone({
       displayName: name.trim(),
       categories: picked,
       firstThing: thingName.trim()
         ? { name: thingName.trim(), amount, dueDate }
         : null,
-      loadSample,
+      loadSample: false,
+      locale,
     });
   }
 
   return (
-    <div className="ob">
+    <div className="ob" lang={locale}>
       <div className="ob-brand">
         <div className="ob-logo-box">
           <Image
@@ -65,7 +105,7 @@ export default function Onboarding({
           />
         </div>
         <h1>LifeDesk</h1>
-        <p>One place to manage the things that keep your life running.</p>
+        <p>{t("app.tagline")}</p>
       </div>
 
       <div className="ob-steps">
@@ -76,19 +116,20 @@ export default function Onboarding({
 
       {step === 0 && (
         <section className="card">
-          <p className="section-label">Welcome</p>
-          <h2 className="ob-h">What should we call you?</h2>
-          <p className="card-meta">
-            LifeDesk lives on your device. Nothing is uploaded and no account is
-            needed.
-          </p>
+          <p className="section-label">{t("ob.welcome")}</p>
+          <h2 className="ob-h">{t("ob.whatCallYou")}</h2>
+          <p className="card-meta">{t("ob.localOnly")}</p>
           <div className="field">
-            <label htmlFor="ob-name">First name</label>
+            <label htmlFor="ob-lang">{t("ob.language")}</label>
+            <LocalePicker locale={locale} onChange={setLocale} t={t} />
+          </div>
+          <div className="field">
+            <label htmlFor="ob-name">{t("ob.firstName")}</label>
             <input
               id="ob-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Temmy"
+              placeholder={t("ob.namePlaceholder")}
             />
           </div>
           <button
@@ -96,16 +137,16 @@ export default function Onboarding({
             onClick={() => setStep(1)}
             disabled={!name.trim()}
           >
-            Continue
+            {t("ob.continue")}
           </button>
         </section>
       )}
 
       {step === 1 && (
         <section className="card">
-          <p className="section-label">Step 2</p>
-          <h2 className="ob-h">What do you want to manage?</h2>
-          <p className="card-meta">Pick everything that applies. You can change this later.</p>
+          <p className="section-label">{t("ob.step2")}</p>
+          <h2 className="ob-h">{t("ob.whatManage")}</h2>
+          <p className="card-meta">{t("ob.pickAll")}</p>
           <div className="chips" style={{ marginTop: 12 }}>
             {OPTIONS.map((o) => (
               <button
@@ -113,20 +154,20 @@ export default function Onboarding({
                 className={picked.includes(o.id) ? "chip on" : "chip"}
                 onClick={() => toggle(o.id)}
               >
-                {o.ico} {o.label}
+                {o.ico} {t(o.labelKey)}
               </button>
             ))}
           </div>
           <div className="quick-grid" style={{ marginTop: 16 }}>
             <button className="btn btn-secondary" onClick={() => setStep(0)}>
-              Back
+              {t("ob.back")}
             </button>
             <button
               className="btn btn-primary"
               onClick={() => setStep(2)}
               disabled={picked.length === 0}
             >
-              Continue
+              {t("ob.continue")}
             </button>
           </div>
         </section>
@@ -134,32 +175,30 @@ export default function Onboarding({
 
       {step === 2 && (
         <section className="card">
-          <p className="section-label">Step 3</p>
-          <h2 className="ob-h">Add your first important item</h2>
-          <p className="card-meta">
-            LifeDesk will create reminders around the date you set.
-          </p>
+          <p className="section-label">{t("ob.step3")}</p>
+          <h2 className="ob-h">{t("ob.addFirst")}</h2>
+          <p className="card-meta">{t("ob.willRemind")}</p>
           <div className="field">
-            <label htmlFor="ob-thing">What is it?</label>
+            <label htmlFor="ob-thing">{t("ob.whatIsIt")}</label>
             <input
               id="ob-thing"
               value={thingName}
               onChange={(e) => setThingName(e.target.value)}
-              placeholder="e.g. Rent"
+              placeholder={t("ob.thingPlaceholder")}
             />
           </div>
           <div className="field">
-            <label htmlFor="ob-amount">Amount (optional)</label>
+            <label htmlFor="ob-amount">{t("ob.amount")}</label>
             <input
               id="ob-amount"
               inputMode="numeric"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="e.g. 1200000"
+              placeholder={t("ob.amountPlaceholder")}
             />
           </div>
           <div className="field">
-            <label htmlFor="ob-due">Next due date</label>
+            <label htmlFor="ob-due">{t("ob.dueDate")}</label>
             <input
               id="ob-due"
               type="date"
@@ -169,22 +208,22 @@ export default function Onboarding({
           </div>
           <div className="quick-grid">
             <button className="btn btn-secondary" onClick={() => setStep(1)}>
-              Back
+              {t("ob.back")}
             </button>
             <button
               className="btn btn-primary"
               onClick={() => finish(false)}
               disabled={!thingName.trim()}
             >
-              Finish
+              {t("ob.finish")}
             </button>
           </div>
           <button
             className="btn btn-secondary"
             style={{ width: "100%", marginTop: 10 }}
-            onClick={onSample}
+            onClick={() => finish(true)}
           >
-            Explore with sample data instead
+            {t("ob.sample")}
           </button>
         </section>
       )}

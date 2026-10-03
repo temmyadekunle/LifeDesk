@@ -33,7 +33,10 @@ body {
 body {
   background: #dfe5ee;
   color: var(--charcoal);
-  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Latin Extended + Latin Extended Additional cover Hausa (ƙ Ɗ ɓ),
+     Yoruba (ẹ ọ ṣ) and Igbo (ọ ị ụ) diacritics. */
+  font-family: "Segoe UI", Roboto, "Noto Sans", "Noto Sans Yoruba",
+    "Noto Sans Hausa", "Noto Sans Igbo", "Helvetica Neue", Arial, sans-serif;
   line-height: 1.55;
   display: flex;
   justify-content: center;

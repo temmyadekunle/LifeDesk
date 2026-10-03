@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLifeDesk } from "@/lib/useLifeDesk";
 import { daysUntil } from "@/lib/risk";
+import { formatNaira, type Locale } from "@/lib/i18n";
+import type { TKey } from "@/lib/locales/en";
 import {
   downloadJson,
   exportPayload,
@@ -14,7 +16,7 @@ import {
   requestNotificationPermission,
   type PermissionState,
 } from "@/lib/notifications";
-import Onboarding from "@/components/Onboarding";
+import Onboarding, { LocalePicker } from "@/components/Onboarding";
 import ThingEditor, {
   fromEditorValues,
   toEditorValues,
@@ -26,21 +28,21 @@ import type { Alert, Category, Priority, Thing } from "@/lib/types";
 
 type Tab = "home" | "things" | "alerts" | "household" | "profile";
 
-const TABS: { id: Tab; label: string; ico: string }[] = [
-  { id: "home", label: "Home", ico: "🏠" },
-  { id: "things", label: "Things", ico: "📋" },
-  { id: "alerts", label: "Alerts", ico: "🔔" },
-  { id: "household", label: "Household", ico: "👨‍👩‍👧" },
-  { id: "profile", label: "Profile", ico: "👤" },
+const TABS: { id: Tab; labelKey: TKey; ico: string }[] = [
+  { id: "home", labelKey: "tab.home", ico: "🏠" },
+  { id: "things", labelKey: "tab.things", ico: "📋" },
+  { id: "alerts", labelKey: "tab.alerts", ico: "🔔" },
+  { id: "household", labelKey: "tab.household", ico: "👨‍👩‍👧" },
+  { id: "profile", labelKey: "tab.profile", ico: "👤" },
 ];
 
-const CATEGORIES: { id: Category; label: string; ico: string; color: string }[] = [
-  { id: "home", label: "Home", ico: "🏠", color: "var(--home)" },
-  { id: "transport", label: "Transport", ico: "🚗", color: "var(--transport)" },
-  { id: "money", label: "Money", ico: "💳", color: "var(--money)" },
-  { id: "documents", label: "Documents", ico: "📄", color: "var(--documents)" },
-  { id: "family", label: "Family", ico: "👨‍👩‍👧", color: "var(--family)" },
-  { id: "services", label: "Services", ico: "🔧", color: "var(--maintenance)" },
+const CATEGORIES: { id: Category; labelKey: TKey; ico: string; color: string }[] = [
+  { id: "home", labelKey: "cat.home", ico: "🏠", color: "var(--home)" },
+  { id: "transport", labelKey: "cat.transport", ico: "🚗", color: "var(--transport)" },
+  { id: "money", labelKey: "cat.money", ico: "💳", color: "var(--money)" },
+  { id: "documents", labelKey: "cat.documents", ico: "📄", color: "var(--documents)" },
+  { id: "family", labelKey: "cat.family", ico: "👨‍👩‍👧", color: "var(--family)" },
+  { id: "services", labelKey: "cat.services", ico: "🔧", color: "var(--maintenance)" },
 ];
 
 const PRIORITY_CLASS: Record<Priority, string> = {
@@ -73,19 +75,19 @@ const LEVEL_STYLE = {
   immediate: "level-immediate",
 } as const;
 
-const QUICK_ADD: EditorPreset[] = [
-  { label: "Reminder", kind: "reminder", category: "family" },
-  { label: "Bill", kind: "bill", category: "money" },
-  { label: "Document", kind: "document", category: "documents" },
-  { label: "Asset", kind: "asset", category: "home" },
+const QUICK_ADD: { labelKey: TKey; kind: EditorPreset["kind"]; category: Category }[] = [
+  { labelKey: "kind.reminder", kind: "reminder", category: "family" },
+  { labelKey: "kind.bill", kind: "bill", category: "money" },
+  { labelKey: "kind.document", kind: "document", category: "documents" },
+  { labelKey: "kind.asset", kind: "asset", category: "home" },
 ];
 
 export default function LifeDeskApp() {
   const [tab, setTab] = useState<Tab>("home");
   const [module, setModule] = useState<ModuleId | null>(null);
   const desk = useLifeDesk();
+  const { t } = desk;
 
-  const firstName = desk.settings.displayName || "there";
   const notified = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -99,16 +101,18 @@ export default function LifeDeskApp() {
 
   if (desk.ready && !desk.settings.onboarded) {
     return (
-      <div className="phone">
+      <div className="phone" lang={desk.settings.locale}>
         <main className="screen ob-screen">
           <Onboarding
+            locale={desk.settings.locale}
             onDone={(result) => void desk.completeOnboarding(result)}
-            onSample={() => {
+            onSample={(locale) => {
               void desk.completeOnboarding({
-                displayName: firstName === "there" ? "Temmy" : firstName,
+                displayName: desk.settings.displayName || "Temmy",
                 categories: ["home", "money", "transport", "documents"],
                 firstThing: null,
                 loadSample: true,
+                locale,
               });
             }}
           />
@@ -119,7 +123,7 @@ export default function LifeDeskApp() {
 
   if (!desk.ready) {
     return (
-      <div className="phone">
+      <div className="phone" lang="en">
         <main className="screen">
           <section className="card">
             <p className="card-meta">Opening your LifeDesk…</p>
@@ -130,21 +134,22 @@ export default function LifeDeskApp() {
   }
 
   if (module) {
+    const active = MODULES.find((m) => m.id === module);
     return (
-      <div className="phone">
+      <div className="phone" lang={desk.settings.locale}>
         <header className="app-header">
           <button className="back" onClick={() => setModule(null)}>
-            ← Back
+            ← {t("app.back")}
           </button>
           <h1>
-            {MODULES.find((m) => m.id === module)?.ico}{" "}
-            {MODULES.find((m) => m.id === module)?.label}
+            {active?.ico} {active ? t(active.labelKey) : ""}
           </h1>
         </header>
         <main className="screen">
           <ModuleScreen
             module={module}
             things={desk.things}
+            t={t}
             onOpenThing={() => {
               setModule(null);
               setTab("things");
@@ -152,17 +157,17 @@ export default function LifeDeskApp() {
           />
         </main>
         <nav className="tabbar">
-          {TABS.map((t) => (
+          {TABS.map((tabDef) => (
             <button
-              key={t.id}
+              key={tabDef.id}
               className="tab"
               onClick={() => {
                 setModule(null);
-                setTab(t.id);
+                setTab(tabDef.id);
               }}
             >
-              <span className="ico">{t.ico}</span>
-              {t.label}
+              <span className="ico">{tabDef.ico}</span>
+              {t(tabDef.labelKey)}
             </button>
           ))}
         </nav>
@@ -171,7 +176,7 @@ export default function LifeDeskApp() {
   }
 
   return (
-    <div className="phone">
+    <div className="phone" lang={desk.settings.locale}>
       <header className="app-header">
         <div className="header-top">
           <Image
@@ -183,8 +188,13 @@ export default function LifeDeskApp() {
           />
           <span className="header-brand">LifeDesk</span>
         </div>
-        <h1>Good morning, {desk.settings.displayName || "Temmy"} 👋</h1>
-        <p>{desk.loading ? "Opening your LifeDesk…" : desk.status.headline}</p>
+        <h1>
+          {t("app.greeting", {
+            name: desk.settings.displayName || "Temmy",
+          })}{" "}
+          👋
+        </h1>
+        <p>{desk.loading ? t("app.loading") : desk.status.headline}</p>
         <div className={`status-pill ${LEVEL_STYLE[desk.status.level]}`}>
           <span className="dot" />
           {desk.status.label}
@@ -194,8 +204,8 @@ export default function LifeDeskApp() {
       <main className="screen">
         {desk.error && (
           <section className="card alert-urgent">
-            <p className="section-label">Local database</p>
-            <h3 className="card-title">Could not open storage</h3>
+            <p className="section-label">{t("app.error.label")}</p>
+            <h3 className="card-title">{t("app.error.title")}</h3>
             <p className="card-meta">{desk.error}</p>
           </section>
         )}
@@ -205,27 +215,25 @@ export default function LifeDeskApp() {
         {tab === "alerts" && <AlertsScreen desk={desk} />}
         {tab === "household" && (
           <section className="card accent-teal">
-            <p className="section-label">Household</p>
-            <h3 className="card-title">Coming in Phase 5</h3>
-            <p className="card-meta">
-              Shared responsibilities and member permissions land here.
-            </p>
+            <p className="section-label">{t("household.title")}</p>
+            <h3 className="card-title">{t("household.soon")}</h3>
+            <p className="card-meta">{t("household.blurb")}</p>
           </section>
         )}
         {tab === "profile" && <ProfileScreen desk={desk} />}
       </main>
 
       <nav className="tabbar">
-        {TABS.map((t) => (
+        {TABS.map((tabDef) => (
           <button
-            key={t.id}
-            className={t.id === tab ? "tab active" : "tab"}
-            onClick={() => setTab(t.id)}
-            aria-current={t.id === tab ? "page" : undefined}
+            key={tabDef.id}
+            className={tabDef.id === tab ? "tab active" : "tab"}
+            onClick={() => setTab(tabDef.id)}
+            aria-current={tabDef.id === tab ? "page" : undefined}
           >
-            <span className="ico">{t.ico}</span>
-            {t.label}
-            {t.id === "alerts" && desk.status.urgentCount > 0 && (
+            <span className="ico">{tabDef.ico}</span>
+            {t(tabDef.labelKey)}
+            {tabDef.id === "alerts" && desk.status.urgentCount > 0 && (
               <span className="tab-badge">{desk.status.urgentCount}</span>
             )}
           </button>
@@ -244,6 +252,7 @@ function HomeScreen({
   desk: Desk;
   onOpenModule: (id: ModuleId) => void;
 }) {
+  const { t } = desk;
   const [adding, setAdding] = useState<EditorPreset | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -260,24 +269,24 @@ function HomeScreen({
   return (
     <>
       <section className="card">
-        <p className="section-label">This week</p>
+        <p className="section-label">{t("home.thisWeek")}</p>
         <div className="stat-row">
-          <Stat n={desk.status.urgentCount} label="urgent" tone="urgent" />
-          <Stat n={desk.status.importantCount} label="upcoming" tone="important" />
-          <Stat n={desk.status.onTrackCount} label="on track" tone="routine" />
+          <Stat n={desk.status.urgentCount} label={t("home.stat.urgent")} tone="urgent" />
+          <Stat n={desk.status.importantCount} label={t("home.stat.upcoming")} tone="important" />
+          <Stat n={desk.status.onTrackCount} label={t("home.stat.onTrack")} tone="routine" />
         </div>
       </section>
 
       <section className="card alert-urgent">
-        <p className="section-label">Needs attention</p>
+        <p className="section-label">{t("home.needsAttention")}</p>
         {desk.loading ? (
-          <p className="card-meta">Reading your local records…</p>
+          <p className="card-meta">{t("home.reading")}</p>
         ) : top.length === 0 ? (
-          <p className="card-meta">Nothing urgent. You&apos;re on track.</p>
+          <p className="card-meta">{t("home.nothingUrgent")}</p>
         ) : (
           top.map((a) => (
             <div key={a.id} style={{ marginBottom: 14 }}>
-              <AlertBody alert={a} />
+              <AlertBody alert={a} t={t} />
               <AlertActions alert={a} desk={desk} />
             </div>
           ))
@@ -285,49 +294,46 @@ function HomeScreen({
       </section>
 
       <section className="card">
-        <p className="section-label">Coming soon</p>
-        {desk.totals.items.slice(0, 3).map((t) => (
-          <ThingRow key={t.id} thing={t} />
+        <p className="section-label">{t("home.comingSoon")}</p>
+        {desk.totals.items.slice(0, 3).map((item) => (
+          <ThingRow key={item.id} thing={item} t={t} />
         ))}
         {desk.totals.items.length === 0 && (
-          <p className="card-meta">Nothing due in the next 30 days.</p>
+          <p className="card-meta">{t("home.nothing30")}</p>
         )}
       </section>
 
       <section className="card">
-        <p className="section-label">Upcoming commitments</p>
-        <div className="amount">{desk.formatNaira(desk.totals.total)}</div>
-        <p className="card-meta">
-          Next 30 days · {desk.totals.count} item
-          {desk.totals.count === 1 ? "" : "s"}
-        </p>
+        <p className="section-label">{t("home.commitments")}</p>
+        <div className="amount">{formatNaira(desk.totals.total)}</div>
+        <p className="card-meta">{t.n("home.next30", desk.totals.count)}</p>
       </section>
 
       <section className="card">
-        <p className="section-label">Modules</p>
+        <p className="section-label">{t("home.modules")}</p>
         <div className="module-grid">
           {MODULES.map((m) => (
             <button key={m.id} className="module" onClick={() => onOpenModule(m.id)}>
               <span className="module-ico" style={{ color: m.color }}>
                 {m.ico}
               </span>
-              <span className="module-label">{m.label}</span>
-              <span className="module-blurb">{m.blurb}</span>
+              <span className="module-label">{t(m.labelKey)}</span>
+              <span className="module-blurb">{t(m.blurbKey)}</span>
             </button>
           ))}
         </div>
       </section>
 
       <section className="card">
-        <p className="section-label">Quick add</p>
+        <p className="section-label">{t("home.quickAdd")}</p>
         <div className="quick-grid">
           {QUICK_ADD.map((q) => (
             <button
               key={q.kind}
               className="btn btn-secondary"
-              onClick={() => setAdding(q)}
+              onClick={() => setAdding({ label: t(q.labelKey), kind: q.kind, category: q.category })}
             >
-              {KIND_ICO[q.kind]} {q.label}
+              {KIND_ICO[q.kind]} {t(q.labelKey)}
             </button>
           ))}
         </div>
@@ -337,6 +343,7 @@ function HomeScreen({
         <section className="card">
           <ThingEditor
             preset={adding}
+            t={t}
             onSave={save}
             onCancel={() => setAdding(null)}
             busy={busy}
@@ -348,6 +355,7 @@ function HomeScreen({
 }
 
 function ThingsScreen({ desk }: { desk: Desk }) {
+  const { t } = desk;
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Category | "all">("all");
   const [showDone, setShowDone] = useState(false);
@@ -358,13 +366,13 @@ function ThingsScreen({ desk }: { desk: Desk }) {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return desk.things
-      .filter((t) => (showDone ? true : t.status === "active"))
-      .filter((t) => (category === "all" ? true : t.category === category))
-      .filter((t) =>
+      .filter((item) => (showDone ? true : item.status === "active"))
+      .filter((item) => (category === "all" ? true : item.category === category))
+      .filter((item) =>
         q === ""
           ? true
-          : t.name.toLowerCase().includes(q) ||
-            (t.notes ?? "").toLowerCase().includes(q),
+          : item.name.toLowerCase().includes(q) ||
+            (item.notes ?? "").toLowerCase().includes(q),
       )
       .sort((a, b) => {
         if (a.dueDate === null) return 1;
@@ -389,28 +397,28 @@ function ThingsScreen({ desk }: { desk: Desk }) {
     setAdding(null);
   }
 
-  async function remove(t: Thing) {
+  async function remove(item: Thing) {
     if (
       typeof window !== "undefined" &&
-      !window.confirm(`Delete "${t.name}"? This cannot be undone.`)
+      !window.confirm(t("things.confirmDelete", { name: item.name }))
     ) {
       return;
     }
-    await desk.removeThing(t.id);
+    await desk.removeThing(item.id);
   }
 
-  const completedCount = desk.things.filter((t) => t.status === "completed").length;
+  const completedCount = desk.things.filter((item) => item.status === "completed").length;
 
   return (
     <>
       <section className="card">
         <div className="field" style={{ marginBottom: 10 }}>
-          <label htmlFor="t-search">Search</label>
+          <label htmlFor="t-search">{t("things.search")}</label>
           <input
             id="t-search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search things and notes"
+            placeholder={t("things.searchPlaceholder")}
           />
         </div>
         <div className="chips">
@@ -418,7 +426,7 @@ function ThingsScreen({ desk }: { desk: Desk }) {
             className={category === "all" ? "chip on" : "chip"}
             onClick={() => setCategory("all")}
           >
-            All
+            {t("things.filterAll")}
           </button>
           {CATEGORIES.map((c) => (
             <button
@@ -426,7 +434,7 @@ function ThingsScreen({ desk }: { desk: Desk }) {
               className={category === c.id ? "chip on" : "chip"}
               onClick={() => setCategory(c.id)}
             >
-              {c.ico} {c.label}
+              {c.ico} {t(c.labelKey)}
             </button>
           ))}
         </div>
@@ -436,43 +444,41 @@ function ThingsScreen({ desk }: { desk: Desk }) {
             checked={showDone}
             onChange={(e) => setShowDone(e.target.checked)}
           />
-          Show completed ({completedCount})
+          {t("things.showCompleted", { n: completedCount })}
         </label>
       </section>
 
       <section className="card">
-        <p className="section-label">
-          {filtered.length} thing{filtered.length === 1 ? "" : "s"}
-        </p>
-        {filtered.map((t) => (
-          <div className="thing-block" key={t.id}>
-            <ThingRow thing={t} />
+        <p className="section-label">{t.n("things.count", filtered.length)}</p>
+        {filtered.map((item) => (
+          <div className="thing-block" key={item.id}>
+            <ThingRow thing={item} t={t} />
             <div className="thing-actions">
               <button
                 className="btn btn-secondary btn-sm"
-                onClick={() => setEditing(t)}
+                onClick={() => setEditing(item)}
               >
-                Edit
+                {t("things.edit")}
               </button>
-              {t.status === "active" && (
+              {item.status === "active" && (
                 <button
                   className="btn btn-secondary btn-sm"
-                  onClick={() => void desk.completeThing(t)}
+                  onClick={() => void desk.completeThing(item)}
                 >
-                  Mark handled
+                  {t("things.markHandled")}
                 </button>
               )}
               <button
                 className="btn btn-danger btn-sm"
-                onClick={() => void remove(t)}
+                onClick={() => void remove(item)}
               >
-                Delete
+                {t("things.delete")}
               </button>
             </div>
           </div>
         ))}
         {filtered.length === 0 && (
-          <p className="card-meta">Nothing matches those filters.</p>
+          <p className="card-meta">{t("things.nothingMatches")}</p>
         )}
       </section>
 
@@ -480,6 +486,7 @@ function ThingsScreen({ desk }: { desk: Desk }) {
         <section className="card">
           <ThingEditor
             preset={adding}
+            t={t}
             onSave={saveAdd}
             onCancel={() => setAdding(null)}
             busy={busy}
@@ -491,10 +498,11 @@ function ThingsScreen({ desk }: { desk: Desk }) {
         <section className="card">
           <ThingEditor
             preset={{
-              label: KIND_ICO[editing.kind] ?? "Thing",
+              label: t(`kind.${editing.kind}` as TKey),
               kind: editing.kind,
               category: editing.category,
             }}
+            t={t}
             initial={toEditorValues(editing)}
             onSave={saveEdit}
             onCancel={() => setEditing(null)}
@@ -507,11 +515,12 @@ function ThingsScreen({ desk }: { desk: Desk }) {
 }
 
 function AlertsScreen({ desk }: { desk: Desk }) {
+  const { t } = desk;
+
   return (
     <>
       <p className="section-label">
-        {desk.alerts.length} alert{desk.alerts.length === 1 ? "" : "s"} ·{" "}
-        {desk.status.label}
+        {t.n("alerts.count", desk.alerts.length, { status: desk.status.label })}
       </p>
       {desk.alerts.map((a) => (
         <section
@@ -524,19 +533,19 @@ function AlertsScreen({ desk }: { desk: Desk }) {
           }`}
           key={a.id}
         >
-          <AlertBody alert={a} />
+          <AlertBody alert={a} t={t} />
           <AlertActions alert={a} desk={desk} />
         </section>
       ))}
       {desk.alerts.length === 0 && (
         <section className="card">
-          <p className="card-meta">No alerts. Nothing needs attention.</p>
+          <p className="card-meta">{t("alerts.none")}</p>
           <div style={{ marginTop: 12 }}>
             <button
               className="btn btn-secondary"
               onClick={() => void desk.restoreAlerts()}
             >
-              Restore dismissed alerts
+              {t("alerts.restore")}
             </button>
           </div>
         </section>
@@ -546,6 +555,7 @@ function AlertsScreen({ desk }: { desk: Desk }) {
 }
 
 function ProfileScreen({ desk }: { desk: Desk }) {
+  const { t } = desk;
   const [permission, setPermission] = useState<PermissionState>("default");
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -556,8 +566,8 @@ function ProfileScreen({ desk }: { desk: Desk }) {
   const upcoming = useMemo(
     () =>
       desk.things
-        .filter((t) => t.status === "active" && t.dueDate)
-        .map((t) => ({ thing: t, leads: leadDaysCrossed(t, desk.settings.leadDays) }))
+        .filter((item) => item.status === "active" && item.dueDate)
+        .map((item) => ({ thing: item, leads: leadDaysCrossed(item, desk.settings.leadDays) }))
         .filter((x) => x.leads.length > 0)
         .slice(0, 4),
     [desk.things, desk.settings.leadDays],
@@ -566,22 +576,32 @@ function ProfileScreen({ desk }: { desk: Desk }) {
   return (
     <>
       <section className="card">
-        <p className="section-label">Account</p>
+        <p className="section-label">{t("profile.account")}</p>
         <div className="row">
           <span className="lead">👤</span>
           <span className="grow">
             <div className="name">{desk.settings.displayName || "Temmy"}</div>
-            <div className="sub">Free plan · local only</div>
+            <div className="sub">{t("profile.freePlan")}</div>
           </span>
         </div>
       </section>
 
       <section className="card">
-        <p className="section-label">Notifications</p>
+        <p className="section-label">{t("profile.language")}</p>
+        <LocalePicker
+          locale={desk.settings.locale}
+          t={t}
+          onChange={(locale: Locale) => void desk.updateSettings({ locale })}
+        />
+        <p className="card-meta" style={{ marginTop: 8 }}>
+          {t("profile.languageHint")}
+        </p>
+      </section>
+
+      <section className="card">
+        <p className="section-label">{t("profile.notifications")}</p>
         {permission === "unsupported" && (
-          <p className="card-meta">
-            This browser does not support notifications. In-app alerts still work.
-          </p>
+          <p className="card-meta">{t("profile.notifUnsupported")}</p>
         )}
         {permission === "default" && (
           <button
@@ -589,20 +609,14 @@ function ProfileScreen({ desk }: { desk: Desk }) {
             style={{ width: "100%" }}
             onClick={async () => setPermission(await requestNotificationPermission())}
           >
-            Enable browser alerts
+            {t("profile.enableAlerts")}
           </button>
         )}
         {permission === "granted" && (
-          <p className="card-meta">
-            Browser alerts are on. LifeDesk will notify you when something urgent
-            needs attention.
-          </p>
+          <p className="card-meta">{t("profile.notifGranted")}</p>
         )}
         {permission === "denied" && (
-          <p className="card-meta">
-            Alerts are blocked in your browser settings. You can still use the
-            in-app Alerts tab.
-          </p>
+          <p className="card-meta">{t("profile.notifDenied")}</p>
         )}
         <label className="check" style={{ marginTop: 12 }}>
           <input
@@ -610,12 +624,12 @@ function ProfileScreen({ desk }: { desk: Desk }) {
             checked={desk.settings.notifyUrgent}
             onChange={(e) => void desk.updateSettings({ notifyUrgent: e.target.checked })}
           />
-          Notify me about urgent alerts
+          {t("profile.notifyUrgent")}
         </label>
       </section>
 
       <section className="card">
-        <p className="section-label">Reminder schedule</p>
+        <p className="section-label">{t("profile.reminderSchedule")}</p>
         <div className="chips">
           {[90, 60, 30, 14, 7, 1].map((n) => (
             <button
@@ -637,9 +651,9 @@ function ProfileScreen({ desk }: { desk: Desk }) {
         </div>
         {upcoming.length > 0 && (
           <div style={{ marginTop: 12 }}>
-            <p className="section-label">Preview</p>
+            <p className="section-label">{t("profile.preview")}</p>
             {upcoming.map(({ thing, leads }) => {
-              const copy = reminderCopy(thing, leads[0]);
+              const copy = reminderCopy(thing, leads[0], t);
               return (
                 <div className="row" key={thing.id}>
                   <span className="grow">
@@ -654,18 +668,17 @@ function ProfileScreen({ desk }: { desk: Desk }) {
       </section>
 
       <section className="card">
-        <p className="section-label">Data</p>
+        <p className="section-label">{t("profile.data")}</p>
         <label className="check">
           <input
             type="checkbox"
             checked={desk.settings.dataSaver}
             onChange={(e) => void desk.updateSettings({ dataSaver: e.target.checked })}
           />
-          Data Saver mode
+          {t("profile.dataSaver")}
         </label>
         <p className="card-meta" style={{ marginTop: 6 }}>
-          Blocks automatic uploads and keeps background sync off. Recommended on
-          metered data.
+          {t("profile.dataSaverHint")}
         </p>
         <div className="quick-grid" style={{ marginTop: 12 }}>
           <button
@@ -675,49 +688,53 @@ function ProfileScreen({ desk }: { desk: Desk }) {
                 "lifedesk-export.json",
                 exportPayload(desk.things, desk.settings),
               );
-              setNotice("Export downloaded.");
+              setNotice(t("profile.exportDone"));
             }}
           >
-            Export my data
+            {t("profile.export")}
           </button>
           <button
             className="btn btn-secondary"
             onClick={() => void desk.loadSampleData()}
           >
-            Load sample data
+            {t("profile.loadSample")}
           </button>
         </div>
         {notice && <p className="card-meta" style={{ marginTop: 8 }}>{notice}</p>}
       </section>
 
       <section className="card">
-        <p className="section-label">Your data</p>
-        <p className="card-meta">
-          {desk.things.length} thing{desk.things.length === 1 ? "" : "s"} stored in
-          IndexedDB on this device. Nothing is uploaded. LifeDesk does not sell
-          personal data.
-        </p>
+        <p className="section-label">{t("profile.yourData")}</p>
+        <p className="card-meta">{t.n("profile.yourDataBody", desk.things.length)}</p>
         <button
           className="btn btn-danger"
           style={{ width: "100%", marginTop: 12 }}
           onClick={() => {
             if (
               typeof window !== "undefined" &&
-              window.confirm("Delete everything? This cannot be undone.")
+              window.confirm(t("profile.confirmDeleteAll"))
             ) {
               void desk.deleteEverything();
               window.location.reload();
             }
           }}
         >
-          Delete all my data
+          {t("profile.deleteAll")}
         </button>
       </section>
     </>
   );
 }
 
-function Stat({ n, label, tone }: { n: number; label: string; tone: Priority }) {
+function Stat({
+  n,
+  label,
+  tone,
+}: {
+  n: number;
+  label: string;
+  tone: Priority;
+}) {
   return (
     <div className="stat">
       <div className={`stat-num ${tone}`}>{n}</div>
@@ -726,14 +743,20 @@ function Stat({ n, label, tone }: { n: number; label: string; tone: Priority }) 
   );
 }
 
-function AlertBody({ alert }: { alert: Alert }) {
+function AlertBody({
+  alert,
+  t,
+}: {
+  alert: Alert;
+  t: ReturnType<typeof useLifeDesk>["t"];
+}) {
   return (
     <>
       <h3 className="card-title">{alert.title}</h3>
       <p className="card-meta">{alert.message}</p>
       <div style={{ marginTop: 8 }}>
         <span className={`badge ${PRIORITY_CLASS[alert.priority]}`}>
-          {alert.priority}
+          {t(`priority.${alert.priority}` as TKey)}
         </span>
       </div>
     </>
@@ -741,7 +764,8 @@ function AlertBody({ alert }: { alert: Alert }) {
 }
 
 function AlertActions({ alert, desk }: { alert: Alert; desk: Desk }) {
-  const thing = desk.things.find((t) => t.id === alert.thingId);
+  const { t } = desk;
+  const thing = desk.things.find((item) => item.id === alert.thingId);
 
   return (
     <div className="quick-grid" style={{ marginTop: 12 }}>
@@ -749,29 +773,35 @@ function AlertActions({ alert, desk }: { alert: Alert; desk: Desk }) {
         className="btn btn-secondary btn-sm"
         onClick={() => void desk.dismissAlert(alert)}
       >
-        Remind me later
+        {t("action.remindLater")}
       </button>
       <button
         className="btn btn-primary btn-sm"
         disabled={!thing}
         onClick={() => thing && void desk.completeThing(thing)}
       >
-        Mark as handled
+        {t("action.markHandled")}
       </button>
     </div>
   );
 }
 
-function ThingRow({ thing }: { thing: Thing }) {
+function ThingRow({
+  thing,
+  t,
+}: {
+  thing: Thing;
+  t: ReturnType<typeof useLifeDesk>["t"];
+}) {
   const days = thing.dueDate ? daysUntil(thing.dueDate) : null;
   const sub =
     thing.status === "completed"
-      ? "Completed"
+      ? t("row.completed")
       : days === null
-        ? thing.notes ?? "No date set"
+        ? thing.notes ?? t("row.noDate")
         : days < 0
-          ? `Overdue by ${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"}`
-          : `Due in ${days} day${days === 1 ? "" : "s"}`;
+          ? t.n("row.overdue", Math.abs(days))
+          : t.n("row.dueIn", days);
 
   return (
     <div className="row">
@@ -781,10 +811,10 @@ function ThingRow({ thing }: { thing: Thing }) {
         <div className="sub">{sub}</div>
       </span>
       {thing.amount ? (
-        <span className="sub">{`₦${thing.amount.toLocaleString("en-NG")}`}</span>
+        <span className="sub">{formatNaira(thing.amount)}</span>
       ) : (
         <span className={`badge ${PRIORITY_CLASS[thing.priority]}`}>
-          {thing.priority}
+          {t(`priority.${thing.priority}` as TKey)}
         </span>
       )}
     </div>

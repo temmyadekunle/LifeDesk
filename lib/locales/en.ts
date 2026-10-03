@@ -1,0 +1,294 @@
+/**
+ * The source-of-truth string catalogue. Every other locale is typed as
+ * `Record<TKey, string>`, so TypeScript fails the build if a translation is
+ * missing a key or invents one.
+ *
+ * Naming: dot-separated by area. Keys ending in `_one` / `_many` are resolved
+ * by `t.n(base, count)` for languages that need a singular/plural split.
+ * Placeholders use `{name}` and are substituted by `t()`.
+ */
+export const en = {
+  /* ---------- language names (shown in the picker) ---------- */
+  "lang.en": "English",
+  "lang.ha": "Hausa",
+  "lang.yo": "Yoruba",
+  "lang.ig": "Igbo",
+
+  /* ---------- app shell ---------- */
+  "app.tagline": "One place to manage the things that keep your life running.",
+  "app.greeting": "Good morning, {name}",
+  "app.loading": "Opening your LifeDesk…",
+  "app.error.label": "Local database",
+  "app.error.title": "Could not open storage",
+  "app.back": "Back",
+
+  /* ---------- tabs ---------- */
+  "tab.home": "Home",
+  "tab.things": "Things",
+  "tab.alerts": "Alerts",
+  "tab.household": "Household",
+  "tab.profile": "Profile",
+
+  /* ---------- categories ---------- */
+  "cat.home": "Home",
+  "cat.transport": "Transport",
+  "cat.money": "Money",
+  "cat.documents": "Documents",
+  "cat.family": "Family",
+  "cat.services": "Services",
+
+  /* ---------- thing kinds ---------- */
+  "kind.rent": "Rent",
+  "kind.utility": "Utility",
+  "kind.bill": "Bill",
+  "kind.subscription": "Subscription",
+  "kind.school-fee": "School fee",
+  "kind.vehicle": "Vehicle",
+  "kind.fuel": "Fuel",
+  "kind.maintenance": "Maintenance",
+  "kind.insurance": "Insurance",
+  "kind.document": "Document",
+  "kind.asset": "Asset",
+  "kind.appointment": "Appointment",
+  "kind.reminder": "Reminder",
+  "kind.service-provider": "Service provider",
+
+  /* ---------- frequencies ---------- */
+  "freq.none": "One-off",
+  "freq.weekly": "Weekly",
+  "freq.biweekly": "Every 2 weeks",
+  "freq.monthly": "Monthly",
+  "freq.quarterly": "Quarterly",
+  "freq.biannual": "Twice a year",
+  "freq.annual": "Yearly",
+
+  /* ---------- priority ---------- */
+  "priority.urgent": "urgent",
+  "priority.important": "important",
+  "priority.upcoming": "upcoming",
+  "priority.routine": "routine",
+
+  /* ---------- life status ---------- */
+  "level.stable": "Stable",
+  "level.needs-attention": "Needs attention",
+  "level.immediate": "Immediate attention",
+  "headline.stable": "You're mostly on track.",
+  "headline.important_one": "{n} thing should be handled soon.",
+  "headline.important_many": "{n} things should be handled soon.",
+  "headline.urgent_one": "{n} thing needs attention now.",
+  "headline.urgent_many": "{n} things need attention now.",
+
+  /* ---------- alerts (generated in lib/risk) ---------- */
+  "alert.overdue.title": "{name} is overdue",
+  "alert.overdue.message.none": "This responsibility has passed its due date.",
+  "alert.overdue.message.days_one": "This responsibility was due {n} day ago.",
+  "alert.overdue.message.days_many": "This responsibility was due {n} days ago.",
+  "alert.expiring.title_one": "{name} expires in {n} day",
+  "alert.expiring.title_many": "{name} expires in {n} days",
+  "alert.expiring.message.soon": "Start preparing now to avoid penalties or inconvenience.",
+  "alert.expiring.message.later": "No action needed yet, but it is coming up.",
+  "alert.recurring.title_one": "{name} renews in {n} day",
+  "alert.recurring.title_many": "{name} renews in {n} days",
+  "alert.recurring.message": "A recurring payment is approaching.",
+  "alert.service.title": "{name} service is overdue",
+  "alert.service.message": "Delaying routine maintenance may increase the likelihood of unexpected repair costs.",
+  "alert.norecord.title": "{name} has no record yet",
+  "alert.norecord.message": "Add a date so LifeDesk can watch it for you.",
+
+  /* ---------- reminder copy (lib/notifications) ---------- */
+  "reminder.doc.long.title": "{name} expires in about 3 months",
+  "reminder.doc.long.body": "Start thinking about renewal so you are not rushed.",
+  "reminder.doc.month.title": "{name} expires next month",
+  "reminder.doc.month.body": "Consider planning your renewal now.",
+  "reminder.doc.days.title": "{name} expires in {n} days",
+  "reminder.doc.days.body": "Arrange the renewal before this becomes a problem.",
+  "reminder.doc.tomorrow.title": "{name} expires tomorrow",
+  "reminder.doc.tomorrow.body": "This is your last reminder before expiry.",
+  "reminder.rent.title_one": "Rent is due in {n} day",
+  "reminder.rent.title_many": "Rent is due in {n} days",
+  "reminder.rent.body": "Set money aside early so you are not caught short.",
+  "reminder.generic.title_one": "{name} is due in {n} day",
+  "reminder.generic.title_many": "{name} is due in {n} days",
+  "reminder.generic.body.note": "{note}",
+  "reminder.generic.body.default": "Open LifeDesk to prepare for it.",
+
+  /* ---------- home screen ---------- */
+  "home.thisWeek": "This week",
+  "home.stat.urgent": "urgent",
+  "home.stat.upcoming": "upcoming",
+  "home.stat.onTrack": "on track",
+  "home.needsAttention": "Needs attention",
+  "home.reading": "Reading your local records…",
+  "home.nothingUrgent": "Nothing urgent. You're on track.",
+  "home.comingSoon": "Coming soon",
+  "home.nothing30": "Nothing due in the next 30 days.",
+  "home.commitments": "Upcoming commitments",
+  "home.next30_one": "Next 30 days · {n} item",
+  "home.next30_many": "Next 30 days · {n} items",
+  "home.modules": "Modules",
+  "home.quickAdd": "Quick add",
+
+  /* ---------- things screen ---------- */
+  "things.search": "Search",
+  "things.searchPlaceholder": "Search things and notes",
+  "things.filterAll": "All",
+  "things.showCompleted": "Show completed ({n})",
+  "things.count_one": "{n} thing",
+  "things.count_many": "{n} things",
+  "things.edit": "Edit",
+  "things.markHandled": "Mark handled",
+  "things.delete": "Delete",
+  "things.nothingMatches": "Nothing matches those filters.",
+  "things.confirmDelete": "Delete \"{name}\"? This cannot be undone.",
+
+  /* ---------- alerts screen ---------- */
+  "alerts.count_one": "{n} alert · {status}",
+  "alerts.count_many": "{n} alerts · {status}",
+  "alerts.none": "No alerts. Nothing needs attention.",
+  "alerts.restore": "Restore dismissed alerts",
+  "action.remindLater": "Remind me later",
+  "action.markHandled": "Mark as handled",
+
+  /* ---------- household placeholder ---------- */
+  "household.title": "Household",
+  "household.soon": "Coming soon",
+  "household.blurb": "Shared responsibilities and member permissions land here.",
+
+  /* ---------- profile ---------- */
+  "profile.account": "Account",
+  "profile.freePlan": "Free plan · local only",
+  "profile.language": "Language",
+  "profile.languageHint": "Choose the language LifeDesk uses.",
+  "profile.notifications": "Notifications",
+  "profile.notifUnsupported": "This browser does not support notifications. In-app alerts still work.",
+  "profile.enableAlerts": "Enable browser alerts",
+  "profile.notifGranted": "Browser alerts are on. LifeDesk will notify you when something urgent needs attention.",
+  "profile.notifDenied": "Alerts are blocked in your browser settings. You can still use the in-app Alerts tab.",
+  "profile.notifyUrgent": "Notify me about urgent alerts",
+  "profile.reminderSchedule": "Reminder schedule",
+  "profile.preview": "Preview",
+  "profile.data": "Data",
+  "profile.dataSaver": "Data Saver mode",
+  "profile.dataSaverHint": "Blocks automatic uploads and keeps background sync off. Recommended on metered data.",
+  "profile.export": "Export my data",
+  "profile.exportDone": "Export downloaded.",
+  "profile.loadSample": "Load sample data",
+  "profile.yourData": "Your data",
+  "profile.yourDataBody_one": "{n} thing stored in IndexedDB on this device. Nothing is uploaded. LifeDesk does not sell personal data.",
+  "profile.yourDataBody_many": "{n} things stored in IndexedDB on this device. Nothing is uploaded. LifeDesk does not sell personal data.",
+  "profile.deleteAll": "Delete all my data",
+  "profile.confirmDeleteAll": "Delete everything? This cannot be undone.",
+
+  /* ---------- thing row ---------- */
+  "row.completed": "Completed",
+  "row.noDate": "No date set",
+  "row.overdue_one": "Overdue by {n} day",
+  "row.overdue_many": "Overdue by {n} days",
+  "row.dueIn_one": "Due in {n} day",
+  "row.dueIn_many": "Due in {n} days",
+
+  /* ---------- onboarding ---------- */
+  "ob.welcome": "Welcome",
+  "ob.whatCallYou": "What should we call you?",
+  "ob.localOnly": "LifeDesk lives on your device. Nothing is uploaded and no account is needed.",
+  "ob.firstName": "First name",
+  "ob.namePlaceholder": "e.g. Temmy",
+  "ob.continue": "Continue",
+  "ob.step2": "Step 2",
+  "ob.whatManage": "What do you want to manage?",
+  "ob.pickAll": "Pick everything that applies. You can change this later.",
+  "ob.back": "Back",
+  "ob.step3": "Step 3",
+  "ob.addFirst": "Add your first important item",
+  "ob.willRemind": "LifeDesk will create reminders around the date you set.",
+  "ob.whatIsIt": "What is it?",
+  "ob.thingPlaceholder": "e.g. Rent",
+  "ob.amount": "Amount (optional)",
+  "ob.amountPlaceholder": "e.g. 1200000",
+  "ob.dueDate": "Next due date",
+  "ob.finish": "Finish",
+  "ob.sample": "Explore with sample data instead",
+  "ob.language": "Choose your language",
+
+  /* ---------- editor ---------- */
+  "ed.editPrefix": "Edit {label}",
+  "ed.newPrefix": "New {label}",
+  "ed.whatIsIt": "What is it?",
+  "ed.whatPlaceholder": "e.g. Water bill",
+  "ed.category": "Category",
+  "ed.type": "Type",
+  "ed.amount": "Amount (optional)",
+  "ed.amountPlaceholder": "e.g. 45000",
+  "ed.dueDate": "Due or expiry date",
+  "ed.dueHint": "Leave empty if there is no date yet.",
+  "ed.repeats": "Repeats",
+  "ed.note": "Note (optional)",
+  "ed.notePlaceholder": "e.g. Pay before the 25th",
+  "ed.cancel": "Cancel",
+  "ed.save": "Save",
+  "ed.saving": "Saving…",
+
+  /* ---------- modules ---------- */
+  "module.home": "Home",
+  "module.home.blurb": "Rent, utilities and maintenance",
+  "module.vehicles": "Vehicles",
+  "module.vehicles.blurb": "Service, fuel and documents",
+  "module.bills": "Bills",
+  "module.bills.blurb": "Recurring payments and money due",
+  "module.documents": "Documents",
+  "module.documents.blurb": "Expiry dates and renewals",
+  "module.assets": "Assets",
+  "module.assets.blurb": "Warranties and what you own",
+
+  "mod.properties": "Properties",
+  "mod.noProperty": "No property added yet.",
+  "mod.landlord": "Landlord",
+  "mod.serviceCharge": "Service charge",
+  "mod.homeMaintenance": "Home maintenance",
+  "mod.needServicing_one": "{n} item needs servicing.",
+  "mod.needServicing_many": "{n} items need servicing.",
+  "mod.nothingMaintenance": "Nothing tracked for maintenance.",
+  "mod.next30": "Next 30 days",
+  "mod.knownOutgoings": "Known household outgoings.",
+  "mod.daysAgo": "{n} d ago",
+
+  "mod.noVehicles": "No vehicles added yet.",
+  "mod.serviceDue_one": "{n} service item due or overdue.",
+  "mod.serviceDue_many": "{n} service items due or overdue.",
+  "mod.nextDue": "Next due: {name}",
+  "mod.nextDueIn": " in {n} days",
+  "mod.recordedSpend": "Recorded spend: {amount}",
+
+  "mod.recurringCount_one": "{n} recurring payment",
+  "mod.recurringCount_many": "{n} recurring payments",
+  "mod.perCycle": " · {amount} total per cycle",
+  "mod.largestCommitment": "Largest commitment",
+  "mod.recurringPayments": "Recurring payments",
+  "mod.noRecurring": "No recurring payments.",
+  "mod.oneOffPayments": "One-off payments",
+
+  "mod.expiringSoon": "Expiring soon",
+  "mod.thisYear": "This year",
+  "mod.later": "Later",
+  "mod.noExpiryRecorded": "No expiry recorded",
+  "mod.noDocuments": "No documents stored yet.",
+  "mod.daysLeft": "{n}d left",
+
+  "mod.noAssets": "No assets registered yet.",
+  "mod.portfolio": "Portfolio",
+  "mod.covered": "covered",
+  "mod.expiring": "expiring",
+  "mod.expired": "expired",
+  "mod.totalValue": "Total value {amount}",
+  "mod.warrantyExpired": "Warranty expired",
+  "mod.underWarranty": "Under warranty",
+  "mod.noWarranty": "No warranty recorded",
+} as const;
+
+export type TKey = keyof typeof en;
+export type Dict = Record<TKey, string>;
+
+type PluralBaseOf<K> = K extends `${infer B}_one` ? B : never;
+
+/** Base keys that have `_one` / `_many` variants, derived from the catalogue. */
+export type PluralBase = PluralBaseOf<TKey>;

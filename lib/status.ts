@@ -1,3 +1,5 @@
+import { englishT } from "./risk.ts";
+import type { Translate } from "./i18n.ts";
 import type { Alert, Thing } from "./types.ts";
 import { daysUntil } from "./risk.ts";
 
@@ -22,6 +24,7 @@ export function computeLifeStatus(
   things: Thing[],
   alerts: Alert[],
   now: Date = new Date(),
+  tr: Translate = englishT,
 ): LifeStatus {
   const active = things.filter((t) => t.status === "active");
   const live = alerts.filter((a) => !a.dismissed);
@@ -49,20 +52,16 @@ export function computeLifeStatus(
 
   if (urgentCount === 0 && importantCount === 0) {
     level = "stable";
-    label = "Stable";
-    headline = "You're mostly on track.";
+    label = tr("level.stable");
+    headline = tr("headline.stable");
   } else if (urgentCount === 0) {
     level = "needs-attention";
-    label = "Needs attention";
-    headline = `${importantCount} thing${
-      importantCount === 1 ? "" : "s"
-    } should be handled soon.`;
+    label = tr("level.needs-attention");
+    headline = tr.n("headline.important", importantCount);
   } else {
     level = "immediate";
-    label = "Immediate attention";
-    headline = `${urgentCount} thing${urgentCount === 1 ? "" : "s"} need${
-      urgentCount === 1 ? "s" : ""
-    } attention now.`;
+    label = tr("level.immediate");
+    headline = tr.n("headline.urgent", urgentCount);
   }
 
   return {

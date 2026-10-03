@@ -1,3 +1,5 @@
+import { englishT } from "./risk.ts";
+import type { Translate } from "./i18n.ts";
 import { daysUntil } from "./risk.ts";
 import type { Alert, Thing } from "./types.ts";
 import type { Settings } from "./settings.ts";
@@ -45,41 +47,44 @@ export function leadDaysCrossed(
 export function reminderCopy(
   thing: Thing,
   lead: number,
+  tr: Translate = englishT,
 ): { title: string; body: string } {
   const name = thing.name;
 
   if (thing.kind === "document") {
     if (lead >= 90)
       return {
-        title: `${name} expires in about 3 months`,
-        body: "Start thinking about renewal so you are not rushed.",
+        title: tr("reminder.doc.long.title", { name }),
+        body: tr("reminder.doc.long.body"),
       };
     if (lead >= 30)
       return {
-        title: `${name} expires next month`,
-        body: "Consider planning your renewal now.",
+        title: tr("reminder.doc.month.title", { name }),
+        body: tr("reminder.doc.month.body"),
       };
     if (lead > 1)
       return {
-        title: `${name} expires in ${lead} days`,
-        body: "Arrange the renewal before this becomes a problem.",
+        title: tr("reminder.doc.days.title", { name, n: lead }),
+        body: tr("reminder.doc.days.body"),
       };
     return {
-      title: `${name} expires tomorrow`,
-      body: "This is your last reminder before expiry.",
+      title: tr("reminder.doc.tomorrow.title", { name }),
+      body: tr("reminder.doc.tomorrow.body"),
     };
   }
 
   if (thing.kind === "rent") {
     return {
-      title: `Rent is due in ${lead} day${lead === 1 ? "" : "s"}`,
-      body: "Set money aside early so you are not caught short.",
+      title: tr.n("reminder.rent.title", lead),
+      body: tr("reminder.rent.body"),
     };
   }
 
   return {
-    title: `${name} is due in ${lead} day${lead === 1 ? "" : "s"}`,
-    body: thing.notes ?? "Open LifeDesk to prepare for it.",
+    title: tr.n("reminder.generic.title", lead, { name }),
+    body: thing.notes
+      ? tr("reminder.generic.body.note", { note: thing.notes })
+      : tr("reminder.generic.body.default"),
   };
 }
 

@@ -5,6 +5,7 @@ import { buildAlerts, daysUntil, derivePriority, formatNaira } from "./risk.ts";
 import { computeLifeStatus } from "./status.ts";
 import { deleteThing, getAllAlerts, getAllThings, putAlert, putThing, clearAllStores } from "./db.ts";
 import { seedIfEmpty } from "./seed.ts";
+import { makeT } from "./i18n.ts";
 import { DEFAULT_SETTINGS, loadSettings, saveSettings, type Settings } from "./settings.ts";
 import type { Alert, Category, Thing, ThingKind } from "./types.ts";
 
@@ -74,12 +75,14 @@ export function useLifeDesk() {
       categories: Settings["managedCategories"];
       firstThing: { name: string; amount: string; dueDate: string } | null;
       loadSample: boolean;
+      locale?: Settings["locale"];
     }) => {
       const next: Settings = {
         ...settings,
         onboarded: true,
         displayName: input.displayName || settings.displayName,
         managedCategories: input.categories,
+        locale: input.locale ?? settings.locale,
       };
       setSettings(next);
       await saveSettings(next);
@@ -137,14 +140,16 @@ export function useLifeDesk() {
     setDismissedIds(new Set());
   }, []);
 
+  const t = useMemo(() => makeT(settings.locale), [settings.locale]);
+
   const alerts = useMemo(() => {
-    const built = buildAlerts(things);
+    const built = buildAlerts(things, new Date(), t);
     return built.filter((a) => !dismissedIds.has(a.id));
-  }, [things, dismissedIds]);
+  }, [things, dismissedIds, t]);
 
   const status = useMemo(
-    () => computeLifeStatus(things, alerts),
-    [things, alerts],
+    () => computeLifeStatus(things, alerts, new Date(), t),
+    [things, alerts, t],
   );
 
   const addThing = useCallback(
@@ -267,6 +272,7 @@ export function useLifeDesk() {
     status,
     totals,
     settings,
+    t,
     refresh,
     updateSettings,
     completeOnboarding,

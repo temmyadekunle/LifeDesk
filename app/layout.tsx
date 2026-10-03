@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "LifeDesk",
   description:
     "One place to manage the things that keep your life running.",
+  icons: { icon: "/logo.jpeg" },
 };
 
 export default function RootLayout({

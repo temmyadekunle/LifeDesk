@@ -55,6 +55,21 @@ body {
   min-height: 720px;
 }
 
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+
+.header-brand {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
 .app-header {
   background: var(--navy);
   color: #fff;
@@ -529,9 +544,29 @@ button:disabled {
   margin-bottom: 18px;
 }
 
+.ob-logo-box {
+  background: #fff;
+  border: 1px solid var(--softgray);
+  border-radius: 14px;
+  padding: 10px;
+  display: inline-block;
+  line-height: 0;
+  box-shadow: 0 4px 14px rgba(23, 43, 77, 0.08);
+}
+
 .ob-logo {
-  font-size: 40px;
-  line-height: 1;
+  width: 132px;
+  height: auto;
+  display: block;
+}
+
+.header-logo {
+  display: block;
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .ob-brand h1 {

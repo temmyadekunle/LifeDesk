@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import type { Category } from "@/lib/types";
 
@@ -53,7 +54,16 @@ export default function Onboarding({
   return (
     <div className="ob">
       <div className="ob-brand">
-        <span className="ob-logo">🗄️</span>
+        <div className="ob-logo-box">
+          <Image
+            src="/logo.jpeg"
+            alt="LifeDesk logo"
+            width={1080}
+            height={720}
+            priority
+            className="ob-logo"
+          />
+        </div>
         <h1>LifeDesk</h1>
         <p>One place to manage the things that keep your life running.</p>
       </div>

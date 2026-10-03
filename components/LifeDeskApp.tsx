@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLifeDesk } from "@/lib/useLifeDesk";
 import { daysUntil } from "@/lib/risk";
@@ -172,6 +173,16 @@ export default function LifeDeskApp() {
   return (
     <div className="phone">
       <header className="app-header">
+        <div className="header-top">
+          <Image
+            src="/logo.jpeg"
+            alt=""
+            width={1080}
+            height={720}
+            className="header-logo"
+          />
+          <span className="header-brand">LifeDesk</span>
+        </div>
         <h1>Good morning, {desk.settings.displayName || "Temmy"} 👋</h1>
         <p>{desk.loading ? "Opening your LifeDesk…" : desk.status.headline}</p>
         <div className={`status-pill ${LEVEL_STYLE[desk.status.level]}`}>

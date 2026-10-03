@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LifeDesk — Design Preview</title>
+<style>
+  :root {
+    --navy: #172B4D;
+    --teal: #16A6A0;
+    --amber: #F4B942;
+    --offwhite: #F7F9FC;
+    --charcoal: #263238;
+    --softgray: #E6EBF2;
+    --danger: #E05252;
+    --success: #2E9D68;
+
+    --text: var(--charcoal);
+    --muted: #4A5A70;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--offwhite);
+    color: var(--text);
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 32px 20px 72px; }
+
+  header.page {
+    background: var(--navy);
+    color: #fff;
+    padding: 28px 20px;
+  }
+  header.page .inner { max-width: 1040px; margin: 0 auto; }
+  header.page h1 { margin: 0 0 4px; font-size: 28px; letter-spacing: -0.02em; }
+  header.page p { margin: 0; color: #C7D2E0; font-size: 15px; }
+
+  section { margin-top: 40px; }
+  h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--muted);
+    margin: 0 0 16px;
+    font-weight: 700;
+  }
+  h3 { font-size: 17px; margin: 0 0 6px; color: var(--navy); }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--softgray);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  /* ---------- Colour palette ---------- */
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .swatch { border: 1px solid var(--softgray); border-radius: 10px; overflow: hidden; background: #fff; }
+  .chip { height: 64px; }
+  .swatch .meta { padding: 10px 12px; }
+  .swatch .name { font-weight: 600; font-size: 14px; }
+  .swatch .hex { font-family: Consolas, "SF Mono", monospace; font-size: 12px; color: var(--muted); }
+
+  /* ---------- Typography ---------- */
+  .type-row { padding: 14px 0; border-bottom: 1px solid var(--softgray); }
+  .type-row:last-child { border-bottom: 0; }
+  .type-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+
+  .display { font-size: 28px; font-weight: 700; color: var(--navy); letter-spacing: -0.02em; }
+  .heading  { font-size: 20px; font-weight: 700; color: var(--navy); }
+  .subhead  { font-size: 16px; font-weight: 600; color: var(--charcoal); }
+  .body     { font-size: 16px; }
+  .small    { font-size: 13px; color: var(--muted); }
+
+  /* ---------- Buttons ---------- */
+  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+  .btn {
+    font: inherit;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 11px 20px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .btn-primary { background: var(--teal); color: #fff; }
+  .btn-secondary { background: #fff; color: var(--navy); border-color: var(--teal); }
+  .btn-alert { background: var(--amber); color: var(--navy); }
+
+  /* ---------- Inputs ---------- */
+  .field { margin-bottom: 18px; max-width: 420px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--charcoal); }
+  .field input {
+    width: 100%;
+    font: inherit;
+    padding: 11px 14px;
+    border: 1px solid var(--softgray);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+  }
+  .field .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  /* ---------- Status + alert cards ---------- */
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+  .b-urgent { background: #FBE9E9; color: #B03A3A; }
+  .b-important { background: #FEF3DC; color: #8A6410; }
+  .b-upcoming { background: #E4F4F3; color: #0E7C77; }
+  .b-routine { background: #EDF1F6; color: #55677E; }
+
+  .alert-card { border-left: 4px solid var(--amber); }
+  .alert-card.urgent { border-left-color: var(--danger); }
+  .alert-card .amount { font-size: 22px; font-weight: 700; color: var(--navy); }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <div class="inner">
+    <h1>LifeDesk</h1>
+    <p>Design preview &mdash; colours, type, buttons, inputs</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2>Brand colours</h2>
+    <div class="swatches">
+      <div class="swatch"><div class="chip" style="background:#172B4D"></div><div class="meta"><div class="name">Deep Navy</div><div class="hex">#172B4D</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#16A6A0"></div><div class="meta"><div class="name">Life Teal</div><div class="hex">#16A6A0</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#F4B942"></div><div class="meta"><div class="name">Warm Amber</div><div class="hex">#F4B942</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#F7F9FC"></div><div class="meta"><div class="name">Off White</div><div class="hex">#F7F9FC</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#263238"></div><div class="meta"><div class="name">Charcoal</div><div class="hex">#263238</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#E6EBF2"></div><div class="meta"><div class="name">Soft Gray</div><div class="hex">#E6EBF2</div></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Typography</h2>
+    <div class="card">
+      <div class="type-row"><div class="type-label">Display &mdash; 28px / 700</div><div class="display">Good morning, Temmy</div></div>
+      <div class="type-row"><div class="type-label">Heading &mdash; 20px / 700</div><div class="heading">Needs attention</div></div>
+      <div class="type-row"><div class="type-label">Subheading &mdash; 16px / 600</div><div class="subhead">Generator service overdue</div></div>
+      <div class="type-row"><div class="type-label">Body &mdash; 16px / 400</div><div class="body">Your last recorded rent payment was &#8358;1,200,000. Set money aside early to avoid penalties.</div></div>
+      <div class="type-row"><div class="type-label">Small &mdash; 13px / 400</div><div class="small">Last serviced 12 July &middot; recommended service 12 October</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Buttons</h2>
+    <div class="card">
+      <div class="btn-row">
+        <button class="btn btn-primary">+ Add Reminder</button>
+        <button class="btn btn-secondary">View all</button>
+        <button class="btn btn-alert">Take action</button>
+        <button class="btn btn-primary" disabled>Disabled</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Input fields</h2>
+    <div class="card">
+      <div class="field">
+        <label for="amount">Amount</label>
+        <input id="amount" type="text" placeholder="e.g. 1,200,000" />
+        <div class="hint">Enter the amount in naira.</div>
+      </div>
+      <div class="field">
+        <label for="due">Due date</label>
+        <input id="due" type="date" />
+      </div>
+      <div class="field">
+        <label for="note">Note (optional)</label>
+        <input id="note" type="text" placeholder="e.g. Pay before the 25th to avoid a late fee" />
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Risk levels &amp; alert cards</h2>
+    <div class="card" style="margin-bottom:14px">
+      <div class="badges">
+        <span class="badge b-urgent">Urgent</span>
+        <span class="badge b-important">Important</span>
+        <span class="badge b-upcoming">Upcoming</span>
+        <span class="badge b-routine">Routine</span>
+      </div>
+      <div class="card alert-card urgent" style="margin-bottom:12px">
+        <h3>Generator service overdue</h3>
+        <div class="small">Last serviced 4 months ago. Delaying routine maintenance may increase repair costs.</div>
+      </div>
+      <div class="card alert-card">
+        <h3>Vehicle insurance expires in 12 days</h3>
+        <div class="amount">&#8358;85,000</div>
+        <div class="small">Your last premium was &#8358;85,000, paid 12 months ago.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

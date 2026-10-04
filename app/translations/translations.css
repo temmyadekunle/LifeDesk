@@ -1,0 +1,120 @@
+/* Layout for /translations — the reviewer-facing translation proof sheet.
+   Deliberately plain and print-friendly so it can be shared or exported. */
+
+.proof {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 6rem;
+  color: #16181d;
+  background: #fff;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.proof-head h1 {
+  font-size: 1.75rem;
+  margin: 0 0 0.5rem;
+}
+
+.proof-lede {
+  max-width: 60ch;
+  margin: 0 0 1.25rem;
+  color: #4a5058;
+}
+
+.proof-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  list-style: none;
+  background: #f5f6f8;
+  border-radius: 8px;
+}
+
+.proof-facts .good strong {
+  color: #0a7d3f;
+}
+
+.proof-facts .bad strong {
+  color: #b3261e;
+}
+
+.proof-warn {
+  padding: 0.85rem 1rem;
+  background: #fdecea;
+  border-left: 4px solid #b3261e;
+  border-radius: 0 8px 8px 0;
+}
+
+.proof-warn code {
+  margin-right: 0.4rem;
+}
+
+.proof-group {
+  margin: 2.5rem 0 0;
+}
+
+.proof-group h2 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid #16181d;
+}
+
+.proof table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.proof th,
+.proof td {
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #e4e6ea;
+}
+
+.proof thead th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #4a5058;
+}
+
+.proof tbody th {
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.proof code {
+  font-size: 0.85em;
+  color: #1d4ed8;
+}
+
+.proof .ph {
+  display: block;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.proof .row-bad {
+  background: #fdecea;
+}
+
+@media print {
+  .proof thead th {
+    position: static;
+  }
+
+  .proof-group {
+    break-inside: avoid;
+  }
+}

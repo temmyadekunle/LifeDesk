@@ -36,6 +36,11 @@ export async function resolve(specifier, context, next) {
 }
 
 export async function load(url, context, next) {
+  // Server components may import CSS for their route. Node cannot parse
+  // it, and tests care about markup rather than styling.
+  if (url.endsWith(".css")) {
+    return { format: "module", source: "export default {};", shortCircuit: true };
+  }
   if (!url.endsWith(".tsx")) return next(url, context);
 
   const filename = fileURLToPath(url);

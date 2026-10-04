@@ -222,3 +222,46 @@ test("LocalePicker group label is translated", async (t) => {
     });
   }
 });
+
+test("translation proof page lists every key in all four languages", async () => {
+  const TranslationsPage = (await import("../app/translations/page.tsx")).default;
+  const html = renderToStaticMarkup(<TranslationsPage />);
+
+  // Header row plus one row per key, plus the grouped section tables.
+  const rows = html.match(/<tr[ >]/g) ?? [];
+  assert.ok(
+    rows.length >= Object.keys(en).length,
+    `expected at least ${Object.keys(en).length} rows, got ${rows.length}`,
+  );
+
+  for (const locale of LOCALES) {
+    assert.ok(html.includes(`lang="${locale}"`), `proof page missing lang="${locale}"`);
+  }
+});
+
+test("translation proof page reports no placeholder mismatches", async () => {
+  const TranslationsPage = (await import("../app/translations/page.tsx")).default;
+  const html = renderToStaticMarkup(<TranslationsPage />);
+
+  const count = Number(
+    html.match(/<strong>(\d+)<\/strong> placeholder mismatches/)?.[1] ?? "-1",
+  );
+  assert.equal(count, 0, `proof page reported ${count} placeholder mismatches`);
+
+  // The warning block must stay absent while the count is zero, otherwise
+  // reviewers open the page to an alarming banner about nothing.
+  assert.ok(!html.includes("proof-warn"), "mismatch warning rendered despite zero mismatches");
+});
+
+test("translation proof page marks plural variants", async () => {
+  const TranslationsPage = (await import("../app/translations/page.tsx")).default;
+  const html = renderToStaticMarkup(<TranslationsPage />);
+
+  const pluralKeys = Object.keys(en).filter(
+    (k) => k.endsWith("_one") || k.endsWith("_many"),
+  );
+  assert.ok(pluralKeys.length > 0, "expected plural keys to exist");
+  for (const key of pluralKeys) {
+    assert.ok(html.includes(`<code>${key}</code>`), `proof page missing ${key}`);
+  }
+});

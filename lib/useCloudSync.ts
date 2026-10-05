@@ -26,7 +26,16 @@ export interface UseCloudSync {
 
 const DEBOUNCE_MS = 2000;
 
-export function useCloudSync(): UseCloudSync {
+export interface CloudSyncOptions {
+  /**
+   * When the user has asked for low-data mode, background syncing is skipped.
+   * The Profile screen promises that data saver keeps sync off, so this has to
+   * be honoured or the copy is a lie. An explicit "Sync now" still runs.
+   */
+  dataSaver?: boolean;
+}
+
+export function useCloudSync({ dataSaver = false }: CloudSyncOptions = {}): UseCloudSync {
   const { enabled, status } = useAuth();
   const signedIn = status === "signed-in";
 
@@ -79,22 +88,27 @@ export function useCloudSync(): UseCloudSync {
   }, [enabled, signedIn, syncNow]);
 
   // A household app is mostly left open on a phone and on a laptop, so
-  // catching up when the tab becomes visible is the sync that matters.
+  // catching up when the tab becomes visible is the sync that matters. It is
+  // skipped in low-data mode, where the user has asked Livanta to stay quiet
+  // unless they trigger it themselves.
   useEffect(() => {
     if (!enabled || !signedIn) return;
 
     const onVisible = () => {
+      if (dataSaver) return;
       if (document.visibilityState === "visible") void syncNow();
     };
-    document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("focus", onVisible);
+    if (!dataSaver) {
+      document.addEventListener("visibilitychange", onVisible);
+      window.addEventListener("focus", onVisible);
+    }
 
     return () => {
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", onVisible);
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [enabled, signedIn, syncNow]);
+  }, [enabled, signedIn, dataSaver, syncNow]);
 
   return { enabled, signedIn, phase, lastResult, bindRefresh, scheduleSync, syncNow };
 }

@@ -95,7 +95,7 @@ export default function LivantaApp() {
     const { refresh } = desk;
 
     const auth = useAuth();
-    const sync = useCloudSync();
+    const sync = useCloudSync({ dataSaver: desk.settings.dataSaver });
 
     // A completed sync that pulled changes writes to IndexedDB, so the desk
     // hook has to re-read for the new state to appear.

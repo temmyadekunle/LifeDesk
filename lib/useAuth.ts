@@ -8,9 +8,16 @@
  *
  * Note that no password ever touches this module's callers beyond the moment of
  * submission, and the session itself is held by supabase-js in local storage.
+ *
+ * The state lives in a module-level store rather than in each hook call. The
+ * app calls `useAuth()` from both LivantaApp and useCloudSync, and two separate
+ * instances each held their own `user` plus their own onAuthStateChange
+ * subscription. That could drift: the UI could show signed-in while sync still
+ * believed it was signed out, and the second subscription was pure overhead.
+ * One store means one subscription, one session, and one error to read.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import type { User } from "@supabase/supabase-js";
 
 import { getSupabase, isCloudEnabled } from "./supabase/client.ts";
@@ -65,58 +72,87 @@ function toAuthError(error: { message: string } | null): AuthError {
   return { code: "unknown", message };
 }
 
+interface AuthState {
+  status: AuthStatus;
+  user: User | null;
+  error: AuthError | null;
+  needsEmailConfirmation: boolean;
+  passwordResetReady: boolean;
+}
+
+/** Seeded from a constant, so an unconfigured build never needs a state update. */
+function initialState(): AuthState {
+  return {
+    status: isCloudEnabled() ? "loading" : "disabled",
+    user: null,
+    error: null,
+    needsEmailConfirmation: false,
+    passwordResetReady: false,
+  };
+}
+
+let state: AuthState = initialState();
+const listeners = new Set<() => void>();
+let started = false;
+
+/**
+ * Replaces the state object rather than mutating it, which is what lets
+ * useSyncExternalStore see a new reference and re-render.
+ */
+function emit(patch: Partial<AuthState>) {
+  state = { ...state, ...patch };
+  for (const listener of listeners) listener();
+}
+
+const getSnapshot = () => state;
+
+function start() {
+  if (started) return;
+  started = true;
+
+  if (!isCloudEnabled()) return;
+  const supabase = getSupabase();
+  if (!supabase) return;
+
+  // Deliberately not torn down when the last hook unmounts. Tearing it down
+  // would drop the session mid-navigation and re-run getSession on every mount,
+  // which is the churn the shared store exists to remove. Supabase's
+  // subscription lives for the lifetime of the page, as it would in any app.
+  supabase.auth.onAuthStateChange((event, session) => {
+    emit({ user: session?.user ?? null, status: session ? "signed-in" : "signed-out" });
+
+    // A recovery link establishes a real session, so `status` alone reads as an
+    // ordinary sign-in and the app would show the signed-in screen instead of
+    // asking for the new password the user came to set. Only this event arms the
+    // reset flow, and nothing else disarms it: TOKEN_REFRESHED fires straight
+    // afterwards and must not clear the flag out from under the form.
+    if (event === "PASSWORD_RECOVERY") {
+      emit({ passwordResetReady: true, needsEmailConfirmation: false });
+    }
+  });
+
+  void supabase.auth.getSession().then(({ data: sessionData }) => {
+    emit({
+      user: sessionData.session?.user ?? null,
+      status: sessionData.session ? "signed-in" : "signed-out",
+    });
+  });
+}
+
+function subscribe(listener: () => void) {
+  start();
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
 export function useAuth(): UseAuth {
   const enabled = isCloudEnabled();
-  const [user, setUser] = useState<User | null>(null);
-  // Seeded from a constant so the disabled case never needs a state update,
-  // which would be a cascading render inside the effect below.
-  const [status, setStatus] = useState<AuthStatus>(() =>
-    enabled ? "loading" : "disabled",
-  );
-  const [error, setError] = useState<AuthError | null>(null);
-  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
-  const [passwordResetReady, setPasswordResetReady] = useState(false);
-
-  useEffect(() => {
-    if (!enabled) return;
-
-    const supabase = getSupabase();
-    if (!supabase) return;
-
-    let active = true;
-
-    // The callback runs outside the effect body, so this is a subscription
-    // rather than a synchronous render-phase state change.
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!active) return;
-      setUser(session?.user ?? null);
-      setStatus(session ? "signed-in" : "signed-out");
-
-      // A recovery link establishes a real session, so `status` alone reads as
-      // an ordinary sign-in and the app would show the signed-in screen instead
-      // of asking for the new password the user came to set. Only this event
-      // arms the reset flow, and nothing else disarms it: TOKEN_REFRESHED fires
-      // straight afterwards and must not clear the flag out from under the form.
-      if (event === "PASSWORD_RECOVERY") {
-        setPasswordResetReady(true);
-        setNeedsEmailConfirmation(false);
-      }
-    });
-
-    void supabase.auth.getSession().then(({ data: sessionData }) => {
-      if (!active) return;
-      setUser(sessionData.session?.user ?? null);
-      setStatus(sessionData.session ? "signed-in" : "signed-out");
-    });
-
-    return () => {
-      active = false;
-      data.subscription.unsubscribe();
-    };
-  }, [enabled]);
+  const session = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    setError(null);
+    emit({ error: null });
     const supabase = getSupabase();
     if (!supabase) return false;
 
@@ -125,15 +161,14 @@ export function useAuth(): UseAuth {
       password,
     });
     if (signInError) {
-      setError(toAuthError(signInError));
+      emit({ error: toAuthError(signInError) });
       return false;
     }
     return true;
   }, []);
 
   const signUp = useCallback(async (email: string, password: string) => {
-    setError(null);
-    setNeedsEmailConfirmation(false);
+    emit({ error: null, needsEmailConfirmation: false });
     const supabase = getSupabase();
     if (!supabase) return false;
 
@@ -142,18 +177,18 @@ export function useAuth(): UseAuth {
       password,
     });
     if (signUpError) {
-      setError(toAuthError(signUpError));
+      emit({ error: toAuthError(signUpError) });
       return false;
     }
     // When email confirmation is switched on in the Supabase project there is
     // no session yet. Say so, otherwise the screen would look like nothing
     // happened after a successful sign-up.
-    if (!data.session && data.user) setNeedsEmailConfirmation(true);
+    if (!data.session && data.user) emit({ needsEmailConfirmation: true });
     return true;
   }, []);
 
   const resetPassword = useCallback(async (email: string) => {
-    setError(null);
+    emit({ error: null });
     const supabase = getSupabase();
     if (!supabase) return false;
 
@@ -163,47 +198,46 @@ export function useAuth(): UseAuth {
       { redirectTo: `${window.location.origin}${window.location.pathname}` },
     );
     if (resetError) {
-      setError(toAuthError(resetError));
+      emit({ error: toAuthError(resetError) });
       return false;
     }
     return true;
   }, []);
 
   const updatePassword = useCallback(async (password: string) => {
-    setError(null);
+    emit({ error: null });
     const supabase = getSupabase();
     if (!supabase) return false;
 
     const { error: updateError } = await supabase.auth.updateUser({ password });
     if (updateError) {
-      setError(toAuthError(updateError));
+      emit({ error: toAuthError(updateError) });
       return false;
     }
     // The reset is done, so stop forcing the new-password form on the next
     // render. Clearing only on success means an expired or already-used link
     // leaves the form up with its error rather than dropping the user back to a
     // sign-in screen that cannot explain what went wrong.
-    setPasswordResetReady(false);
+    emit({ passwordResetReady: false });
     return true;
   }, []);
 
   const signOut = useCallback(async () => {
-    setNeedsEmailConfirmation(false);
-    setPasswordResetReady(false);
+    emit({ needsEmailConfirmation: false, passwordResetReady: false });
     const supabase = getSupabase();
     if (!supabase) return;
     await supabase.auth.signOut();
   }, []);
 
-  const clearError = useCallback(() => setError(null), []);
+  const clearError = useCallback(() => emit({ error: null }), []);
 
   return {
     enabled,
-    status,
-    user,
-    error,
-    needsEmailConfirmation,
-    passwordResetReady,
+    status: session.status,
+    user: session.user,
+    error: session.error,
+    needsEmailConfirmation: session.needsEmailConfirmation,
+    passwordResetReady: session.passwordResetReady,
     signIn,
     signUp,
     resetPassword,

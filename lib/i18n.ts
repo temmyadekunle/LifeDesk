@@ -40,12 +40,16 @@ function interpolate(template: string, params?: TranslateParams): string {
 }
 
 export function makeT(locale: Locale): Translate {
-  const dict = DICTIONARIES[locale] ?? DICTIONARIES[DEFAULT_LOCALE];
+  // Report the locale actually in use, not the one requested. Callers read
+  // t.locale for the lang attribute, and echoing an unsupported value would
+  // emit invalid markup such as lang="zz".
+  const resolved: Locale = isLocale(locale) ? locale : DEFAULT_LOCALE;
+  const dict = DICTIONARIES[resolved];
 
   const t = ((key: TKey, params?: TranslateParams) =>
     interpolate(dict[key] ?? en[key] ?? key, params)) as Translate;
 
-  t.locale = locale;
+  t.locale = resolved;
   t.n = (base: PluralBase, count: number, params?: TranslateParams) => {
     const key = `${base}_${count === 1 ? "one" : "many"}` as TKey;
     return t(key, { ...params, n: count });

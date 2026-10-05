@@ -60,8 +60,30 @@ export function useLivanta() {
   }, [loadThings]);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let active = true;
+    void (async () => {
+      try {
+        const loaded = await loadSettings();
+        if (!active) return;
+        setSettings(loaded);
+        await loadThings();
+        if (!active) return;
+        setError(null);
+      } catch (e) {
+        if (!active) return;
+        setError(
+          e instanceof Error ? e.message : "Could not open the local database.",
+        );
+      } finally {
+        if (!active) return;
+        setLoading(false);
+        setReady(true);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [loadThings]);
 
   const updateSettings = useCallback(async (patch: Partial<Settings>) => {
     const next = { ...settings, ...patch };

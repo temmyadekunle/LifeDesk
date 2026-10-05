@@ -4,7 +4,7 @@
  * Livanta is local-first: everything works with no account and no network. If
  * these environment variables are absent the helpers here return null and every
  * caller falls back to IndexedDB, which is why importing this module must never
- * throw. That is what keeps the static Netlify build working unchanged for
+ * throw. That is what keeps the static build working unchanged for
  * users who never sign in.
  */
 

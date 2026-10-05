@@ -1,0 +1,24 @@
+# Cloudflare Pages response headers.
+#
+# This lives in public/ so the Next.js build copies it to the root of the
+# published directory, which is where Cloudflare Pages reads it from. The
+# equivalent Netlify rules have been removed with netlify.toml.
+
+/*
+  # HTML and unhashed assets must be revalidated, or a deploy would keep serving
+  # the previous index to anyone who had already visited. Cloudflare applies every
+  # matching rule, and the more specific rule wins for a repeated header, so the
+  # immutable rule below overrides this one for content-hashed build output only.
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  # No X- prefix here, unlike the headers below. X-Content-Security-Policy was
+  # deprecated years ago and is ignored by every current browser, so spelling it
+  # that way looks like protection while enforcing nothing.
+  Content-Security-Policy: default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co
+
+/_next/static/*
+  # Next.js emits content-hashed filenames here, so the bytes behind a given URL
+  # can never change. This is safe to cache for a year.
+  Cache-Control: public, max-age=31536000, immutable

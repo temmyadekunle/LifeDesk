@@ -7,8 +7,12 @@ dist/
 .env
 .env*.local
 
-# Netlify's per-machine link state. It records the site id this checkout is
-# bound to, which is local to one developer and not part of the project.
+# Cloudflare's local toolchain state from wrangler, and its Pages dev state.
+.wrangler/
+.dev.vars
+
+# Historical: this project was deployed to Netlify before moving to Cloudflare
+# Pages. Kept so an old checkout's link state is still ignored.
 .netlify/
 
 *.tsbuildinfo

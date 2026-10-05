@@ -1,5 +1,5 @@
-// Serves the static export in out/ exactly the way Netlify will, so you
-// can check a production build locally before pushing. Dependency-free on
+// Serves the static export in out/ the way a static host does, so you can
+// check a production build locally before pushing. Dependency-free on
 // purpose: nothing extra to install, and it works offline.
 import { createServer } from "node:http";
 import { createReadStream, existsSync, statSync } from "node:fs";

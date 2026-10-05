@@ -16,7 +16,7 @@ at, so the product document and the code cannot disagree about what Plus means.
 
 | Decision | Choice | Why |
 | --- | --- | --- |
-| Hosting for billing | Netlify Functions sidecar | Keeps `output: "export"` and the static Netlify deploy untouched |
+| Hosting for billing | Cloudflare Pages Functions | Keeps `output: "export"` and the static Cloudflare Pages deploy untouched |
 | What the free tier limits | Advanced capability, never row counts | A capped core loop stops users experiencing the product |
 | Proactive alerts | Insight free forever, breadth is premium | The insight is the reason anyone looks at a paywall |
 | Documentation | Markdown, reviewable in git | The existing PRD is a 393kb PDF with no source |
@@ -26,7 +26,8 @@ at, so the product document and the code cannot disagree about what Plus means.
 ## 2. The structural problem, stated plainly
 
 Livanta is a **pure static export**. `next.config` sets `output: "export"`,
-Netlify publishes `out/`, and the app has no API routes and no server actions.
+Cloudflare Pages publishes `out/`, and the app has no API routes and no server
+actions.
 
 That means the current build **cannot** take a payment. Not "should be
 refactored to" — cannot:
@@ -161,27 +162,42 @@ so a failed retry does not degrade the user's experience mid-month. Tunable; see
 
 ## 6. Server surface
 
-Three functions under `netlify/functions/`. Nothing else about the deploy
-changes; `netlify.toml` keeps publishing `out/`.
+Three functions under `functions/` at the repo root, which Cloudflare Pages picks
+up automatically. Nothing else about the deploy changes; the build keeps
+publishing `out/`.
 
 | Function | Responsibility |
 | --- | --- |
-| `create-checkout` | Creates or reuses the Paystack plan and returns a checkout authorization URL. The only function that talks to Paystack's API from a request. |
-| `paystack-webhook` | Verifies the `x-paystack-signature` HMAC against the raw body, then writes the entitlement to Supabase. Idempotent on event id. |
-| `cancel-subscription` | Disables auto-renew at the period end. Access continues until then. |
+| `functions/api/create-checkout.ts` | Creates or reuses the Paystack plan and returns a checkout authorization URL. The only function that talks to Paystack's API from a request. |
+| `functions/api/paystack-webhook.ts` | Verifies the `x-paystack-signature` HMAC against the raw body, then writes the entitlement to Supabase. Idempotent on event id. |
+| `functions/api/cancel-subscription.ts` | Disables auto-renew at the period end. Access continues until then. |
+
+Three Cloudflare-specific constraints, all of which would otherwise surface as
+runtime failures rather than build errors:
+
+- **Pages Functions run on the Workers runtime, not Node.** Anything Node-specific
+  needs the `nodejs_compat` compatibility flag, set per project rather than in the
+  repository.
+- **The webhook must read the raw body.** Workers will hand a handler a parsed
+  object if it looks like JSON, and a re-serialized body will produce a different
+  HMAC. Read the text, verify, then parse.
+- **Secrets are environment variables, not files.** `PAYSTACK_SECRET_KEY` belongs
+  in the Pages project's encrypted environment settings. `.dev.vars` is the local
+  equivalent and is gitignored.
 
 Two rules make this surface trustworthy:
 
 - **The webhook must verify against the raw request body.** Re-serializing the
   JSON to check the signature will fail or, worse, pass by accident. Read the
-  body as a buffer once, verify, then parse.
+  body once, verify, then parse.
 - **Webhook handlers must be idempotent.** Paystack retries. Applying the same
   event twice must not corrupt state, so key on the event id and ignore
   replays.
 
-### A note on Netlify's free tier
+### A note on Cloudflare's free tier
 
-Function invocations are metered. `paystack-webhook` only runs on real payment
+Function invocations are metered at 100,000 per day on the free plan.
+`paystack-webhook` only runs on real payment
 events, so volume tracks paying customers, not traffic. `create-checkout` runs
 only on an explicit user action. This is not a cost concern at launch scale, but
 it is a reason not to put anything chatty or high-traffic in a function.

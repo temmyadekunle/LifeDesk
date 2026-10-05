@@ -32,6 +32,17 @@ export async function resolve(specifier, context, next) {
     }
     return next(found, context);
   }
+  // Relative imports inside components/ are written without a file extension,
+  // which is what Next.js expects but native ESM resolution rejects. Try the
+  // TypeScript extensions first, then fall back to the specifier untouched so
+  // real files with their own extension (notably CSS) still resolve.
+  if (specifier.startsWith("./") || specifier.startsWith("../")) {
+    const base = new URL(specifier, context.parentURL);
+    for (const ext of [".ts", ".tsx", "/index.ts", "/index.tsx"]) {
+      const candidate = new URL(base.href + ext);
+      if (existsSync(fileURLToPath(candidate))) return next(candidate.href, context);
+    }
+  }
   return next(specifier, context);
 }
 

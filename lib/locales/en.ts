@@ -21,13 +21,23 @@ export const en = {
   "app.error.label": "Local database",
   "app.error.title": "Could not open storage",
   "app.back": "Back",
+  "app.brand": "Livanta",
+
+  /* ---------- generic UI ---------- */
+  "ui.clear": "Clear",
+  "ui.dueToday": "Due today",
+  "ui.dueTomorrow": "Due tomorrow",
+  "ui.lifeArea": "Life area",
 
   /* ---------- tabs ---------- */
   "tab.home": "Home",
   "tab.things": "Things",
   "tab.alerts": "Alerts",
   "tab.household": "Household",
+  "tab.calendar": "Calendar",
+  "tab.services": "Services",
   "tab.profile": "Profile",
+  "nav.primary": "Primary",
 
   /* ---------- categories ---------- */
   "cat.home": "Home",
@@ -52,6 +62,9 @@ export const en = {
   "kind.appointment": "Appointment",
   "kind.reminder": "Reminder",
   "kind.service-provider": "Service provider",
+  "kind.task": "Task",
+  "kind.birthday": "Birthday",
+  "kind.important-date": "Important date",
 
   /* ---------- frequencies ---------- */
   "freq.none": "One-off",
@@ -127,6 +140,14 @@ export const en = {
   "home.next30_many": "Next 30 days · {n} items",
   "home.modules": "Modules",
   "home.quickAdd": "Quick add",
+  "home.lifeAreas": "Life areas",
+  "home.more": "More",
+  "home.openCalendar": "Open calendar",
+  "home.seeAllCount_one": "See all ({n})",
+  "home.seeAllCount_many": "See all ({n})",
+  "home.allClearTitle": "All clear",
+  "home.allClearBody": "Nothing urgent, and nothing due in the next 30 days.",
+  "home.nothing30Title": "Nothing coming up",
 
   /* ---------- things screen ---------- */
   "things.search": "Search",
@@ -140,14 +161,79 @@ export const en = {
   "things.delete": "Delete",
   "things.nothingMatches": "Nothing matches those filters.",
   "things.confirmDelete": "Delete \"{name}\"? This cannot be undone.",
+  "things.all": "All",
+  "things.active": "Active",
+  "things.emptyTitle": "Nothing here yet",
+  "things.emptyBody": "Add your first item and Livanta will keep an eye on it for you.",
 
   /* ---------- alerts screen ---------- */
   "alerts.count_one": "{n} alert · {status}",
   "alerts.count_many": "{n} alerts · {status}",
   "alerts.none": "No alerts. Nothing needs attention.",
   "alerts.restore": "Restore dismissed alerts",
+  "alerts.title": "Alerts",
+  "alerts.emptyTitle": "Nothing needs attention",
+  "alerts.emptyBody": "When something gets urgent or overdue, it will show up here.",
+  "alerts.restoreShort": "Restore",
   "action.remindLater": "Remind me later",
   "action.markHandled": "Mark as handled",
+  "action.review": "Review",
+
+  /* ---------- calendar screen ---------- */
+  "cal.title": "Calendar",
+  "cal.subtitle": "Everything you are tracking, by date.",
+  "cal.jumpToday": "Today",
+  "cal.prevMonth": "Previous month",
+  "cal.nextMonth": "Next month",
+  "cal.upcoming": "Upcoming",
+  "cal.noEvents": "Nothing on this day",
+  "cal.noEventsBody": "Pick another day, or add something new.",
+
+  /* ---------- services screen ---------- */
+  "svc.subtitle": "The life areas you manage and the people you rely on.",
+  "svc.blurb": "Everything you are responsible for, grouped by the area of life it belongs to.",
+  "svc.areas": "Life areas",
+  "svc.providers": "Service providers",
+  "svc.addProvider": "Add provider",
+  "svc.byCategory": "By category",
+  "svc.noProviders": "No providers yet",
+  "svc.noProvidersBody": "Add the mechanic, tailor, barber or generator repairer you use, so their number is always close.",
+  "svc.items_one": "{n} item",
+  "svc.items_many": "{n} items",
+
+  /* ---------- thing detail ---------- */
+  "thing.details": "Details",
+  "thing.type": "Type",
+  "thing.category": "Category",
+  "thing.amount": "Amount",
+  "thing.due": "Date",
+  "thing.dueOn": "Due {date}",
+  "thing.repeats": "Repeats",
+  "thing.notesLabel": "Note",
+  "thing.noNotes": "No note added.",
+  "thing.contact": "Contact",
+  "thing.address": "Address",
+  "thing.lastHandled": "Last handled {time}",
+  "thing.neverHandled": "Never marked as handled",
+  "thing.savedToast": "Saved",
+  "thing.handledToast": "Marked as handled",
+  "thing.deletedToast": "Deleted",
+  "thing.deleteTitle": "Delete this item?",
+  "thing.deleteBody": "\"{name}\" will be removed from this device. This cannot be undone.",
+
+  /* ---------- quick add ---------- */
+  "qa.title": "What do you need to add?",
+  "qa.blurb": "Pick a type to start. You can change the details afterwards.",
+  "qa.home": "Rent or home",
+  "qa.vehicle": "Vehicle",
+  "qa.bill": "Bill to pay",
+  "qa.subscription": "Subscription",
+  "qa.document": "Document",
+  "qa.family": "Birthday",
+  "qa.appointment": "Appointment",
+  "qa.service": "Someone who provides a service",
+  "qa.task": "Task",
+  "qa.importantDate": "Important date",
 
   /* ---------- household placeholder ---------- */
   "household.title": "Household",
@@ -178,6 +264,12 @@ export const en = {
   "profile.yourDataBody_many": "{n} things stored on this device. Nothing leaves it unless you sign in to sync. Livanta does not sell personal data.",
   "profile.deleteAll": "Delete all my data",
   "profile.confirmDeleteAll": "Delete everything? This cannot be undone.",
+  "prof.active": "Active",
+  "prof.completed": "Completed",
+  "prof.daysShort": "{n}d",
+  "prof.manageAccount": "Manage account",
+  "prof.manageAccountSub": "Sync across your devices",
+  "prof.signedIn": "Signed in",
 
   /* ---------- thing row ---------- */
   "row.completed": "Completed",
@@ -209,6 +301,12 @@ export const en = {
   "ob.finish": "Finish",
   "ob.sample": "Explore with sample data instead",
   "ob.language": "Choose your language",
+  "ob.nameBlurb": "This is how Livanta will greet you. You can change it later.",
+  "ob.firstThingTitle": "Add something to keep an eye on",
+  "ob.sampleHint": "Sample data is a demo you can delete at any time.",
+  "ob.f.early": "Early warning before a date catches you",
+  "ob.f.calendar": "Everything you track on one calendar",
+  "ob.f.sync": "Optional sync across your devices",
 
   /* ---------- editor ---------- */
   "ed.editPrefix": "Edit {label}",
@@ -305,6 +403,32 @@ export const en = {
   "auth.emailTaken": "An account already exists for that email.",
   "auth.rateLimited": "Too many attempts. Wait a minute and try again.",
   "auth.unknown": "Something went wrong. Try again.",
+
+  /* ---------- auth screen ---------- */
+  "auth.signInTitle": "Sign in",
+  "auth.signUpTitle": "Create account",
+  "auth.forgotTitle": "Reset password",
+  "auth.newPasswordTitle": "Choose a new password",
+  "auth.signInBlurb": "Sync your things across devices. Optional.",
+  "auth.signUpBlurb": "One account to sync everything. Your data stays yours.",
+  "auth.forgotBlurb": "We will email you a link to set a new password.",
+  "auth.newPasswordBlurb": "Pick something you will remember.",
+  "auth.working": "Working…",
+  "auth.showPassword": "Show password",
+  "auth.hidePassword": "Hide password",
+  "auth.passwordHint": "At least 8 characters.",
+  "auth.savePassword": "Save password",
+  "auth.forgotLink": "Forgot password?",
+  "auth.haveResetLink": "Already have a reset link?",
+  "auth.backToSignIn": "Back to sign in",
+  "auth.checkEmail": "Check your inbox",
+  "auth.checkEmailTitle": "Check your email",
+  "auth.checkEmailBody": "If that address is new, a confirmation link is on its way.",
+  "auth.resetSent": "Reset link sent",
+  "auth.resetSentBody": "Follow the link in the email to choose a new password.",
+  "auth.signedInToast": "Signed in. Syncing…",
+  "auth.signedUpToast": "Account created. Check your email to confirm.",
+  "auth.passwordUpdated": "Password updated. You are signed in.",
 } as const;
 
 export type TKey = keyof typeof en;

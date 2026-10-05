@@ -1,0 +1,72 @@
+import type { IconName } from "./Icons";
+import type { Category, ThingKind } from "@/lib/types";
+import type { ModuleId } from "./ModuleScreen";
+import type { TKey } from "@/lib/locales/en";
+
+/**
+ * Presentation maps. Kept out of the screen components so an icon or colour can
+ * be changed in one place, and so the same category never looks like two
+ * different things on two different screens.
+ */
+
+export const CATEGORY_META: Record<
+  Category,
+  { icon: IconName; color: string; labelKey: TKey }
+> = {
+  home: { icon: "home", color: "var(--home)", labelKey: "cat.home" },
+  transport: { icon: "car", color: "var(--transport)", labelKey: "cat.transport" },
+  money: { icon: "wallet", color: "var(--money)", labelKey: "cat.money" },
+  documents: { icon: "file", color: "var(--documents)", labelKey: "cat.documents" },
+  family: { icon: "users", color: "var(--family)", labelKey: "cat.family" },
+  services: { icon: "wrench", color: "var(--services)", labelKey: "cat.services" },
+};
+
+export const CATEGORIES = Object.keys(CATEGORY_META) as Category[];
+
+export const KIND_ICON: Record<ThingKind, IconName> = {
+  rent: "home",
+  utility: "zap",
+  bill: "receipt",
+  subscription: "repeat",
+  "school-fee": "graduation",
+  vehicle: "car",
+  fuel: "fuel",
+  maintenance: "wrench",
+  insurance: "shieldCheck",
+  document: "file",
+  asset: "package",
+  appointment: "calendar",
+  reminder: "bell",
+  "service-provider": "pin",
+  task: "checkSquare",
+  birthday: "cake",
+  "important-date": "flag",
+};
+
+export const KIND_LABEL_KEY: Record<ThingKind, TKey> = {
+  rent: "kind.rent",
+  utility: "kind.utility",
+  bill: "kind.bill",
+  subscription: "kind.subscription",
+  "school-fee": "kind.school-fee",
+  vehicle: "kind.vehicle",
+  fuel: "kind.fuel",
+  maintenance: "kind.maintenance",
+  insurance: "kind.insurance",
+  document: "kind.document",
+  asset: "kind.asset",
+  appointment: "kind.appointment",
+  reminder: "kind.reminder",
+  "service-provider": "kind.service-provider",
+  task: "kind.task",
+  birthday: "kind.birthday",
+  "important-date": "kind.important-date",
+};
+
+export const MODULE_ICON: Record<ModuleId, IconName> = {
+  home: "home",
+  vehicles: "car",
+  bills: "wallet",
+  documents: "file",
+  assets: "package",
+};

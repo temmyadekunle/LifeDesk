@@ -1,110 +1,91 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { useLivanta } from "@/lib/useLivanta";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { Icon, type IconName } from "./Icons";
+import { ConfirmDialog, Sheet, Toast, useToast } from "./ui";
+import { QuickAddSheet } from "./QuickAdd";
+import { ThingDetailSheet } from "./ThingDetail";
+import { AuthScreen } from "./AuthScreen";
+import Onboarding from "./Onboarding";
+import ModuleScreen, { MODULES, type ModuleId } from "./ModuleScreen";
+import ThingEditor, { fromEditorValues } from "./ThingEditor";
+import { HomeScreen } from "./screens/HomeScreen";
+import { ThingsScreen } from "./screens/ThingsScreen";
+import { CalendarScreen } from "./screens/CalendarScreen";
+import { ServicesScreen } from "./screens/ServicesScreen";
+import { NotificationsScreen } from "./screens/NotificationsScreen";
+import { ProfileScreen } from "./screens/ProfileScreen";
+import { CATEGORY_META, KIND_ICON, MODULE_ICON } from "./maps";
+import { dueMeta, initials, TONE_CLASS } from "./labels";
+import { formatDate } from "@/lib/dates";
+import { formatNaira } from "@/lib/i18n";
+import { notifyUrgentAlert } from "@/lib/notifications";
+import type { EditorPreset } from "@/lib/editor";
+import type { TKey } from "@/lib/locales/en";
+import type { Thing } from "@/lib/types";
 import { useAuth } from "@/lib/useAuth";
 import { useCloudSync } from "@/lib/useCloudSync";
-import { AccountPanel } from "./AccountPanel";
-import { daysUntil } from "@/lib/risk";
-import { formatNaira, type Locale } from "@/lib/i18n";
-import type { TKey } from "@/lib/locales/en";
-import {
-  downloadJson,
-  exportPayload,
-  leadDaysCrossed,
-  announcePermissionChange,
-  notificationPermission,
-  notifyUrgentAlert,
-  reminderCopy,
-  requestNotificationPermission,
-  serverPermissionSnapshot,
-  subscribeToPermission,
-} from "@/lib/notifications";
-import Onboarding, { LocalePicker } from "@/components/Onboarding";
-import ThingEditor, {
-  fromEditorValues,
-  toEditorValues,
-  type EditorPreset,
-  type EditorValues,
-} from "@/components/ThingEditor";
-import ModuleScreen, { MODULES, type ModuleId } from "@/components/ModuleScreen";
-import type { Alert, Category, Priority, Thing } from "@/lib/types";
+import { useLivanta } from "@/lib/useLivanta";
 
-type Tab = "home" | "things" | "alerts" | "household" | "profile";
+type Tab = "home" | "things" | "calendar" | "services" | "profile";
 
-const TABS: { id: Tab; labelKey: TKey; ico: string }[] = [
-  { id: "home", labelKey: "tab.home", ico: "🏠" },
-  { id: "things", labelKey: "tab.things", ico: "📋" },
-  { id: "alerts", labelKey: "tab.alerts", ico: "🔔" },
-  { id: "household", labelKey: "tab.household", ico: "👨‍👩‍👧" },
-  { id: "profile", labelKey: "tab.profile", ico: "👤" },
-];
+type Route =
+  | { kind: "module"; id: ModuleId }
+  | { kind: "notifications" }
+  | { kind: "auth" };
 
-const CATEGORIES: { id: Category; labelKey: TKey; ico: string; color: string }[] = [
-  { id: "home", labelKey: "cat.home", ico: "🏠", color: "var(--home)" },
-  { id: "transport", labelKey: "cat.transport", ico: "🚗", color: "var(--transport)" },
-  { id: "money", labelKey: "cat.money", ico: "💳", color: "var(--money)" },
-  { id: "documents", labelKey: "cat.documents", ico: "📄", color: "var(--documents)" },
-  { id: "family", labelKey: "cat.family", ico: "👨‍👩‍👧", color: "var(--family)" },
-  { id: "services", labelKey: "cat.services", ico: "🔧", color: "var(--maintenance)" },
-];
-
-const PRIORITY_CLASS: Record<Priority, string> = {
-  urgent: "b-urgent",
-  important: "b-important",
-  upcoming: "b-upcoming",
-  routine: "b-routine",
-};
-
-const KIND_ICO: Record<string, string> = {
-  rent: "🏠",
-  utility: "💡",
-  bill: "🧾",
-  subscription: "💳",
-  "school-fee": "🎓",
-  vehicle: "🚗",
-  fuel: "⛽",
-  maintenance: "🔧",
-  insurance: "🛡️",
-  document: "📄",
-  asset: "📦",
-  appointment: "📅",
-  reminder: "🔔",
-  "service-provider": "🔧",
-};
-
-const LEVEL_STYLE = {
-  stable: "level-stable",
-  "needs-attention": "level-attention",
-  immediate: "level-immediate",
-} as const;
-
-const QUICK_ADD: { labelKey: TKey; kind: EditorPreset["kind"]; category: Category }[] = [
-  { labelKey: "kind.reminder", kind: "reminder", category: "family" },
-  { labelKey: "kind.bill", kind: "bill", category: "money" },
-  { labelKey: "kind.document", kind: "document", category: "documents" },
-  { labelKey: "kind.asset", kind: "asset", category: "home" },
+const TABS: { id: Tab; labelKey: TKey; icon: IconName }[] = [
+  { id: "home", labelKey: "tab.home", icon: "home" },
+  { id: "things", labelKey: "tab.things", icon: "list" },
+  { id: "calendar", labelKey: "tab.calendar", icon: "calendar" },
+  { id: "services", labelKey: "tab.services", icon: "layers" },
+  { id: "profile", labelKey: "tab.profile", icon: "user" },
 ];
 
 export default function LivantaApp() {
-    const [tab, setTab] = useState<Tab>("home");
-    const [module, setModule] = useState<ModuleId | null>(null);
-    const desk = useLivanta();
-    const { t } = desk;
-    const { refresh } = desk;
+  const desk = useLivanta();
+  const { t, refresh } = desk;
+  const auth = useAuth();
+  const sync = useCloudSync({ dataSaver: desk.settings.dataSaver });
+  const { toast, showToast } = useToast();
 
-    const auth = useAuth();
-    const sync = useCloudSync({ dataSaver: desk.settings.dataSaver });
+  const [tab, setTab] = useState<Tab>("home");
+  const [stack, setStack] = useState<Route[]>([]);
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [quickPreset, setQuickPreset] = useState<EditorPreset | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [confirmThing, setConfirmThing] = useState<string | null>(null);
+  const [confirmWipe, setConfirmWipe] = useState(false);
 
-    // A completed sync that pulled changes writes to IndexedDB, so the desk
-    // hook has to re-read for the new state to appear.
-    useEffect(() => {
-      sync.bindRefresh(() => void refresh());
-    }, [sync, refresh]);
+  const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
+  const pop = useCallback(() => setStack((s) => s.slice(0, -1)), []);
+
+  // A completed sync writes to IndexedDB, so the desk has to re-read for the
+  // pulled state to appear.
+  useEffect(() => {
+    sync.bindRefresh(() => void refresh());
+  }, [sync, refresh]);
+
+  /* Queue a sync whenever local data actually changed. `scheduleSync` is a
+     no-op unless the build has Supabase credentials and a session exists, so
+     this is inert for the signed-out app that ships by default. */
+  const signature = useMemo(
+    () =>
+      `${desk.things.length}:${desk.things
+        .map((x) => `${x.updatedAt}${x.status}`)
+        .join("|")}:${desk.alerts.length}`,
+    [desk.things, desk.alerts.length],
+  );
+  const scheduleSync = sync.scheduleSync;
+  useEffect(() => {
+    if (!desk.ready) return;
+    scheduleSync();
+  }, [signature, desk.ready, scheduleSync]);
 
   const notified = useRef<Set<string>>(new Set());
-
   useEffect(() => {
     if (!desk.ready || !desk.settings.notifyUrgent) return;
     const urgent = desk.alerts.find((a) => a.priority === "urgent");
@@ -114,737 +95,584 @@ export default function LivantaApp() {
     }
   }, [desk.ready, desk.settings.notifyUrgent, desk.alerts]);
 
+  const openThing = useCallback((thing: Thing) => {
+    setEditId(null);
+    setOpenId(thing.id);
+  }, []);
+
+  const startAdd = useCallback((preset?: EditorPreset) => {
+    setQuickPreset(preset ?? null);
+    setQuickOpen(true);
+  }, []);
+
+  const closeSheets = useCallback(() => {
+    setQuickOpen(false);
+    setQuickPreset(null);
+    setOpenId(null);
+    setEditId(null);
+  }, []);
+
+  async function saveNew(values: ReturnType<typeof fromEditorValues>) {
+    setBusy(true);
+    const thing = await desk.addThing(values);
+    setBusy(false);
+    closeSheets();
+    showToast(t("thing.savedToast", { name: thing.name }), "ok");
+  }
+
+  async function saveEdit(values: ReturnType<typeof fromEditorValues>) {
+    const target = desk.things.find((x) => x.id === editId);
+    if (!target) return;
+    setBusy(true);
+    await desk.updateThing(target, values);
+    setBusy(false);
+    setEditId(null);
+    showToast(t("thing.savedToast", { name: values.name }), "ok");
+  }
+
+  async function handleThing(thing: Thing) {
+    setBusy(true);
+    await desk.completeThing(thing);
+    setBusy(false);
+    setOpenId(null);
+    showToast(t("thing.handledToast"), "ok");
+  }
+
+  /* -------------------------------------------------------------- gates */
+
   if (desk.ready && !desk.settings.onboarded) {
     return (
-      <div className="phone" lang={desk.settings.locale}>
-        <main className="screen ob-screen">
-          <Onboarding
-            locale={desk.settings.locale}
-            onDone={(result) => void desk.completeOnboarding(result)}
-            onSample={(locale) => {
-              void desk.completeOnboarding({
-                displayName: desk.settings.displayName || "Temmy",
-                categories: ["home", "money", "transport", "documents"],
-                firstThing: null,
-                loadSample: true,
-                locale,
-              });
-            }}
-          />
-        </main>
+      <div className="app" lang={desk.settings.locale}>
+        <div className="app__col">
+          <div className="app__body">
+            <Onboarding
+              locale={desk.settings.locale}
+              onDone={(result) => void desk.completeOnboarding(result)}
+              onSample={(locale) => {
+                void desk.completeOnboarding({
+                  displayName: desk.settings.displayName || "Temmy",
+                  categories: ["home", "money", "transport", "documents"],
+                  firstThing: null,
+                  loadSample: true,
+                  locale,
+                });
+              }}
+            />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!desk.ready) {
     return (
-      <div className="phone" lang="en">
-        <main className="screen">
-          <section className="card">
-            <p className="card-meta">{desk.t("app.loading")}</p>
-          </section>
-        </main>
+      <div className="app" lang={desk.settings.locale}>
+        <div className="app__col">
+          <header className="appbar">
+            <div className="appbar__lead">
+              <span className="appbar__brand">Livanta</span>
+            </div>
+          </header>
+          <div className="app__body">
+            <div className="card">
+              <p className="card-meta">{t("app.loading")}</p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (module) {
-    const active = MODULES.find((m) => m.id === module);
-    return (
-      <div className="phone" lang={desk.settings.locale}>
-        <header className="app-header">
-          <button className="back" onClick={() => setModule(null)}>
-            ← {t("app.back")}
-          </button>
-          <h1>
-            {active?.ico} {active ? t(active.labelKey) : ""}
-          </h1>
-        </header>
-        <main className="screen">
-          <ModuleScreen
-            module={module}
-            things={desk.things}
-            t={t}
-            onOpenThing={() => {
-              setModule(null);
-              setTab("things");
-            }}
-          />
-        </main>
-        <nav className="tabbar">
-          {TABS.map((tabDef) => (
-            <button
-              key={tabDef.id}
-              className="tab"
-              onClick={() => {
-                setModule(null);
-                setTab(tabDef.id);
+  const route = stack[stack.length - 1] ?? null;
+  const open = openId ? desk.things.find((x) => x.id === openId) ?? null : null;
+  const editing = editId ? desk.things.find((x) => x.id === editId) ?? null : null;
+
+  return (
+    <div className="app" lang={desk.settings.locale}>
+      <div className="app__col">
+        <Header
+          desk={desk}
+          tab={tab}
+          route={route}
+          onBack={pop}
+          onOpenNotifications={() => push({ kind: "notifications" })}
+          onOpenProfile={() => {
+            setStack([]);
+            setTab("profile");
+          }}
+        />
+
+        <div className="app__body">
+          {desk.error ? (
+            <div style={{ marginBottom: "0.875rem" }}>
+              <div className="notice notice--danger">
+                <Icon name="alert" size={18} className="notice__icon" />
+                <div className="notice__body">
+                  <strong>{t("app.error.title")}</strong>
+                  <br />
+                  {desk.error}
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {route?.kind === "module" ? (
+            <ModuleHeader
+              id={route.id}
+              t={t}
+              count={desk.things.filter((x) => x.status === "active").length}
+            />
+          ) : null}
+
+          {route?.kind === "module" ? (
+            <ModuleScreen
+              module={route.id}
+              things={desk.things}
+              t={t}
+              onOpenThing={(thing) => {
+                setStack([]);
+                setTab("things");
+                openThing(thing);
               }}
+            />
+          ) : route?.kind === "notifications" ? (
+            <NotificationsScreen
+              desk={desk}
+              onOpenThing={openThing}
+              onAdd={() => startAdd()}
+            />
+          ) : route?.kind === "auth" ? (
+            <AuthScreen
+              t={t}
+              auth={auth}
+              onClose={pop}
+              onDone={(message) => showToast(message, "ok")}
+            />
+          ) : tab === "home" ? (
+            <HomeScreen
+              desk={desk}
+              onOpenThing={openThing}
+              onAdd={startAdd}
+              onAddMore={() => startAdd()}
+              onOpenModule={(id) => push({ kind: "module", id })}
+              onOpenNotifications={() => push({ kind: "notifications" })}
+              onOpenCalendar={() => {
+                setStack([]);
+                setTab("calendar");
+              }}
+              onOpenThings={() => {
+                setStack([]);
+                setTab("things");
+              }}
+            />
+          ) : tab === "things" ? (
+            <ThingsScreen desk={desk} onOpenThing={openThing} onAdd={() => startAdd()} />
+          ) : tab === "calendar" ? (
+            <CalendarScreen desk={desk} onOpenThing={openThing} onAdd={() => startAdd()} />
+          ) : tab === "services" ? (
+            <ServicesScreen
+              desk={desk}
+              onOpenModule={(id) => push({ kind: "module", id })}
+              onOpenThing={openThing}
+              onAddProvider={() =>
+                startAdd({ label: t("kind.service-provider"), kind: "service-provider", category: "services" })
+              }
+              onAdd={() => startAdd()}
+            />
+          ) : (
+            <ProfileScreen
+              desk={desk}
+              auth={auth}
+              sync={sync}
+              onOpenAuth={() => push({ kind: "auth" })}
+              onOpenConfirmDeleteAll={() => setConfirmWipe(true)}
+              showToast={showToast}
+            />
+          )}
+        </div>
+
+        <nav className="bottomnav" aria-label={t("nav.primary")}>
+          {TABS.map((def) => (
+            <button
+              key={def.id}
+              type="button"
+              className={
+                def.id === tab && !route ? "navitem navitem--on" : "navitem"
+              }
+              onClick={() => {
+                setStack([]);
+                setTab(def.id);
+              }}
+              aria-current={def.id === tab && !route ? "page" : undefined}
             >
-              <span className="ico">{tabDef.ico}</span>
-              {t(tabDef.labelKey)}
+              <span className="navitem__icon">
+                <Icon name={def.icon} size={21} />
+              </span>
+              <span className="navitem__label">{t(def.labelKey)}</span>
             </button>
           ))}
         </nav>
+
+        <button
+          type="button"
+          className="fab"
+          onClick={() => startAdd()}
+          aria-label={t("qa.title")}
+        >
+          <Icon name="plus" size={26} strokeWidth={2.1} />
+        </button>
       </div>
-    );
-  }
 
-  return (
-    <div className="phone" lang={desk.settings.locale}>
-      <header className="app-header">
-        <div className="header-top">
-          <Image
-            src="/logo.jpeg"
-            alt=""
-            width={1080}
-            height={720}
-            className="header-logo"
-          />
-          <span className="header-brand">Livanta</span>
-        </div>
-        <h1>
-          {t("app.greeting", {
-            name: desk.settings.displayName || "Temmy",
-          })}{" "}
-          👋
-        </h1>
-        <p>{desk.loading ? t("app.loading") : desk.status.headline}</p>
-        <div className={`status-pill ${LEVEL_STYLE[desk.status.level]}`}>
-          <span className="dot" />
-          {desk.status.label}
-        </div>
-      </header>
+      <DesktopRail desk={desk} tab={tab} onOpenThing={openThing} />
 
-      <main className="screen">
-        {desk.error && (
-          <section className="card alert-urgent">
-            <p className="section-label">{t("app.error.label")}</p>
-            <h3 className="card-title">{t("app.error.title")}</h3>
-            <p className="card-meta">{desk.error}</p>
-          </section>
-        )}
+      {/* ---------------------------------------------------------- sheets */}
 
-        {tab === "home" && <HomeScreen desk={desk} onOpenModule={setModule} />}
-        {tab === "things" && <ThingsScreen desk={desk} />}
-        {tab === "alerts" && <AlertsScreen desk={desk} />}
-        {tab === "household" && (
-          <section className="card accent-teal">
-            <p className="section-label">{t("household.title")}</p>
-            <h3 className="card-title">{t("household.soon")}</h3>
-            <p className="card-meta">{t("household.blurb")}</p>
-          </section>
-        )}
-        {tab === "profile" && <ProfileScreen desk={desk} auth={auth} sync={sync} />}
-      </main>
+      <Toast toast={toast} />
 
-      <nav className="tabbar">
-        {TABS.map((tabDef) => (
-          <button
-            key={tabDef.id}
-            className={tabDef.id === tab ? "tab active" : "tab"}
-            onClick={() => setTab(tabDef.id)}
-            aria-current={tabDef.id === tab ? "page" : undefined}
-          >
-            <span className="ico">{tabDef.ico}</span>
-            {t(tabDef.labelKey)}
-            {tabDef.id === "alerts" && desk.status.urgentCount > 0 && (
-              <span className="tab-badge">{desk.status.urgentCount}</span>
-            )}
-          </button>
-        ))}
-      </nav>
+      {quickOpen ? (
+        <QuickAddSheet
+          t={t}
+          busy={busy}
+          initial={quickPreset ?? undefined}
+          initialCategory={quickPreset?.category}
+          onClose={closeSheets}
+          onSave={(values) => void saveNew(values)}
+        />
+      ) : null}
+
+      {editing ? (
+        <QuickAddEditHost
+          thing={editing}
+          t={t}
+          busy={busy}
+          onCancel={() => setEditId(null)}
+          onSave={(values) => void saveEdit(values)}
+        />
+      ) : null}
+
+      {open && !editing ? (
+        <ThingDetailSheet
+          thing={open}
+          t={t}
+          leadDays={desk.settings.leadDays}
+          busy={busy}
+          onClose={() => setOpenId(null)}
+          onEdit={() => setEditId(open.id)}
+          onDelete={() => setConfirmThing(open.id)}
+          onHandle={() => void handleThing(open)}
+        />
+      ) : null}
+
+      {confirmThing ? (
+        <ConfirmDialog
+          title={t("thing.deleteTitle")}
+          message={t("thing.deleteBody")}
+          confirmLabel={t("things.delete")}
+          cancelLabel={t("ed.cancel")}
+          destructive
+          onCancel={() => setConfirmThing(null)}
+          onConfirm={() => {
+            const target = desk.things.find((x) => x.id === confirmThing);
+            setConfirmThing(null);
+            setOpenId(null);
+            if (!target) return;
+            void desk.removeThing(target.id);
+            showToast(t("thing.deletedToast"), "info");
+          }}
+        />
+      ) : null}
+
+      {confirmWipe ? (
+        <ConfirmDialog
+          title={t("profile.deleteAll")}
+          message={t("profile.confirmDeleteAll")}
+          confirmLabel={t("profile.deleteAll")}
+          cancelLabel={t("ed.cancel")}
+          destructive
+          onCancel={() => setConfirmWipe(false)}
+          onConfirm={() => {
+            setConfirmWipe(false);
+            void desk.deleteEverything();
+            showToast(t("thing.deletedToast"), "info");
+            window.location.reload();
+          }}
+        />
+      ) : null}
     </div>
   );
 }
 
-type Desk = ReturnType<typeof useLivanta>;
+/* ----------------------------------------------------------------- header */
 
-function HomeScreen({
+function Header({
   desk,
-  onOpenModule,
+  tab,
+  route,
+  onBack,
+  onOpenNotifications,
+  onOpenProfile,
 }: {
-  desk: Desk;
-  onOpenModule: (id: ModuleId) => void;
+  desk: ReturnType<typeof useLivanta>;
+  tab: Tab;
+  route: Route | null;
+  onBack: () => void;
+  onOpenNotifications: () => void;
+  onOpenProfile: () => void;
 }) {
   const { t } = desk;
-  const [adding, setAdding] = useState<EditorPreset | null>(null);
-  const [busy, setBusy] = useState(false);
+  const name = desk.settings.displayName || "Temmy";
 
-  const top = desk.alerts.slice(0, 3);
+  let title: string;
+  let sub: string | undefined;
 
-  async function save(values: EditorValues) {
-    if (!adding) return;
-    setBusy(true);
-    await desk.addThing(fromEditorValues(values));
-    setBusy(false);
-    setAdding(null);
+  if (route?.kind === "module") {
+    const mod = MODULES.find((m) => m.id === route.id);
+    title = mod ? t(mod.labelKey) : "";
+    sub = t("ui.lifeArea");
+  } else if (route?.kind === "notifications") {
+    title = t("alerts.title");
+    sub = t.n("alerts.count", desk.alerts.length, { status: desk.status.label });
+  } else if (route?.kind === "auth") {
+    title = t("account.title");
+    sub = t("account.subtitle");
+  } else if (tab === "home") {
+    title = t("app.brand");
+    sub = formatDate(new Date(), t.locale, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+  } else if (tab === "things") {
+    title = t("tab.things");
+    sub = t.n("things.count", desk.things.filter((x) => x.status === "active").length);
+  } else if (tab === "calendar") {
+    title = t("tab.calendar");
+    sub = t("cal.subtitle");
+  } else if (tab === "services") {
+    title = t("tab.services");
+    sub = t("svc.subtitle");
+  } else {
+    title = t("tab.profile");
+    sub = name;
   }
 
   return (
-    <>
-      <section className="card">
-        <p className="section-label">{t("home.thisWeek")}</p>
-        <div className="stat-row">
-          <Stat n={desk.status.urgentCount} label={t("home.stat.urgent")} tone="urgent" />
-          <Stat n={desk.status.importantCount} label={t("home.stat.upcoming")} tone="important" />
-          <Stat n={desk.status.onTrackCount} label={t("home.stat.onTrack")} tone="routine" />
-        </div>
-      </section>
-
-      <section className="card alert-urgent">
-        <p className="section-label">{t("home.needsAttention")}</p>
-        {desk.loading ? (
-          <p className="card-meta">{t("home.reading")}</p>
-        ) : top.length === 0 ? (
-          <p className="card-meta">{t("home.nothingUrgent")}</p>
-        ) : (
-          top.map((a) => (
-            <div key={a.id} style={{ marginBottom: 14 }}>
-              <AlertBody alert={a} t={t} />
-              <AlertActions alert={a} desk={desk} />
-            </div>
-          ))
-        )}
-      </section>
-
-      <section className="card">
-        <p className="section-label">{t("home.comingSoon")}</p>
-        {desk.totals.items.slice(0, 3).map((item) => (
-          <ThingRow key={item.id} thing={item} t={t} />
-        ))}
-        {desk.totals.items.length === 0 && (
-          <p className="card-meta">{t("home.nothing30")}</p>
-        )}
-      </section>
-
-      <section className="card">
-        <p className="section-label">{t("home.commitments")}</p>
-        <div className="amount">{formatNaira(desk.totals.total)}</div>
-        <p className="card-meta">{t.n("home.next30", desk.totals.count)}</p>
-      </section>
-
-      <section className="card">
-        <p className="section-label">{t("home.modules")}</p>
-        <div className="module-grid">
-          {MODULES.map((m) => (
-            <button key={m.id} className="module" onClick={() => onOpenModule(m.id)}>
-              <span className="module-ico" style={{ color: m.color }}>
-                {m.ico}
-              </span>
-              <span className="module-label">{t(m.labelKey)}</span>
-              <span className="module-blurb">{t(m.blurbKey)}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="card">
-        <p className="section-label">{t("home.quickAdd")}</p>
-        <div className="quick-grid">
-          {QUICK_ADD.map((q) => (
-            <button
-              key={q.kind}
-              className="btn btn-secondary"
-              onClick={() => setAdding({ label: t(q.labelKey), kind: q.kind, category: q.category })}
-            >
-              {KIND_ICO[q.kind]} {t(q.labelKey)}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {adding && (
-        <section className="card">
-          <ThingEditor
-            preset={adding}
-            t={t}
-            onSave={save}
-            onCancel={() => setAdding(null)}
-            busy={busy}
-          />
-        </section>
-      )}
-    </>
-  );
-}
-
-function ThingsScreen({ desk }: { desk: Desk }) {
-  const { t } = desk;
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<Category | "all">("all");
-  const [showDone, setShowDone] = useState(false);
-  const [editing, setEditing] = useState<Thing | null>(null);
-  const [adding, setAdding] = useState<EditorPreset | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return desk.things
-      .filter((item) => (showDone ? true : item.status === "active"))
-      .filter((item) => (category === "all" ? true : item.category === category))
-      .filter((item) =>
-        q === ""
-          ? true
-          : item.name.toLowerCase().includes(q) ||
-            (item.notes ?? "").toLowerCase().includes(q),
-      )
-      .sort((a, b) => {
-        if (a.dueDate === null) return 1;
-        if (b.dueDate === null) return -1;
-        return a.dueDate.localeCompare(b.dueDate);
-      });
-  }, [desk.things, query, category, showDone]);
-
-  async function saveEdit(values: EditorValues) {
-    if (!editing) return;
-    setBusy(true);
-    await desk.updateThing(editing, fromEditorValues(values));
-    setBusy(false);
-    setEditing(null);
-  }
-
-  async function saveAdd(values: EditorValues) {
-    if (!adding) return;
-    setBusy(true);
-    await desk.addThing(fromEditorValues(values));
-    setBusy(false);
-    setAdding(null);
-  }
-
-  async function remove(item: Thing) {
-    if (
-      typeof window !== "undefined" &&
-      !window.confirm(t("things.confirmDelete", { name: item.name }))
-    ) {
-      return;
-    }
-    await desk.removeThing(item.id);
-  }
-
-  const completedCount = desk.things.filter((item) => item.status === "completed").length;
-
-  return (
-    <>
-      <section className="card">
-        <div className="field" style={{ marginBottom: 10 }}>
-          <label htmlFor="t-search">{t("things.search")}</label>
-          <input
-            id="t-search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("things.searchPlaceholder")}
-          />
-        </div>
-        <div className="chips">
-          <button
-            className={category === "all" ? "chip on" : "chip"}
-            onClick={() => setCategory("all")}
-          >
-            {t("things.filterAll")}
+    <header className="appbar">
+      <div className="appbar__lead">
+        {route ? (
+          <button className="iconbtn" onClick={onBack} aria-label={t("app.back")}>
+            <Icon name="chevronLeft" size={22} />
           </button>
-          {CATEGORIES.map((c) => (
-            <button
-              key={c.id}
-              className={category === c.id ? "chip on" : "chip"}
-              onClick={() => setCategory(c.id)}
-            >
-              {c.ico} {t(c.labelKey)}
-            </button>
-          ))}
+        ) : null}
+        <div style={{ minWidth: 0 }}>
+          <p className="appbar__title">{title}</p>
+          {sub ? <p className="appbar__sub">{sub}</p> : null}
         </div>
-        <label className="check" style={{ marginTop: 10 }}>
-          <input
-            type="checkbox"
-            checked={showDone}
-            onChange={(e) => setShowDone(e.target.checked)}
-          />
-          {t("things.showCompleted", { n: completedCount })}
-        </label>
-      </section>
-
-      <section className="card">
-        <p className="section-label">{t.n("things.count", filtered.length)}</p>
-        {filtered.map((item) => (
-          <div className="thing-block" key={item.id}>
-            <ThingRow thing={item} t={t} />
-            <div className="thing-actions">
-              <button
-                className="btn btn-secondary btn-sm"
-                onClick={() => setEditing(item)}
-              >
-                {t("things.edit")}
-              </button>
-              {item.status === "active" && (
-                <button
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => void desk.completeThing(item)}
-                >
-                  {t("things.markHandled")}
-                </button>
-              )}
-              <button
-                className="btn btn-danger btn-sm"
-                onClick={() => void remove(item)}
-              >
-                {t("things.delete")}
-              </button>
-            </div>
-          </div>
-        ))}
-        {filtered.length === 0 && (
-          <p className="card-meta">{t("things.nothingMatches")}</p>
-        )}
-      </section>
-
-      {adding && (
-        <section className="card">
-          <ThingEditor
-            preset={adding}
-            t={t}
-            onSave={saveAdd}
-            onCancel={() => setAdding(null)}
-            busy={busy}
-          />
-        </section>
-      )}
-
-      {editing && (
-        <section className="card">
-          <ThingEditor
-            preset={{
-              label: t(`kind.${editing.kind}` as TKey),
-              kind: editing.kind,
-              category: editing.category,
-            }}
-            t={t}
-            initial={toEditorValues(editing)}
-            onSave={saveEdit}
-            onCancel={() => setEditing(null)}
-            busy={busy}
-          />
-        </section>
-      )}
-    </>
-  );
-}
-
-function AlertsScreen({ desk }: { desk: Desk }) {
-  const { t } = desk;
-
-  return (
-    <>
-      <p className="section-label">
-        {t.n("alerts.count", desk.alerts.length, { status: desk.status.label })}
-      </p>
-      {desk.alerts.map((a) => (
-        <section
-          className={`card ${
-            a.priority === "urgent"
-              ? "alert-urgent"
-              : a.priority === "important"
-                ? "alert-soon"
-                : "accent-teal"
-          }`}
-          key={a.id}
+      </div>
+      <div className="appbar__actions">
+        <button
+          className="iconbtn"
+          onClick={onOpenNotifications}
+          aria-label={t("alerts.title")}
         >
-          <AlertBody alert={a} t={t} />
-          <AlertActions alert={a} desk={desk} />
-        </section>
-      ))}
-      {desk.alerts.length === 0 && (
-        <section className="card">
-          <p className="card-meta">{t("alerts.none")}</p>
-          <div style={{ marginTop: 12 }}>
-            <button
-              className="btn btn-secondary"
-              onClick={() => void desk.restoreAlerts()}
-            >
-              {t("alerts.restore")}
-            </button>
-          </div>
-        </section>
-      )}
-    </>
+          <Icon name="bell" size={21} />
+          {desk.alerts.length > 0 ? (
+            <span className="iconbtn__dot">{desk.alerts.length > 9 ? "9+" : desk.alerts.length}</span>
+          ) : null}
+        </button>
+        <button
+          className="iconbtn"
+          onClick={onOpenProfile}
+          aria-label={t("tab.profile")}
+        >
+          <span className="avatar">{initials(name)}</span>
+        </button>
+      </div>
+    </header>
   );
 }
 
-function ProfileScreen({
-  desk,
-  auth,
-  sync,
+function ModuleHeader({
+  id,
+  t,
+  count,
 }: {
-  desk: Desk;
-  auth: ReturnType<typeof useAuth>;
-  sync: ReturnType<typeof useCloudSync>;
+  id: ModuleId;
+  t: ReturnType<typeof useLivanta>["t"];
+  count: number;
+}) {
+  const mod = MODULES.find((m) => m.id === id);
+  if (!mod) return null;
+  return (
+    <section className="section" style={{ marginTop: "0.875rem" }}>
+      <div className="card card--quiet">
+        <div className="rowline">
+          <span
+            className="module-ico"
+            style={{ color: mod.color, background: `${mod.color}14`, marginBottom: 0, flex: "none" }}
+          >
+            <Icon name={MODULE_ICON[id]} size={20} />
+          </span>
+          <div className="listrow__body">
+            <p className="module-label" style={{ margin: 0 }}>
+              {t(mod.labelKey)}
+            </p>
+            <p className="module-blurb">{t(mod.blurbKey)}</p>
+          </div>
+        </div>
+        <p className="card-meta" style={{ marginTop: "0.5rem" }}>
+          {t.n("svc.items", count)}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ----------------------------------------------------------- desktop rail */
+
+function DesktopRail({
+  desk,
+  tab,
+  onOpenThing,
+}: {
+  desk: ReturnType<typeof useLivanta>;
+  tab: Tab;
+  onOpenThing: (thing: Thing) => void;
 }) {
   const { t } = desk;
-  const permission = useSyncExternalStore(
-    subscribeToPermission,
-    notificationPermission,
-    serverPermissionSnapshot,
-  );
-  const [notice, setNotice] = useState<string | null>(null);
-
-  const upcoming = useMemo(
-    () =>
-      desk.things
-        .filter((item) => item.status === "active" && item.dueDate)
-        .map((item) => ({ thing: item, leads: leadDaysCrossed(item, desk.settings.leadDays) }))
-        .filter((x) => x.leads.length > 0)
-        .slice(0, 4),
-    [desk.things, desk.settings.leadDays],
-  );
+  const soon = desk.things
+    .filter((x) => x.status === "active" && x.dueDate)
+    .sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? ""))
+    .slice(0, 6);
 
   return (
-    <>
-      <section className="card">
-        <p className="section-label">{t("profile.account")}</p>
-        <div className="row">
-          <span className="lead">👤</span>
-          <span className="grow">
-            <div className="name">{desk.settings.displayName || "Temmy"}</div>
-            <div className="sub">{t("profile.freePlan")}</div>
-          </span>
+    <aside className="app__aside" aria-hidden={tab === "home" ? undefined : undefined}>
+      <div className="railhead">
+        <span className="avatar avatar--lg">{initials(desk.settings.displayName || "Temmy")}</span>
+        <div>
+          <p className="railhead__title">{t("app.tagline")}</p>
+          <p className="railhead__sub">
+            {t("app.greeting", { name: desk.settings.displayName || "Temmy" })}
+          </p>
         </div>
-      </section>
+      </div>
 
-      <AccountPanel t={t} auth={auth} sync={sync} />
-
-      <section className="card">
-        <p className="section-label">{t("profile.language")}</p>
-        <LocalePicker
-          locale={desk.settings.locale}
-          t={t}
-          onChange={(locale: Locale) => void desk.updateSettings({ locale })}
-        />
-        <p className="card-meta" style={{ marginTop: 8 }}>
-          {t("profile.languageHint")}
-        </p>
-      </section>
-
-      <section className="card">
-        <p className="section-label">{t("profile.notifications")}</p>
-        {permission === "unsupported" && (
-          <p className="card-meta">{t("profile.notifUnsupported")}</p>
-        )}
-        {permission === "default" && (
-          <button
-            className="btn btn-secondary"
-            style={{ width: "100%" }}
-            onClick={async () => {
-            await requestNotificationPermission();
-            announcePermissionChange();
-          }}
-          >
-            {t("profile.enableAlerts")}
-          </button>
-        )}
-        {permission === "granted" && (
-          <p className="card-meta">{t("profile.notifGranted")}</p>
-        )}
-        {permission === "denied" && (
-          <p className="card-meta">{t("profile.notifDenied")}</p>
-        )}
-        <label className="check" style={{ marginTop: 12 }}>
-          <input
-            type="checkbox"
-            checked={desk.settings.notifyUrgent}
-            onChange={(e) => void desk.updateSettings({ notifyUrgent: e.target.checked })}
-          />
-          {t("profile.notifyUrgent")}
-        </label>
-      </section>
-
-      <section className="card">
-        <p className="section-label">{t("profile.reminderSchedule")}</p>
-        <div className="chips">
-          {[90, 60, 30, 14, 7, 1].map((n) => (
-            <button
-              key={n}
-              className={
-                desk.settings.leadDays.includes(n) ? "chip on" : "chip"
-              }
-              onClick={() =>
-                void desk.updateSettings({
-                  leadDays: desk.settings.leadDays.includes(n)
-                    ? desk.settings.leadDays.filter((d) => d !== n)
-                    : [...desk.settings.leadDays, n].sort((a, b) => b - a),
-                })
-              }
-            >
-              {n}d
-            </button>
-          ))}
+      <p className="railtitle">{t("home.needsAttention")}</p>
+      <div className="statgrid" style={{ marginBottom: "1.75rem" }}>
+        <div className="stat">
+          <div className="stat-num urgent">{desk.status.urgentCount}</div>
+          <div className="stat-label">{t("home.stat.urgent")}</div>
         </div>
-        {upcoming.length > 0 && (
-          <div style={{ marginTop: 12 }}>
-            <p className="section-label">{t("profile.preview")}</p>
-            {upcoming.map(({ thing, leads }) => {
-              const copy = reminderCopy(thing, leads[0], t);
+        <div className="stat">
+          <div className="stat-num important">{desk.status.importantCount}</div>
+          <div className="stat-label">{t("home.stat.upcoming")}</div>
+        </div>
+        <div className="stat">
+          <div className="stat-num routine">{desk.status.onTrackCount}</div>
+          <div className="stat-label">{t("home.stat.onTrack")}</div>
+        </div>
+      </div>
+
+      {soon.length > 0 ? (
+        <>
+          <p className="railtitle">{t("home.comingSoon")}</p>
+          <div className="list" style={{ marginBottom: "1.75rem" }}>
+            {soon.map((thing) => {
+              const meta = CATEGORY_META[thing.category];
+              const due = dueMeta(thing, t);
               return (
-                <div className="row" key={thing.id}>
-                  <span className="grow">
-                    <div className="name">{copy.title}</div>
-                    <div className="sub">{copy.body}</div>
+                <button
+                  key={thing.id}
+                  className="listrow"
+                  onClick={() => onOpenThing(thing)}
+                >
+                  <span
+                    className="listrow__lead"
+                    style={{ color: meta.color, background: `${meta.color}14`, borderColor: `${meta.color}33` }}
+                  >
+                    <Icon name={KIND_ICON[thing.kind]} size={18} />
                   </span>
-                </div>
+                  <span className="listrow__body">
+                    <span className="listrow__title">{thing.name}</span>
+                    <span className="listrow__sub">
+                      {thing.amount !== null ? formatNaira(thing.amount) : t(`kind.${thing.kind}` as TKey)}
+                    </span>
+                  </span>
+                  <span className="listrow__trail">
+                    <span className={`badge ${TONE_CLASS[due.tone]}`}>{due.text}</span>
+                  </span>
+                </button>
               );
             })}
           </div>
-        )}
-      </section>
+        </>
+      ) : null}
 
-      <section className="card">
-        <p className="section-label">{t("profile.data")}</p>
-        <label className="check">
-          <input
-            type="checkbox"
-            checked={desk.settings.dataSaver}
-            onChange={(e) => void desk.updateSettings({ dataSaver: e.target.checked })}
-          />
-          {t("profile.dataSaver")}
-        </label>
-        <p className="card-meta" style={{ marginTop: 6 }}>
-          {t("profile.dataSaverHint")}
-        </p>
-        <div className="quick-grid" style={{ marginTop: 12 }}>
-          <button
-            className="btn btn-secondary"
-            onClick={() => {
-              downloadJson(
-                "livanta-export.json",
-                exportPayload(desk.things, desk.settings),
-              );
-              setNotice(t("profile.exportDone"));
-            }}
-          >
-            {t("profile.export")}
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={() => void desk.loadSampleData()}
-          >
-            {t("profile.loadSample")}
-          </button>
-        </div>
-        {notice && <p className="card-meta" style={{ marginTop: 8 }}>{notice}</p>}
-      </section>
-
-      <section className="card">
-        <p className="section-label">{t("profile.yourData")}</p>
-        <p className="card-meta">{t.n("profile.yourDataBody", desk.things.length)}</p>
-        <button
-          className="btn btn-danger"
-          style={{ width: "100%", marginTop: 12 }}
-          onClick={() => {
-            if (
-              typeof window !== "undefined" &&
-              window.confirm(t("profile.confirmDeleteAll"))
-            ) {
-              void desk.deleteEverything();
-              window.location.reload();
-            }
-          }}
-        >
-          {t("profile.deleteAll")}
-        </button>
-      </section>
-    </>
-  );
-}
-
-function Stat({
-  n,
-  label,
-  tone,
-}: {
-  n: number;
-  label: string;
-  tone: Priority;
-}) {
-  return (
-    <div className="stat">
-      <div className={`stat-num ${tone}`}>{n}</div>
-      <div className="stat-label">{label}</div>
-    </div>
-  );
-}
-
-function AlertBody({
-  alert,
-  t,
-}: {
-  alert: Alert;
-  t: ReturnType<typeof useLivanta>["t"];
-}) {
-  return (
-    <>
-      <h3 className="card-title">{alert.title}</h3>
-      <p className="card-meta">{alert.message}</p>
-      <div style={{ marginTop: 8 }}>
-        <span className={`badge ${PRIORITY_CLASS[alert.priority]}`}>
-          {t(`priority.${alert.priority}` as TKey)}
-        </span>
+      <p className="railtitle">{t("home.lifeAreas")}</p>
+      <div className="grid grid--3">
+        {(Object.keys(CATEGORY_META) as (keyof typeof CATEGORY_META)[]).map((id) => {
+          const meta = CATEGORY_META[id];
+          return (
+            <div key={id} className="card card--quiet">
+              <span
+                className="tile__icon"
+                style={{ color: meta.color, background: `${meta.color}14` }}
+              >
+                <Icon name={meta.icon} size={19} />
+              </span>
+              <p className="tile__label" style={{ marginTop: "0.5rem" }}>
+                {t(meta.labelKey)}
+              </p>
+            </div>
+          );
+        })}
       </div>
-    </>
+    </aside>
   );
 }
 
-function AlertActions({ alert, desk }: { alert: Alert; desk: Desk }) {
-  const { t } = desk;
-  const thing = desk.things.find((item) => item.id === alert.thingId);
+/* --------------------------------------------------------- edit sheet host */
 
-  return (
-    <div className="quick-grid" style={{ marginTop: 12 }}>
-      <button
-        className="btn btn-secondary btn-sm"
-        onClick={() => void desk.dismissAlert(alert)}
-      >
-        {t("action.remindLater")}
-      </button>
-      <button
-        className="btn btn-primary btn-sm"
-        disabled={!thing}
-        onClick={() => thing && void desk.completeThing(thing)}
-      >
-        {t("action.markHandled")}
-      </button>
-    </div>
-  );
-}
-
-function ThingRow({
+function QuickAddEditHost({
   thing,
   t,
+  busy,
+  onCancel,
+  onSave,
 }: {
   thing: Thing;
   t: ReturnType<typeof useLivanta>["t"];
+  busy: boolean;
+  onCancel: () => void;
+  onSave: (values: ReturnType<typeof fromEditorValues>) => void;
 }) {
-  const days = thing.dueDate ? daysUntil(thing.dueDate) : null;
-  const sub =
-    thing.status === "completed"
-      ? t("row.completed")
-      : days === null
-        ? thing.notes ?? t("row.noDate")
-        : days < 0
-          ? t.n("row.overdue", Math.abs(days))
-          : t.n("row.dueIn", days);
+  const [values, setValues] = useState(() => ({
+    name: thing.name,
+    category: thing.category,
+    kind: thing.kind,
+    amount: thing.amount === null ? "" : String(thing.amount),
+    dueDate: thing.dueDate ?? "",
+    frequency: thing.recurrence?.frequency ?? ("none" as const),
+    notes: thing.notes ?? "",
+  }));
 
   return (
-    <div className="row">
-      <span className="lead">{KIND_ICO[thing.kind] ?? "•"}</span>
-      <span className="grow">
-        <div className="name">{thing.name}</div>
-        <div className="sub">{sub}</div>
-      </span>
-      {thing.amount ? (
-        <span className="sub">{formatNaira(thing.amount)}</span>
-      ) : (
-        <span className={`badge ${PRIORITY_CLASS[thing.priority]}`}>
-          {t(`priority.${thing.priority}` as TKey)}
-        </span>
-      )}
-    </div>
+    <Sheet title={t("things.edit")} onClose={onCancel}>
+      <ThingEditor
+        preset={{
+          label: t(`kind.${thing.kind}` as TKey),
+          kind: thing.kind,
+          category: thing.category,
+        }}
+        initial={values}
+        t={t}
+        busy={busy}
+        onSave={(v) => {
+          setValues(v);
+          onSave(fromEditorValues(v));
+        }}
+        onCancel={onCancel}
+      />
+    </Sheet>
   );
 }

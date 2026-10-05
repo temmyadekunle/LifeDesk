@@ -54,9 +54,12 @@ test("AccountPanel renders the unavailable notice instead of a sign-in form", as
     status: "disabled" as const,
     user: null,
     error: null,
+    needsEmailConfirmation: false,
     signIn: async () => false,
     signUp: async () => false,
     signOut: async () => {},
+    resetPassword: async () => true,
+    updatePassword: async () => true,
     clearError: () => {},
   };
   const sync = {

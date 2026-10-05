@@ -20,7 +20,10 @@ export type ThingKind =
   | "asset"
   | "appointment"
   | "reminder"
-  | "service-provider";
+  | "service-provider"
+  | "task"
+  | "birthday"
+  | "important-date";
 
 export type Frequency =
   | "none"

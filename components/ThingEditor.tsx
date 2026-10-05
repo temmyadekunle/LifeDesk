@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Icon } from "./Icons";
 import type { EditorPreset, EditorValues } from "@/lib/editor";
 import type { Translate } from "@/lib/i18n";
 import type { TKey } from "@/lib/locales/en";
@@ -33,6 +34,9 @@ const KIND_OPTIONS: { id: ThingKind; labelKey: TKey }[] = [
   { id: "appointment", labelKey: "kind.appointment" },
   { id: "reminder", labelKey: "kind.reminder" },
   { id: "service-provider", labelKey: "kind.service-provider" },
+  { id: "task", labelKey: "kind.task" },
+  { id: "birthday", labelKey: "kind.birthday" },
+  { id: "important-date", labelKey: "kind.important-date" },
 ];
 
 const FREQUENCY_OPTIONS: { id: Frequency; labelKey: TKey }[] = [
@@ -48,6 +52,7 @@ const FREQUENCY_OPTIONS: { id: Frequency; labelKey: TKey }[] = [
 export default function ThingEditor({
   preset,
   initial,
+  defaultFrequency = "none",
   onSave,
   onCancel,
   busy,
@@ -55,6 +60,8 @@ export default function ThingEditor({
 }: {
   preset: EditorPreset;
   initial?: EditorValues;
+  /** Used by Quick Add so a birthday starts life repeating yearly. */
+  defaultFrequency?: Frequency;
   onSave: (values: EditorValues) => void;
   onCancel: () => void;
   busy?: boolean;
@@ -67,7 +74,7 @@ export default function ThingEditor({
       kind: preset.kind,
       amount: "",
       dueDate: "",
-      frequency: "none",
+      frequency: defaultFrequency,
       notes: "",
     },
   );
@@ -93,57 +100,61 @@ export default function ThingEditor({
         />
       </div>
 
-      <div className="field">
-        <label htmlFor="e-category">{t("ed.category")}</label>
-        <select
-          id="e-category"
-          value={v.category}
-          onChange={(e) => set("category", e.target.value as Category)}
-        >
-          {CATEGORY_OPTIONS.map((c) => (
-            <option key={c.id} value={c.id}>
-              {t(c.labelKey)}
-            </option>
-          ))}
-        </select>
+      <div className="field field--row">
+        <div>
+          <label htmlFor="e-kind">{t("ed.type")}</label>
+          <select
+            id="e-kind"
+            value={v.kind}
+            onChange={(e) => set("kind", e.target.value as ThingKind)}
+          >
+            {KIND_OPTIONS.map((k) => (
+              <option key={k.id} value={k.id}>
+                {t(k.labelKey)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="e-category">{t("ed.category")}</label>
+          <select
+            id="e-category"
+            value={v.category}
+            onChange={(e) => set("category", e.target.value as Category)}
+          >
+            {CATEGORY_OPTIONS.map((c) => (
+              <option key={c.id} value={c.id}>
+                {t(c.labelKey)}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      <div className="field">
-        <label htmlFor="e-kind">{t("ed.type")}</label>
-        <select
-          id="e-kind"
-          value={v.kind}
-          onChange={(e) => set("kind", e.target.value as ThingKind)}
-        >
-          {KIND_OPTIONS.map((k) => (
-            <option key={k.id} value={k.id}>
-              {t(k.labelKey)}
-            </option>
-          ))}
-        </select>
+      <div className="field field--row">
+        <div>
+          <label htmlFor="e-due">{t("ed.dueDate")}</label>
+          <input
+            id="e-due"
+            type="date"
+            value={v.dueDate}
+            onChange={(e) => set("dueDate", e.target.value)}
+          />
+        </div>
+        <div>
+          <label htmlFor="e-amount">{t("ed.amount")}</label>
+          <input
+            id="e-amount"
+            inputMode="numeric"
+            value={v.amount}
+            onChange={(e) => set("amount", e.target.value)}
+            placeholder={t("ed.amountPlaceholder")}
+          />
+        </div>
       </div>
-
-      <div className="field">
-        <label htmlFor="e-amount">{t("ed.amount")}</label>
-        <input
-          id="e-amount"
-          inputMode="numeric"
-          value={v.amount}
-          onChange={(e) => set("amount", e.target.value)}
-          placeholder={t("ed.amountPlaceholder")}
-        />
-      </div>
-
-      <div className="field">
-        <label htmlFor="e-due">{t("ed.dueDate")}</label>
-        <input
-          id="e-due"
-          type="date"
-          value={v.dueDate}
-          onChange={(e) => set("dueDate", e.target.value)}
-        />
-        <div className="hint">{t("ed.dueHint")}</div>
-      </div>
+      <p className="field hint" style={{ marginTop: "-0.5rem" }}>
+        {t("ed.dueHint")}
+      </p>
 
       <div className="field">
         <label htmlFor="e-freq">{t("ed.repeats")}</label>
@@ -162,24 +173,26 @@ export default function ThingEditor({
 
       <div className="field">
         <label htmlFor="e-notes">{t("ed.note")}</label>
-        <input
+        <textarea
           id="e-notes"
           value={v.notes}
           onChange={(e) => set("notes", e.target.value)}
           placeholder={t("ed.notePlaceholder")}
+          rows={2}
         />
       </div>
 
-      <div className="quick-grid">
-        <button className="btn btn-secondary" onClick={onCancel} type="button">
+      <div className="quick-grid" style={{ marginTop: "0.25rem" }}>
+        <button className="btn btn--secondary" onClick={onCancel} type="button">
           {t("ed.cancel")}
         </button>
         <button
-          className="btn btn-primary"
+          className="btn btn--primary"
           onClick={() => onSave(v)}
           disabled={!v.name.trim() || busy}
           type="button"
         >
+          <Icon name="check" size={18} />
           {busy ? t("ed.saving") : t("ed.save")}
         </button>
       </div>

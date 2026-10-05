@@ -28,8 +28,14 @@ export interface UseAuth {
   status: AuthStatus;
   user: User | null;
   error: AuthError | null;
+  /** True right after signing up on a project that requires email confirmation. */
+  needsEmailConfirmation: boolean;
   signIn: (email: string, password: string) => Promise<boolean>;
   signUp: (email: string, password: string) => Promise<boolean>;
+  /** Sends a password-reset email. */
+  resetPassword: (email: string) => Promise<boolean>;
+  /** Completes a reset once the user has followed the emailed link. */
+  updatePassword: (password: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   clearError: () => void;
 }
@@ -62,6 +68,7 @@ export function useAuth(): UseAuth {
     enabled ? "loading" : "disabled",
   );
   const [error, setError] = useState<AuthError | null>(null);
+  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
 
   useEffect(() => {
     if (!enabled) return;
@@ -109,10 +116,11 @@ export function useAuth(): UseAuth {
 
   const signUp = useCallback(async (email: string, password: string) => {
     setError(null);
+    setNeedsEmailConfirmation(false);
     const supabase = getSupabase();
     if (!supabase) return false;
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
     });
@@ -120,10 +128,45 @@ export function useAuth(): UseAuth {
       setError(toAuthError(signUpError));
       return false;
     }
+    // When email confirmation is switched on in the Supabase project there is
+    // no session yet. Say so, otherwise the screen would look like nothing
+    // happened after a successful sign-up.
+    if (!data.session && data.user) setNeedsEmailConfirmation(true);
+    return true;
+  }, []);
+
+  const resetPassword = useCallback(async (email: string) => {
+    setError(null);
+    const supabase = getSupabase();
+    if (!supabase) return false;
+
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+      email.trim(),
+      // Supabase appends the token to this and redirects back into the app.
+      { redirectTo: `${window.location.origin}${window.location.pathname}` },
+    );
+    if (resetError) {
+      setError(toAuthError(resetError));
+      return false;
+    }
+    return true;
+  }, []);
+
+  const updatePassword = useCallback(async (password: string) => {
+    setError(null);
+    const supabase = getSupabase();
+    if (!supabase) return false;
+
+    const { error: updateError } = await supabase.auth.updateUser({ password });
+    if (updateError) {
+      setError(toAuthError(updateError));
+      return false;
+    }
     return true;
   }, []);
 
   const signOut = useCallback(async () => {
+    setNeedsEmailConfirmation(false);
     const supabase = getSupabase();
     if (!supabase) return;
     await supabase.auth.signOut();
@@ -131,5 +174,17 @@ export function useAuth(): UseAuth {
 
   const clearError = useCallback(() => setError(null), []);
 
-  return { enabled, status, user, error, signIn, signUp, signOut, clearError };
+  return {
+    enabled,
+    status,
+    user,
+    error,
+    needsEmailConfirmation,
+    signIn,
+    signUp,
+    resetPassword,
+    updatePassword,
+    signOut,
+    clearError,
+  };
 }

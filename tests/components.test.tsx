@@ -184,7 +184,7 @@ test("LocalePicker marks exactly one language as selected", async (t) => {
         `${locale} did not have exactly one selected option`,
       );
       assert.equal(
-        (html.match(/class="chip on"/g) ?? []).length,
+        (html.match(/class="chip chip--on"/g) ?? []).length,
         1,
         `${locale} did not highlight exactly one chip`,
       );

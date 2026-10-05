@@ -943,7 +943,10 @@ button.listrow:active {
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-pill);
   padding: 0.4375rem 0.75rem;
-  min-height: 38px;
+  /* The project sets a 44px minimum touch target and these chips are the only
+     controls on the onboarding language picker, so they were the one place it
+     was quietly not met at 38px. */
+  min-height: var(--tap);
   display: inline-flex;
   align-items: center;
   gap: 0.3125rem;
@@ -1877,6 +1880,55 @@ button.listrow:active {
   margin-bottom: 1.125rem;
   background: var(--brand-50);
   border: 1px solid var(--brand-100);
+  /* Set by BrandPanel from its height prop; see the short-viewport query below. */
+  height: var(--ob-art-h, 132px);
+}
+
+/* Short viewports. At 360x740, still a common Android size, the onboarding
+   action sat 103px below the fold: the art panel, the lockup and the brand
+   block together pushed it off. Tighten the decorative parts rather than let
+   the primary action need a scroll to reach.
+
+   The reductions are deliberately deeper than the English text strictly needs,
+   to leave roughly 20px of slack. Hausa, Yoruba and Igbo are not audited here
+   and wrap longer than English, so a layout that only just fits will not fit
+   every locale. Scoped to .ob so the profile lockup is untouched. */
+@media (max-height: 800px) {
+  .ob {
+    padding-top: 0;
+  }
+
+  .ob .logo--wordmark {
+    width: 44px;
+  }
+
+  .ob-brand {
+    margin-bottom: 0.5rem;
+  }
+
+  /* The step dots are 4px tall and were carrying 18px of margin below them. */
+  .ob .ob-steps {
+    margin-bottom: 0.25rem;
+  }
+
+  .ob-art {
+    height: 76px;
+    margin-bottom: 0.5rem;
+  }
+
+  .ob .field,
+  .ob .card-meta {
+    margin-bottom: 0.5rem;
+  }
+
+  /* The three feature rows total 160px, the largest block on the screen. */
+  .ob .stack--tight .rowline {
+    padding-block: 0.125rem;
+  }
+
+  .ob .btn--lg {
+    margin-top: 0.5rem;
+  }
 }
 
 .phase-note {

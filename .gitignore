@@ -13,6 +13,9 @@ dist/
 
 *.tsbuildinfo
 
+# Screenshots from scripts/responsive-qa.mjs --shots. Regenerate, don't commit.
+qa-shots/
+
 *.log
 npm-debug.log*
 .DS_Store

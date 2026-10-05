@@ -109,15 +109,20 @@ export function BrandPanel({
     <div
       className="ob-art"
       style={{
-        height,
-        position: "relative",
-        display: "grid",
-        placeItems: "center",
-background:
-        "linear-gradient(135deg, var(--brand-700) 0%, var(--brand-500) 58%, var(--accent-400) 100%)",
-        border: 0,
-      }}
-    >
+          // Exposed as a custom property rather than set as `height` inline, so
+          // a short-viewport media query can shrink the panel. An inline height
+          // would beat the stylesheet and the onboarding action would stay below
+          // the fold on a 360x740 screen.
+          "--ob-art-h": `${height}px`,
+          position: "relative",
+          display: "grid",
+          placeItems: "center",
+          background:
+            "linear-gradient(135deg, var(--brand-700) 0%, var(--brand-500) 58%, var(--accent-400) 100%)",
+          border: 0,
+          // React's CSSProperties has no index signature for custom properties.
+        } as React.CSSProperties}
+      >
       <div
         style={{
           position: "absolute",

@@ -8,6 +8,7 @@ import { BrandPanel } from "./BrandArt";
 import { LOCALES, LOCALE_NAMES, makeT, type Locale, type Translate } from "@/lib/i18n";
 import type { TKey } from "@/lib/locales/en";
 import type { Category } from "@/lib/types";
+import { TINT_SOFT, tint } from "@/lib/color";
 
 const OPTIONS: { id: Category; labelKey: TKey; icon: IconName; color: string }[] = [
   { id: "home", labelKey: "cat.home", icon: "home", color: "var(--home)" },
@@ -198,13 +199,13 @@ export default function Onboarding({
                 onClick={() => toggle(o.id)}
                 style={
                   picked.includes(o.id)
-                    ? { borderColor: o.color, background: `${o.color}0d` }
+                    ? { borderColor: o.color, background: tint(o.color, 5) }
                     : undefined
                 }
               >
                 <span
                   className="tile__icon"
-                  style={{ color: o.color, background: `${o.color}14` }}
+                  style={{ color: o.color, background: tint(o.color, TINT_SOFT) }}
                 >
                   <Icon name={o.icon} size={19} />
                 </span>

@@ -4,6 +4,7 @@ import { Icon } from "../Icons";
 import { EmptyState, IconTile } from "../ui";
 import { alertTone, dueMeta, TONE_CLASS } from "../labels";
 import { CATEGORY_META, KIND_ICON, MODULE_ICON } from "../maps";
+import { TINT_SOFT, tint } from "@/lib/color";
 import { QUICK_TYPES } from "../QuickAdd";
 import { formatNaira } from "@/lib/i18n";
 import type { Alert, Priority, Thing } from "@/lib/types";
@@ -133,7 +134,7 @@ export function HomeScreen({
             >
               <span
                 className="tile__icon"
-                style={{ color: qt.color, background: `${qt.color}14` }}
+                style={{ color: qt.color, background: tint(qt.color, TINT_SOFT) }}
               >
                 <Icon name={qt.icon} size={19} />
               </span>
@@ -156,7 +157,7 @@ export function HomeScreen({
             >
               <span
                 className="module-ico"
-                style={{ color: m.color, background: `${m.color}14` }}
+                style={{ color: m.color, background: tint(m.color, TINT_SOFT) }}
               >
                 <Icon name={MODULE_ICON[m.id]} size={19} />
               </span>

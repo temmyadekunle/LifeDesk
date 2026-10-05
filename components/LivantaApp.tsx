@@ -17,6 +17,7 @@ import { ServicesScreen } from "./screens/ServicesScreen";
 import { NotificationsScreen } from "./screens/NotificationsScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { CATEGORY_META, KIND_ICON, MODULE_ICON } from "./maps";
+import { TINT_BORDER, TINT_SOFT, tint } from "@/lib/color";
 import { dueMeta, initials, TONE_CLASS } from "./labels";
 import { formatDate } from "@/lib/dates";
 import { formatNaira } from "@/lib/i18n";
@@ -509,7 +510,7 @@ function ModuleHeader({
         <div className="rowline">
           <span
             className="module-ico"
-            style={{ color: mod.color, background: `${mod.color}14`, marginBottom: 0, flex: "none" }}
+            style={{ color: mod.color, background: tint(mod.color, TINT_SOFT), marginBottom: 0, flex: "none" }}
           >
             <Icon name={MODULE_ICON[id]} size={20} />
           </span>
@@ -588,7 +589,7 @@ function DesktopRail({
                 >
                   <span
                     className="listrow__lead"
-                    style={{ color: meta.color, background: `${meta.color}14`, borderColor: `${meta.color}33` }}
+                    style={{ color: meta.color, background: tint(meta.color, TINT_SOFT), borderColor: tint(meta.color, TINT_BORDER) }}
                   >
                     <Icon name={KIND_ICON[thing.kind]} size={18} />
                   </span>
@@ -616,7 +617,7 @@ function DesktopRail({
             <div key={id} className="card card--quiet">
               <span
                 className="tile__icon"
-                style={{ color: meta.color, background: `${meta.color}14` }}
+                style={{ color: meta.color, background: tint(meta.color, TINT_SOFT) }}
               >
                 <Icon name={meta.icon} size={19} />
               </span>

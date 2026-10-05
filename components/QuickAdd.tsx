@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Icon } from "./Icons";
+import { TINT_SOFT, tint } from "@/lib/color";
 import { Sheet } from "./ui";
 import ThingEditor, { fromEditorValues, type EditorPreset } from "./ThingEditor";
 import type { Frequency } from "@/lib/types";
@@ -98,7 +99,7 @@ export function QuickAddSheet({
             >
               <span
                 className="tile__icon"
-                style={{ color: qt.color, background: `${qt.color}14` }}
+                style={{ color: qt.color, background: tint(qt.color, TINT_SOFT) }}
               >
                 <Icon name={qt.icon} size={19} />
               </span>

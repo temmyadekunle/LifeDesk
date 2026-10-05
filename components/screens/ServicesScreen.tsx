@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { Icon } from "../Icons";
 import { EmptyState, IconTile } from "../ui";
 import { CATEGORY_META, MODULE_ICON } from "../maps";
+import { TINT_SOFT, tint } from "@/lib/color";
 import { MODULES, type ModuleId } from "../ModuleScreen";
 import type { Category, Thing } from "@/lib/types";
 import type { useLivanta } from "@/lib/useLivanta";
@@ -75,7 +76,7 @@ export function ServicesScreen({
             >
               <span
                 className="module-ico"
-                style={{ color: m.color, background: `${m.color}14`, marginBottom: 0, flex: "none" }}
+                style={{ color: m.color, background: tint(m.color, TINT_SOFT), marginBottom: 0, flex: "none" }}
               >
                 <Icon name={MODULE_ICON[m.id]} size={20} />
               </span>

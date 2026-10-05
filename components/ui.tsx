@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { TINT_BORDER, TINT_SOFT, tint } from "@/lib/color";
 import { Icon, type IconName } from "./Icons";
 
 /* ------------------------------------------------------------------ sheet */
@@ -156,7 +157,7 @@ export function IconTile({
   return (
     <span
       className="listrow__lead"
-      style={color ? { color, background: `${color}14`, borderColor: `${color}33` } : undefined}
+      style={color ? { color, background: tint(color, TINT_SOFT), borderColor: tint(color, TINT_BORDER) } : undefined}
     >
       <Icon name={icon} size={size} />
     </span>

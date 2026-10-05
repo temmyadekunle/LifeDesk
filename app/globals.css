@@ -1063,6 +1063,7 @@ button.listrow:active {
 /* Quick Add tiles */
 .tile {
   font: inherit;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;

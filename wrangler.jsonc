@@ -1,0 +1,30 @@
+{
+  // Cloudflare Workers deployment for Livanta.
+  //
+  // Why this file exists: this project is a Next.js STATIC EXPORT
+  // (output: "export" in next.config.ts) that emits a plain `out/` folder.
+  // It is NOT a serverful Next.js app: there is no server runtime, no API
+  // routes, and no Node function in the request path. When Cloudflare's build
+  // ran without this config, Wrangler auto-detected "Framework: Next.js" and
+  // assumed a serverful app, wired up OpenNext (which needs a standalone Node
+  // build at .next/standalone), and the deploy failed because a static export
+  // never produces that directory. This file tells Wrangler exactly what we
+  // have so auto-detection never runs: static assets from `out/`, no Worker
+  // script. See docs/Cloudflare Deployment.md for the full setup and why we do
+  // NOT use OpenNext.
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "livanta",
+  // Pin to a date you have tested against. Bump deliberately, not automatically.
+  "compatibility_date": "2026-10-05",
+  // Only the static build output is deployed. There is deliberately no `main`
+  // (Worker entrypoint) because the app has no server code; an assets-only
+  // Worker is the correct shape for a static export.
+  "assets": {
+    "directory": "./out",
+    // Serve Next's generated 404.html for unmatched paths so a bad URL returns
+    // the real 404 page (correct status) instead of an opaque CDN 404. We do
+    // NOT use "single-page-application" mode: this is a multi-page export with
+    // real routes (/privacy/, /terms/), not an SPA shell.
+    "not_found_handling": "404-page"
+  }
+}

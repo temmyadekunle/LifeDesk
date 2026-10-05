@@ -171,6 +171,9 @@ export const ha: Dict = {
   "profile.yourDataBody_many": "Abata {n} da aka ajiye a kan wannan na'ura. Za ta fita daga shi sai idan ka shiga don synchronization. Livanta ba ta sayar da bayanan sirri ba.",
   "profile.deleteAll": "Goge duk bayanaina",
   "profile.confirmDeleteAll": "Goge duka? Ba za a iya mayar da shi ba.",
+  "profile.legal": "Dokumi",
+  "profile.privacy": "Bayan sirri",
+  "profile.terms": "Sharuɗin amfani",
 
   /* ---------- thing row ---------- */
   "row.completed": "An gama",

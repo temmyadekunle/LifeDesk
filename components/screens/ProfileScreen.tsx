@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useSyncExternalStore } from "react";
+import Link from "next/link";
 
 import { Icon } from "../Icons";
 import { Logo } from "../Logo";
@@ -305,6 +306,38 @@ export function ProfileScreen({
             <Icon name="trash" size={18} />
             {t("profile.deleteAll")}
           </button>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="section__head">
+          <h2 className="section__title">{t("profile.legal")}</h2>
+        </div>
+        {/* Anchors rather than buttons: these leave the app. trailingSlash is
+            on, so the hrefs carry the slash the static export writes to disk. */}
+        <div className="list">
+          <Link className="setrow" href="/privacy/">
+            <span className="listrow__lead">
+              <Icon name="shieldCheck" size={18} />
+            </span>
+            <span className="setrow__body">
+              <span className="setrow__title">{t("profile.privacy")}</span>
+            </span>
+            <span className="setrow__trail">
+              <Icon name="chevronRight" size={18} />
+            </span>
+          </Link>
+          <Link className="setrow" href="/terms/">
+            <span className="listrow__lead">
+              <Icon name="file" size={18} />
+            </span>
+            <span className="setrow__body">
+              <span className="setrow__title">{t("profile.terms")}</span>
+            </span>
+            <span className="setrow__trail">
+              <Icon name="chevronRight" size={18} />
+            </span>
+          </Link>
         </div>
       </section>
     </>

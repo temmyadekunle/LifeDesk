@@ -156,6 +156,9 @@ export const ig: Dict = {
   "profile.yourDataBody_many": "Ihe {n} dị na ekpe a. Ọ ga-apụụ na ya maọ bụrụ na i banyere iji anyaghị data. Livanta anaghị ọzọ nzere data gị.",
   "profile.deleteAll": "Hapụ data m niile",
   "profile.confirmDeleteAll": "Hapụ ihe niile? Enweghị ike ịmeghee ya.",
+  "profile.legal": "Iwu",
+  "profile.privacy": "Iwu akụkọ data",
+  "profile.terms": "Usoro ikwu",
 
   "row.completed": "Agbanyela",
   "row.noDate": "Enweghị oge akpọrị",

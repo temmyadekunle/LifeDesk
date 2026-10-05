@@ -120,9 +120,18 @@ svg {
 button,
 input,
 select,
-textarea {
+textarea,
+a {
   font: inherit;
   color: inherit;
+}
+
+/* Anchors keep the browser default underline, which is correct for prose and
+   is the only cue that a legal document link leaves the app. The interactive
+   rows below are navigation targets, not prose links, so the underline is
+   suppressed there and the whole row is the hit area instead. */
+a.setrow {
+  text-decoration: none;
 }
 
 button {

@@ -168,6 +168,9 @@ export const yo: Dict = {
   "profile.yourDataBody_many": "Nǹkan {n} tí a fi pamọ́ lórí ẹ̀rọ̀ yìí. Kò ní jáde kúrú látibí o fi wọlé láti mú ìmọ̀lẹ̀ kọjá ẹ̀rọ̀. Livanta kò tẹ̀ ọjọ́ alágbèsè.",
   "profile.deleteAll": "Ṣápẹẹrẹ gbogbo àkójọ mi",
   "profile.confirmDeleteAll": "Ṣápẹẹrẹ gbogbo rẹ̀? Kò le yípadà.",
+  "profile.legal": "Ìlànà",
+  "profile.privacy": "Ilana ìṣọ́jú àkọ́rí",
+  "profile.terms": "Àwọn àkọ́rí lórí lò",
 
   /* ---------- thing row ---------- */
   "row.completed": "Ti ṣe",

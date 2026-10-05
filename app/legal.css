@@ -1,0 +1,145 @@
+/* Shared styling for the long-form legal documents at /privacy and /terms.
+   Separate from globals.css because these two routes sit outside the tab
+   shell: they are read top to bottom, printed, and linked to from outside
+   the app (a store listing, an email footer), so they need a readable
+   measure and their own back-to-app affordance rather than the nav bar. */
+
+.legal {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.125rem 5rem;
+  color: var(--ink-900);
+  background: var(--bg);
+  font-size: 1rem;
+  line-height: 1.65;
+  -webkit-text-size-adjust: 100%;
+}
+
+.legal__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: var(--tap);
+  margin-bottom: 0.75rem;
+  color: var(--brand-700);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.legal__back:hover,
+.legal__back:focus-visible {
+  text-decoration: underline;
+}
+
+.legal h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.legal__meta {
+  margin: 0 0 1.25rem;
+  color: var(--ink-500);
+  font-size: 0.875rem;
+}
+
+.legal__draft {
+  margin: 0 0 1.75rem;
+  padding: 0.85rem 1rem;
+  background: var(--warn-50);
+  border-left: 4px solid var(--warn);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--ink-800);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.legal__draft strong {
+  display: block;
+  margin-bottom: 0.15rem;
+  color: var(--warn);
+}
+
+.legal h2 {
+  margin: 2.25rem 0 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  font-size: 1.0625rem;
+  line-height: 1.35;
+}
+
+.legal h3 {
+  margin: 1.5rem 0 0.35rem;
+  font-size: 0.9375rem;
+  color: var(--ink-700);
+}
+
+.legal p,
+.legal li {
+  color: var(--ink-700);
+}
+
+.legal p {
+  margin: 0 0 0.85rem;
+}
+
+.legal ul,
+.legal ol {
+  margin: 0 0 0.85rem;
+  padding-left: 1.35rem;
+}
+
+.legal li {
+  margin-bottom: 0.4rem;
+}
+
+.legal strong {
+  color: var(--ink-900);
+}
+
+/* Inline code is used for the concrete names a reader might want to check
+   for themselves: the IndexedDB database, the localStorage key, the
+   Content-Security-Policy. Wrapping them keeps long identifiers from
+   overflowing the measure on a narrow phone. */
+.legal code {
+  padding: 0.1em 0.35em;
+  background: var(--brand-50);
+  border-radius: 4px;
+  color: var(--brand-700);
+  font-size: 0.875em;
+  overflow-wrap: break-word;
+}
+
+.legal a {
+  color: var(--brand-700);
+  overflow-wrap: break-word;
+}
+
+.legal__todo {
+  padding: 0.1em 0.35em;
+  background: var(--warn-50);
+  border-radius: 4px;
+  color: var(--warn);
+  font-weight: 600;
+}
+
+@media print {
+  .legal {
+    max-width: none;
+    padding: 0;
+    background: #fff;
+    color: #000;
+    font-size: 11pt;
+  }
+
+  .legal__back,
+  .legal__draft {
+    display: none;
+  }
+
+  .legal h2 {
+    break-after: avoid;
+  }
+}

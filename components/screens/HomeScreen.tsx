@@ -7,6 +7,7 @@ import { CATEGORY_META, KIND_ICON, MODULE_ICON } from "../maps";
 import { TINT_SOFT, tint } from "@/lib/color";
 import { QUICK_TYPES } from "../QuickAdd";
 import { formatNaira } from "@/lib/i18n";
+import { hasAmount } from "@/lib/money";
 import type { Alert, Priority, Thing } from "@/lib/types";
 import type { useLivanta } from "@/lib/useLivanta";
 import type { ModuleId } from "../ModuleScreen";
@@ -300,7 +301,7 @@ export function ThingLine({
         <span className="listrow__title">{thing.name}</span>
         <span className="listrow__sub">
           {t(`kind.${thing.kind}` as never)}
-          {thing.amount !== null ? ` · ${formatNaira(thing.amount)}` : ""}
+          {hasAmount(thing.amount) ? ` · ${formatNaira(thing.amount)}` : ""}
         </span>
       </span>
       <span className="listrow__trail">

@@ -58,7 +58,15 @@ export function makeT(locale: Locale): Translate {
   return t;
 }
 
-/** Formats naira for display; deliberately not localised, since ₦ is universal. */
+/**
+ * Formats naira for display; deliberately not localised, since ₦ is universal.
+ *
+ * A non-finite amount renders as an empty string rather than "₦NaN". Callers
+ * guard with hasAmount, so this is a backstop for any path that has not yet
+ * been converted: a visible NaN reads as a broken total, whereas an absent
+ * figure just looks like a record with no amount on it.
+ */
 export function formatNaira(amount: number): string {
+  if (!Number.isFinite(amount)) return "";
   return `\u20A6${amount.toLocaleString("en-NG")}`;
 }

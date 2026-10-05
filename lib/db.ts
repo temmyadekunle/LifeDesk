@@ -93,8 +93,21 @@ export function newId(): string {
 
 /* ---------------- things ---------------- */
 
-export function getAllThings(): Promise<Thing[]> {
-  return run<Thing[]>(STORES.things, "readonly", (s) => s.getAll());
+export async function getAllThings(): Promise<Thing[]> {
+  const things = await run<Thing[]>(STORES.things, "readonly", (s) => s.getAll());
+  // Amounts saved before parseAmount existed can be NaN in IndexedDB, and NaN
+  // renders as "₦NaN" while poisoning every sum it joins. Repairing on read
+  // fixes existing users without a schema version bump. Only genuinely corrupt
+  // records are written back, so a healthy database is never touched.
+  const repaired = things.map((thing) =>
+    thing.amount === null || Number.isFinite(thing.amount)
+      ? thing
+      : { ...thing, amount: null },
+  );
+  for (const [i, thing] of repaired.entries()) {
+    if (thing !== things[i]) await putThing(thing);
+  }
+  return repaired;
 }
 
 export function putThing(thing: Thing): Promise<IDBValidKey> {

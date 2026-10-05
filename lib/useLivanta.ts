@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { buildAlerts, daysUntil, derivePriority, formatNaira } from "./risk.ts";
+import { amountOrZero, parseAmount } from "./money.ts";
 import { computeLifeStatus } from "./status.ts";
 import { deleteThing, getAllAlerts, getAllThings, putAlert, putThing, clearAllStores } from "./db.ts";
 import { recordDeletion, recordDismissal } from "./sync/meta.ts";
@@ -124,10 +125,7 @@ export function useLivanta() {
           kind: input.firstThing.name.toLowerCase().includes("rent")
             ? "rent"
             : "bill",
-          amount:
-            input.firstThing.amount.trim() === ""
-              ? null
-              : Number(input.firstThing.amount),
+          amount: parseAmount(input.firstThing.amount),
           currency: "NGN",
           dueDate: input.firstThing.dueDate || null,
           lastHandledDate: null,
@@ -283,7 +281,7 @@ export function useLivanta() {
       return d >= 0 && d <= HORIZON;
     });
     return {
-      total: upcoming.reduce((sum, t) => sum + (t.amount ?? 0), 0),
+      total: upcoming.reduce((sum, t) => sum + amountOrZero(t.amount), 0),
       count: upcoming.length,
       items: upcoming.sort((a, b) =>
         (a.dueDate ?? "").localeCompare(b.dueDate ?? ""),

@@ -22,6 +22,7 @@ import { TINT_BORDER, TINT_SOFT, tint } from "@/lib/color";
 import { dueMeta, initials, TONE_CLASS } from "./labels";
 import { formatDate } from "@/lib/dates";
 import { formatNaira } from "@/lib/i18n";
+import { hasAmount } from "@/lib/money";
 import { notifyUrgentAlert } from "@/lib/notifications";
 import type { EditorPreset } from "@/lib/editor";
 import type { TKey } from "@/lib/locales/en";
@@ -617,7 +618,7 @@ function DesktopRail({
                   <span className="listrow__body">
                     <span className="listrow__title">{thing.name}</span>
                     <span className="listrow__sub">
-                      {thing.amount !== null ? formatNaira(thing.amount) : t(`kind.${thing.kind}` as TKey)}
+                      {hasAmount(thing.amount) ? formatNaira(thing.amount) : t(`kind.${thing.kind}` as TKey)}
                     </span>
                   </span>
                   <span className="listrow__trail">

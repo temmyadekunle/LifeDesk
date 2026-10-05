@@ -6,6 +6,7 @@ import { dueMeta, TONE_CLASS } from "./labels";
 import { CATEGORY_META, KIND_ICON } from "./maps";
 import { formatFullDate } from "@/lib/dates";
 import { formatNaira, type Translate } from "@/lib/i18n";
+import { hasAmount } from "@/lib/money";
 import { daysUntil } from "@/lib/risk";
 import type { Frequency, Thing } from "@/lib/types";
 import type { TKey } from "@/lib/locales/en";
@@ -100,7 +101,7 @@ export function ThingDetailSheet({
           {thing.dueDate ? (
             <Row k={t("thing.due")} v={formatFullDate(thing.dueDate, t.locale)} />
           ) : null}
-          {thing.amount !== null ? (
+          {hasAmount(thing.amount) ? (
             <Row k={t("thing.amount")} v={formatNaira(thing.amount)} />
           ) : null}
           <Row k={t("thing.category")} v={t(meta.labelKey)} />

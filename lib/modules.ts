@@ -1,4 +1,5 @@
 import { daysUntil } from "./risk.ts";
+import { amountOrZero } from "./money.ts";
 import type { Thing } from "./types.ts";
 
 /* ---------------- warranty ---------------- */
@@ -88,7 +89,7 @@ export function summariseHome(things: Thing[], now: Date = new Date()): HomeSumm
     overdueMaintenance: maintenance.filter(
       (m) => m.priority === "urgent" || m.priority === "important",
     ),
-    monthlyOutgoings: monthly.reduce((s, t) => s + (t.amount ?? 0), 0),
+    monthlyOutgoings: monthly.reduce((s, t) => s + amountOrZero(t.amount), 0),
   };
 }
 
@@ -118,7 +119,7 @@ export function summariseVehicles(things: Thing[]): VehicleGroup[] {
       serviceDue: items.filter(
         (i) => i.kind === "maintenance" && i.priority !== "routine",
       ),
-      totalSpend: items.reduce((s, i) => s + (i.amount ?? 0), 0),
+      totalSpend: items.reduce((s, i) => s + amountOrZero(i.amount), 0),
       nextDue: soonest(items),
     });
   }
@@ -148,9 +149,9 @@ export function summariseBills(things: Thing[], now: Date = new Date()): BillsSu
     return d >= 0 && d <= HORIZON;
   });
 
-  const withAmount = next30.filter((t) => (t.amount ?? 0) > 0);
+  const withAmount = next30.filter((t) => amountOrZero(t.amount) > 0);
   const largest = withAmount.sort(
-    (a, b) => (b.amount ?? 0) - (a.amount ?? 0),
+    (a, b) => amountOrZero(b.amount) - amountOrZero(a.amount),
   )[0];
 
   return {
@@ -158,8 +159,8 @@ export function summariseBills(things: Thing[], now: Date = new Date()): BillsSu
       (a.dueDate ?? "").localeCompare(b.dueDate ?? ""),
     ),
     oneOff,
-    recurringTotal: recurring.reduce((s, t) => s + (t.amount ?? 0), 0),
-    next30Total: next30.reduce((s, t) => s + (t.amount ?? 0), 0),
+    recurringTotal: recurring.reduce((s, t) => s + amountOrZero(t.amount), 0),
+    next30Total: next30.reduce((s, t) => s + amountOrZero(t.amount), 0),
     largest: largest ?? null,
   };
 }
@@ -237,6 +238,6 @@ export function summariseAssets(things: Thing[], now: Date = new Date()): Assets
     expiring: rows.filter((r) => r.warranty?.state === "expiring"),
     expired: rows.filter((r) => r.warranty?.state === "expired"),
     covered: rows.filter((r) => r.warranty?.state === "active"),
-    totalValue: assets.reduce((s, t) => s + (t.amount ?? 0), 0),
+    totalValue: assets.reduce((s, t) => s + amountOrZero(t.amount), 0),
   };
 }

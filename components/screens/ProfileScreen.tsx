@@ -3,6 +3,7 @@
 import { useMemo, useSyncExternalStore } from "react";
 
 import { Icon } from "../Icons";
+import { Logo } from "../Logo";
 import { AccountPanel } from "../AccountPanel";
 import { initials } from "../labels";
 import { LocalePicker } from "../Onboarding";
@@ -62,6 +63,10 @@ export function ProfileScreen({
   return (
     <>
       <section className="section" style={{ marginTop: 0 }}>
+        <div className="profile-id">
+          <Logo variant="wordmark" />
+          <p className="profile-id__tag">{t("app.tagline")}</p>
+        </div>
         <div className="card">
           <div className="rowline">
             <span className="avatar avatar--lg">{initials(name)}</span>

@@ -1767,17 +1767,46 @@ button.listrow:active {
   margin-bottom: 1rem;
 }
 
-.ob-logo-box {
-  display: inline-block;
-  line-height: 0;
+.logo {
+  display: block;
+  height: auto;
+  border-radius: var(--radius);
 }
 
-.ob-logo {
+/* Onboarding lockup: centred above the wordmark. */
+.logo--wordmark {
   width: 108px;
-  height: auto;
-  display: block;
   margin-inline: auto;
-  border-radius: var(--radius);
+}
+
+/* Small mark in the app bar and profile. Sized by height so any aspect ratio
+   renders undistorted rather than being cropped to a square. */
+.logo--mark {
+  height: 32px;
+  width: auto;
+}
+
+.appbar__logo {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+
+.profile-id {
+  text-align: center;
+  padding: 0.5rem 0 1.125rem;
+}
+
+.profile-id .logo--wordmark {
+  margin-inline: auto;
+}
+
+.profile-id__tag {
+  margin: 0.5rem auto 0;
+  max-width: 30ch;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--ink-500);
 }
 
 .ob-brand h1 {

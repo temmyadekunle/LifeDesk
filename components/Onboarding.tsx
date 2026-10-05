@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 
 import { Icon, type IconName } from "./Icons";
+import { Logo } from "./Logo";
 import { BrandPanel } from "./BrandArt";
 import { LOCALES, LOCALE_NAMES, makeT, type Locale, type Translate } from "@/lib/i18n";
 import type { TKey } from "@/lib/locales/en";
@@ -104,17 +104,8 @@ export default function Onboarding({
 
   return (
     <div className="ob" lang={locale}>
-      <div className="ob-brand">
-        <div className="ob-logo-box">
-          <Image
-            src="/logo.jpeg"
-            alt="Livanta"
-            width={1080}
-            height={720}
-            priority
-            className="ob-logo"
-          />
-        </div>
+<div className="ob-brand">
+        <Logo variant="wordmark" priority />
         <h1>Livanta</h1>
         <p>{t("app.tagline")}</p>
       </div>

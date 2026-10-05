@@ -5,7 +5,17 @@ export const metadata: Metadata = {
   title: "Livanta",
   description:
     "One place to manage the things that keep your life running.",
-  icons: { icon: "/logo.jpeg" },
+  icons: {
+    // Square set generated from the same source artwork by
+    // scripts/make-favicons.mjs, so the tab icon cannot drift from the in-app
+    // mark. The source is a 3:2 landscape image, so a square pad is used
+    // rather than a crop.
+    icon: [
+      { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   appleWebApp: {
     capable: true,
     title: "Livanta",

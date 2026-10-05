@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Icon, type IconName } from "./Icons";
 import { ConfirmDialog, Sheet, Toast, useToast } from "./ui";
+import { Logo } from "./Logo";
 import { QuickAddSheet } from "./QuickAdd";
 import { ThingDetailSheet } from "./ThingDetail";
 import { AuthScreen } from "./AuthScreen";
@@ -459,12 +460,19 @@ function Header({
 
   return (
     <header className="appbar">
-      <div className="appbar__lead">
+<div className="appbar__lead">
         {route ? (
           <button className="iconbtn" onClick={onBack} aria-label={t("app.back")}>
             <Icon name="chevronLeft" size={22} />
           </button>
-        ) : null}
+        ) : (
+          // The mark only appears at a tab root. On a pushed route the back
+          // chevron already occupies the leading slot, and a 32px logo beside
+          // it plus a title plus two actions does not fit a 360px screen.
+          <span className="appbar__logo">
+            <Logo />
+          </span>
+        )}
         <div style={{ minWidth: 0 }}>
           <p className="appbar__title">{title}</p>
           {sub ? <p className="appbar__sub">{sub}</p> : null}

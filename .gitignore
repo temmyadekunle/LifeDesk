@@ -7,6 +7,10 @@ dist/
 .env
 .env*.local
 
+# Netlify's per-machine link state. It records the site id this checkout is
+# bound to, which is local to one developer and not part of the project.
+.netlify/
+
 *.tsbuildinfo
 
 *.log

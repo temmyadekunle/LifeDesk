@@ -12,55 +12,73 @@
      - Safe-area insets are respected so the bar clears iOS home indicators.
    ========================================================================== */
 
-:root {
-  /* Brand */
-  --brand-900: #0a5f5c;
-  --brand-700: #0d7d78;
-  --brand-600: #10908a;
-  --brand-500: #14a49d;
-  --brand-100: #d5f0ee;
-  --brand-50: #eaf8f6;
+/* Brand, sampled from public/logo.jpeg with scripts/logo-colors.mjs. The
+   artwork is 94% near-white paper with two chromatic families: a deep navy at
+   hue 213deg covering ~3.5% of the pixels, and a teal at hue 175deg covering
+   ~0.5%. Navy is therefore the primary and teal the accent, which inverts the
+   previous teal-first palette.
 
-  /* Ink */
-  --ink-900: #0e1a2b;
-  --ink-800: #1d2b3f;
-  --ink-700: #35455c;
-  --ink-500: #64748b;
-  --ink-400: #8a99ae;
+   Contrast for every pair below is asserted by scripts/check-contrast.mjs. */
+:root {
+  /* Brand: navy, hue 210-216deg as sampled from the logo */
+  --brand-900: #042454;
+  --brand-800: #082b56;
+  --brand-700: #0c2c54;
+  --brand-600: #143464;
+  --brand-500: #2b5488;
+  --brand-100: #dbe4f1;
+  --brand-50: #eef2f9;
+
+  /* Accent: teal, hue 173-176deg as sampled from the logo. accent-600 is the
+     logo's own teal but only reaches 3.73:1 on white, so accent-700 is the
+     step to reach for whenever teal carries text or a white label. */
+  --accent-700: #0a736c;
+  --accent-600: #0c948c;
+  --accent-500: #14a494;
+  --accent-400: #1cac9c;
+  --accent-100: #d3efec;
+  --accent-50: #e9f7f5;
+
+  /* Ink: navy-tinted so body copy sits in the same hue family as the brand */
+  --ink-900: #06182f;
+  --ink-800: #102544;
+  --ink-700: #24385c;
+  --ink-500: #4a5b7a;
+  --ink-400: #64748b;
 
   /* Surfaces */
-  --bg: #f4f6fa;
+  --bg: #f7f8fb;
   --surface: #ffffff;
-  --surface-2: #f8fafc;
-  --line: #e6ebf3;
-  --line-strong: #d5dded;
+  --surface-2: #fafbfd;
+  --line: #e4e9f2;
+  --line-strong: #d2dbeb;
 
   /* Semantic */
   --danger: #cf3f3f;
   --danger-50: #fdecec;
-  --warn: #a8730a;
+  --warn: #8a5e08;
   --warn-50: #fdf3e0;
-  --ok: #10795f;
+  --ok: #0a736c;
   --ok-50: #e4f4ef;
-  --info: #2563a8;
+  --info: #143464;
   --info-50: #e8f0fb;
 
   /* Life categories */
-  --home: #10908a;
-  --transport: #2f6bb5;
-  --money: #10795f;
-  --documents: #6c53a8;
-  --family: #c85a48;
-  --services: #b07c12;
+  --home: #0c948c;
+  --transport: #2f5f9e;
+  --money: #0a736c;
+  --documents: #5b4a9e;
+  --family: #c0563f;
+  --services: #8a5e08;
 
   --radius-sm: 10px;
   --radius: 16px;
   --radius-lg: 22px;
   --radius-pill: 999px;
 
-  --shadow-sm: 0 1px 2px rgba(14, 26, 43, 0.06);
-  --shadow: 0 4px 16px rgba(14, 26, 43, 0.07);
-  --shadow-lg: 0 -8px 32px rgba(14, 26, 43, 0.16);
+  --shadow-sm: 0 1px 2px rgba(6, 24, 47, 0.06);
+  --shadow: 0 4px 16px rgba(6, 24, 47, 0.07);
+  --shadow-lg: 0 -8px 32px rgba(6, 24, 47, 0.16);
 
   --tap: 44px;
   --nav-h: 60px;
@@ -85,8 +103,8 @@ html {
 body {
   background: var(--bg);
   color: var(--ink-800);
-  /* Latin Extended + Latin Extended Additional cover Hausa (ƙ Ɗ ɓ),
-     Yoruba (ẹ ọ ṣ) and Igbo (ọ ị ụ) diacritics. */
+  /* Latin Extended + Latin Extended Additional cover Hausa (Æ™ ÆŠ É“),
+     Yoruba (áº¹ á» á¹£) and Igbo (á» á»‹ á»¥) diacritics. */
   font-family: "Segoe UI", Roboto, "Noto Sans", "Noto Sans Yoruba",
     "Noto Sans Hausa", "Noto Sans Igbo", "Helvetica Neue", Arial, sans-serif;
   font-size: 15px;
@@ -163,7 +181,7 @@ button:disabled {
   .app {
     max-width: 78rem;
     flex-direction: row;
-    box-shadow: 0 24px 70px rgba(14, 26, 43, 0.14);
+    box-shadow: 0 24px 70px rgba(6, 24, 47, 0.14);
   }
 
   .app__col {
@@ -394,7 +412,7 @@ button:disabled {
   margin-top: -14px;
   background: var(--brand-600);
   color: #fff;
-  box-shadow: 0 6px 16px rgba(16, 144, 138, 0.35);
+  box-shadow: 0 6px 16px rgba(12, 148, 140, 0.35);
 }
 
 .navitem--action {
@@ -417,7 +435,7 @@ button:disabled {
   color: #fff;
   display: grid;
   place-items: center;
-  box-shadow: 0 8px 22px rgba(16, 144, 138, 0.4);
+  box-shadow: 0 8px 22px rgba(12, 148, 140, 0.4);
   transition: transform 0.12s ease, background 0.15s ease;
 }
 
@@ -597,8 +615,8 @@ button:disabled {
   border-radius: var(--radius-lg);
   padding: 1.125rem;
   color: #fff;
-  background: linear-gradient(140deg, var(--brand-700) 0%, var(--brand-500) 62%, #2bb8ac 100%);
-  box-shadow: 0 10px 26px rgba(13, 125, 120, 0.24);
+  background: linear-gradient(140deg, var(--brand-700) 0%, var(--brand-500) 62%, var(--accent-400) 100%);
+  box-shadow: 0 10px 26px rgba(12, 148, 140, 0.24);
   position: relative;
   overflow: hidden;
 }
@@ -1520,7 +1538,7 @@ button.listrow:active {
   inset: 0;
   border: 0;
   padding: 0;
-  background: rgba(14, 26, 43, 0.44);
+  background: rgba(6, 24, 47, 0.44);
   backdrop-filter: blur(2px);
   animation: fade 0.18s ease;
 }

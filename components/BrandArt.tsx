@@ -113,8 +113,8 @@ export function BrandPanel({
         position: "relative",
         display: "grid",
         placeItems: "center",
-        background:
-          "linear-gradient(135deg, var(--brand-700) 0%, var(--brand-500) 58%, #35c0b2 100%)",
+background:
+        "linear-gradient(135deg, var(--brand-700) 0%, var(--brand-500) 58%, var(--accent-400) 100%)",
         border: 0,
       }}
     >

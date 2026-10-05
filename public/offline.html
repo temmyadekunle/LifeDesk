@@ -1,0 +1,158 @@
+<!doctype html>
+<!--
+  The offline fallback, served when the network is unreachable and no cached
+  copy of the requested route exists.
+
+  This file lives in public/ rather than app/ on purpose. It has to work when
+  the Java bundle that powers the app has itself failed to load, so it cannot
+  depend on React, on the stylesheet, or on any module. Everything it needs is
+  inline, which is also why it is safe under the Content-Security-Policy: the
+  policy allows 'unsafe-inline' for style and script, and this page uses only
+  inline style and no script at all.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- viewport-fit=cover matches the app, so the message clears the home
+         indicator on a notched phone rather than sitting under it. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Livanta &mdash; offline</title>
+    <link rel="icon" href="/icon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <style>
+      /* Values are copied from app/globals.css rather than linked from it: a
+         stylesheet that failed to download is exactly when this page shows. */
+      :root {
+        --bg: #f7f8fb;
+        --ink: #10233f;
+        --muted: #5a6a80;
+        --line: #dde3ec;
+        --card: #ffffff;
+        --brand: #0f6f4f;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1117;
+          --ink: #eef2f7;
+          --muted: #9fb0c6;
+          --line: #232c38;
+          --card: #151b24;
+          --brand: #3fbf8f;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        /* env() resolves to 0 where there is no safe area, so this is safe on
+           every device rather than only notched ones. */
+        padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Segoe UI", Roboto, "Noto Sans", "Noto Sans Yoruba",
+          system-ui, -apple-system, sans-serif;
+        line-height: 1.55;
+        -webkit-text-size-adjust: 100%;
+      }
+      main {
+        width: 100%;
+        max-width: 30rem;
+        text-align: center;
+      }
+      img {
+        width: 84px;
+        height: 84px;
+        border-radius: 20px;
+      }
+      h1 {
+        margin: 20px 0 8px;
+        font-size: 1.375rem;
+        letter-spacing: -0.01em;
+      }
+      p {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 0.9375rem;
+      }
+      .card {
+        margin-top: 24px;
+        padding: 18px 20px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        text-align: left;
+      }
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 0.9375rem;
+      }
+      .card ul {
+        margin: 0;
+        padding-left: 20px;
+        color: var(--muted);
+        font-size: 0.875rem;
+      }
+      .card li + li {
+        margin-top: 6px;
+      }
+      strong {
+        color: var(--ink);
+      }
+      a.btn {
+        /* 48px, not the 44px minimum: this is the page's only target and it
+           sits under a thumb at the bottom of the screen. */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        margin-top: 24px;
+        padding: 0 28px;
+        background: var(--brand);
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        text-decoration: none;
+        border-radius: 999px;
+      }
+      a.btn:focus-visible {
+        outline: 3px solid var(--ink);
+        outline-offset: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/icon-192.png" alt="" width="84" height="84" />
+      <h1>You&rsquo;re offline</h1>
+      <p>
+        Livanta can&rsquo;t reach the network right now. Anything you have
+        already saved is still on this device.
+      </p>
+
+      <div class="card">
+        <h2>What still works</h2>
+        <ul>
+          <li><strong>Everything you have saved</strong> &mdash; bills, documents, assets.</li>
+          <li><strong>Adding a new item</strong>, which is saved here first.</li>
+          <li><strong>Editing and completing</strong> anything already stored.</li>
+        </ul>
+      </div>
+
+      <p style="margin-top: 20px; font-size: 0.875rem">
+        Signing in and syncing need a connection, and will resume automatically
+        once you are back online.
+      </p>
+
+      <a class="btn" href="/">Try again</a>
+    </main>
+  </body>
+</html>

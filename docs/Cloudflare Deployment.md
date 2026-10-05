@@ -76,9 +76,46 @@ npm start              # serves out/ on http://localhost:3101
 npm run qa:responsive  # audits out/ at five viewports
 ```
 
-`npm start` is dependency-free and needs no network, so it works offline. It
-does not run Pages Functions; for those, `npx wrangler pages dev out` is the
-equivalent once they exist.
+`npm start` is dependency-free and needs no network, so it works offline. For a
+preview that matches production exactly, including the `_headers` rules:
+
+```bash
+npm run build
+npx wrangler dev            # honours wrangler.jsonc and public/_headers
+```
+
+## Service worker and cache headers
+
+Two header rules matter more than they look. `/sw.js` and `/manifest.webmanifest`
+are served `max-age=0, must-revalidate`, and that is deliberate: a browser
+compares the bytes of a cached service worker against its copy, so a cached
+worker means updates are never applied while appearing to succeed.
+
+`worker-src 'self'` is stated explicitly in the CSP. It currently falls back to
+`script-src`, which already allows `'self'`, but stating it means a later
+tightening of `script-src` cannot silently break offline support.
+
+`_headers` is honoured by Workers static assets, so the same file works whether
+the project is deployed as Pages or as a Workers assets upload.
+
+## Workers, not Pages, and not OpenNext
+
+The project deploys as a **Workers static-assets upload**, configured in
+`wrangler.jsonc`: `assets.directory` is `./out` and there is deliberately no
+`main`, because this is a static export with no server code.
+
+The build environment once auto-detected `Framework: Next.js` and wired up
+OpenNext, which requires a standalone Node build at `.next/standalone`. A static
+export never produces that directory, so the deploy failed with:
+
+```
+Error: ENOENT: no such file or directory, open
+  '.next/standalone/.next/server/pages-manifest.json'
+```
+
+OpenNext is only correct if the app later gains SSR or API routes. Until then it
+is strictly wrong, and the committed `wrangler.jsonc` is what prevents
+auto-detection from choosing it again.
 
 ## What happened to Netlify
 

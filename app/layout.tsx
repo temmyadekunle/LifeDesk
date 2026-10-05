@@ -13,6 +13,9 @@ export const metadata: Metadata = {
     icon: [
       { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      // Android picks this one for the launcher. It is the same artwork with the
+      // mark inset to the safe zone, because the launcher crops to a shape.
+      { url: "/icon-maskable-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
@@ -21,6 +24,7 @@ export const metadata: Metadata = {
     title: "Livanta",
     statusBarStyle: "default",
   },
+  manifest: "/manifest.webmanifest",
 };
 
 export const viewport: Viewport = {
@@ -32,8 +36,12 @@ export const viewport: Viewport = {
   // clear of the home indicator on notched phones, which is most of the
   // phones this app is built for.
   viewportFit: "cover",
+  // Kept in sync with --bg in globals.css and with the manifest. The browser
+  // chrome is painted from this before the page loads, so a mismatch here is a
+  // visible seam between the status bar and the app. tests/pwa.test.tsx asserts
+  // the light value still matches.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f4f6fa" },
+    { media: "(prefers-color-scheme: light)", color: "#f7f8fb" },
     { media: "(prefers-color-scheme: dark)", color: "#0d1117" },
   ],
 };

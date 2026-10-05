@@ -1982,6 +1982,111 @@ button.listrow:active {
 }
 
 /* ==========================================================================
+   Install bar
+
+   The PWA install / update notice. It is position: fixed rather than in flow
+   because it appears over the app at a moment the user did not ask for, and
+   pushing the layout down to make room would move the tab bar and every tile
+   beneath it at the worst possible time. It sits above the bottom navigation
+   and clears the home indicator via env(), so it never covers the one control
+   the user reaches for most.
+   ========================================================================== */
+
+.installbar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 5.25rem);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(28rem, calc(100vw - 2rem));
+  padding: 0.5rem 0.5rem 0.5rem 0.875rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px rgb(16 35 63 / 18%);
+  color: var(--ink);
+  font-size: 0.875rem;
+}
+
+.installbar__text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.installbar__help {
+  color: var(--ink-500);
+  font-size: 0.8125rem;
+  line-height: 1.3;
+}
+
+.installbar__help strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.installbar__btn {
+  flex: none;
+  /* 44px is the minimum target this app holds everywhere else. */
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--brand-600);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.installbar__btn:hover {
+  filter: brightness(1.08);
+}
+
+.installbar__close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-400);
+  cursor: pointer;
+}
+
+.installbar__close:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.installbar :focus-visible {
+  outline: 3px solid var(--brand-600);
+  outline-offset: 2px;
+}
+
+/* The help text replaces the button on iOS and is the tallest thing in the bar,
+   so the pill becomes a card to avoid clipping two lines of instruction. */
+@media (max-width: 26rem) {
+  .installbar:has(.installbar__help) {
+    border-radius: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .installbar:has(.installbar__help) .installbar__text {
+    flex-basis: 100%;
+  }
+}
+
+/* ==========================================================================
    Print
    ========================================================================== */
 

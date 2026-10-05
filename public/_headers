@@ -16,9 +16,34 @@
   # No X- prefix here, unlike the headers below. X-Content-Security-Policy was
   # deprecated years ago and is ignored by every current browser, so spelling it
   # that way looks like protection while enforcing nothing.
-  Content-Security-Policy: default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co
+  # worker-src is stated even though it currently falls back to script-src, which
+  # already allows 'self' and so permits the service worker. Stating it means a
+  # later tightening of script-src cannot silently break offline support, which
+  # would be a confusing way to discover the dependency.
+  Content-Security-Policy: default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; worker-src 'self'; connect-src 'self' https://*.supabase.co
 
 /_next/static/*
   # Next.js emits content-hashed filenames here, so the bytes behind a given URL
   # can never change. This is safe to cache for a year.
   Cache-Control: public, max-age=31536000, immutable
+
+# The service worker must never be cached, and this rule has to come first so it
+# wins over the catch-all above. A cached worker is the worst possible outcome
+# for an offline app: the browser compares the bytes against its copy, sees no
+# change, and keeps running the previous version forever. Updates would appear
+# to succeed and never land. max-age=0 with must-revalidate forces a
+# conditional request on every navigation.
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Same reasoning for the web app manifest: it is unhashed, so a cached copy
+# would pin an old icon set and old shortcuts indefinitely.
+/manifest.webmanifest
+  Content-Type: application/manifest+json; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
+
+# The offline fallback is only ever read by the service worker out of its own
+# cache, but it must be revalidated on deploy so the page can never describe
+# behaviour the installed app no longer has.
+/offline.html
+  Cache-Control: public, max-age=0, must-revalidate

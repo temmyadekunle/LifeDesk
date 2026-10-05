@@ -49,10 +49,24 @@ const { width, height } = jpegSize(readFileSync(source));
 console.log(`source: ${width}x${height}`);
 
 const BG = "#f4f6fa";
+/**
+ * `inset` is the fraction of the canvas left empty around the mark.
+ *
+ * Ordinary icons want 0: a square source already fills the canvas, and any
+ * inset would only make the mark smaller than it needs to be at 32px.
+ *
+ * The maskable icon wants 0.2. Android does not display a maskable icon as a
+ * square: it crops to a shape (a circle on many launchers, sometimes a squircle)
+ * that can swallow the outer fifth of the image. Content inside the centre 80%
+ * is what survives every mask, so the mark is inset to that safe zone and the
+ * background fills the rest. Without this the launcher can cut the logo in half.
+ */
 const targets = [
-  { name: "icon-32.png", size: 32 },
-  { name: "icon-192.png", size: 192 },
-  { name: "apple-touch-icon.png", size: 180 },
+  { name: "icon-32.png", size: 32, inset: 0 },
+  { name: "icon-192.png", size: 192, inset: 0 },
+  { name: "icon-512.png", size: 512, inset: 0 },
+  { name: "apple-touch-icon.png", size: 180, inset: 0 },
+  { name: "icon-maskable-512.png", size: 512, inset: 0.2 },
 ];
 
 function hasMagick() {
@@ -66,18 +80,29 @@ function hasMagick() {
 
 function runMagick() {
   const square = width === height;
-  for (const { name, size } of targets) {
-    const args = square
-      ? [source, "-resize", `${size}x${size}`, "-strip", resolve(publicDir, name)]
-      : [
-          source,
-          "-background", BG,
-          "-gravity", "center",
-          "-extent", `${size}x${size}`,
-          "-resize", `${size}x${size}`,
-          "-strip",
-          resolve(publicDir, name),
-        ];
+  for (const { name, size, inset } of targets) {
+    // The pad is how much of the canvas the mark is allowed to occupy, as a
+    // fraction. 1 fills the canvas edge to edge.
+    const pad = Math.round(size * inset);
+    const inner = size - 2 * pad;
+    // A square source still needs the background painted underneath whenever it
+    // is inset, which is the maskable case: the safe zone is background, not
+    // logo, and leaving it transparent would show whatever the launcher uses.
+    const args =
+      pad === 0 && square
+        ? [source, "-resize", `${size}x${size}`, "-strip", resolve(publicDir, name)]
+        : [
+            source,
+            "-background", BG,
+            "-gravity", "center",
+            "-extent", `${size}x${size}`,
+            "-resize", `${inner}x${inner}`,
+            "-background", BG,
+            "-gravity", "center",
+            "-extent", `${size}x${size}`,
+            "-strip",
+            resolve(publicDir, name),
+          ];
     execFileSync("magick", args);
     console.log(`wrote public/${name}`);
   }
@@ -93,9 +118,9 @@ function runSystemDrawing() {
   const square = width === height;
   const escaped = (p) => p.replace(/'/g, "''");
   const jobs = targets
-    .map(({ name, size }) => {
+    .map(({ name, size, inset }) => {
       const out = resolve(publicDir, name);
-      const pad = square ? 0 : Math.round(size * 0.06);
+      const pad = inset > 0 ? Math.round(size * inset) : square ? 0 : Math.round(size * 0.06);
       const inner = size - 2 * pad;
       return `
         $bmp = New-Object System.Drawing.Bitmap(${size}, ${size})

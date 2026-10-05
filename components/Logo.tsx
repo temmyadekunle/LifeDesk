@@ -20,12 +20,12 @@ export const LOGO_SRC = "/logo.jpeg";
 
 /** Intrinsic size of the source artwork. */
 export const LOGO_WIDTH = 1080;
-export const LOGO_HEIGHT = 720;
+export const LOGO_HEIGHT = 1080;
 
 /** Rendered height of the small mark, in px. */
 const MARK_PX = 32;
 /** Rendered width of the onboarding lockup, in px. */
-const WORDMARK_PX = 108;
+const WORDMARK_PX = 88;
 
 export function Logo({
   variant = "mark",

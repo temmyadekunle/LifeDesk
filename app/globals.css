@@ -1773,9 +1773,12 @@ button.listrow:active {
   border-radius: var(--radius);
 }
 
-/* Onboarding lockup: centred above the wordmark. */
+/* Onboarding lockup: centred above the wordmark. The source artwork is square,
+   so this is sized to keep roughly the same visual mass the previous 3:2 lockup
+   had at 108x72. Larger than this pushes the continue button below the fold on
+   a 360x740 screen. */
 .logo--wordmark {
-  width: 108px;
+  width: 88px;
   margin-inline: auto;
 }
 

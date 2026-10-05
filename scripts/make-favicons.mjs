@@ -65,30 +65,38 @@ function hasMagick() {
 }
 
 function runMagick() {
+  const square = width === height;
   for (const { name, size } of targets) {
-    execFileSync("magick", [
-      source,
-      "-background", BG,
-      "-gravity", "center",
-      "-extent", `${size}x${size}`,
-      "-resize", `${size}x${size}`,
-      "-strip",
-      resolve(publicDir, name),
-    ]);
+    const args = square
+      ? [source, "-resize", `${size}x${size}`, "-strip", resolve(publicDir, name)]
+      : [
+          source,
+          "-background", BG,
+          "-gravity", "center",
+          "-extent", `${size}x${size}`,
+          "-resize", `${size}x${size}`,
+          "-strip",
+          resolve(publicDir, name),
+        ];
+    execFileSync("magick", args);
     console.log(`wrote public/${name}`);
   }
 }
 
 /**
- * System.Drawing pads and resamples in one step. The artwork is fitted inside
- * the square with a little breathing room so a wide logo does not touch the
- * edges, which reads better at 32px than a full-bleed fit.
+ * System.Drawing resamples in one step. A square source fills the canvas
+ * edge to edge, because any inset would just make the mark smaller than it
+ * needs to be at 32px. A non-square source is fitted inside a small margin,
+ * since a wide wordmark stretched to a square would distort.
  */
 function runSystemDrawing() {
+  const square = width === height;
   const escaped = (p) => p.replace(/'/g, "''");
   const jobs = targets
     .map(({ name, size }) => {
       const out = resolve(publicDir, name);
+      const pad = square ? 0 : Math.round(size * 0.06);
+      const inner = size - 2 * pad;
       return `
         $bmp = New-Object System.Drawing.Bitmap(${size}, ${size})
         $g = [System.Drawing.Graphics]::FromImage($bmp)
@@ -97,9 +105,7 @@ function runSystemDrawing() {
         $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
         $g.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
         $g.Clear([System.Drawing.ColorTranslator]::FromHtml('${BG}'))
-        $pad = [int](${size} * 0.06)
-        $inner = ${size} - (2 * $pad)
-        $scale = [Math]::Min($inner / $img.Width, $inner / $img.Height)
+        $scale = [Math]::Min(${inner} / $img.Width, ${inner} / $img.Height)
         $w = [int]($img.Width * $scale)
         $h = [int]($img.Height * $scale)
         $x = [int]((${size} - $w) / 2)

@@ -3,6 +3,9 @@
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useLivanta } from "@/lib/useLivanta";
+import { useAuth } from "@/lib/useAuth";
+import { useCloudSync } from "@/lib/useCloudSync";
+import { AccountPanel } from "./AccountPanel";
 import { daysUntil } from "@/lib/risk";
 import { formatNaira, type Locale } from "@/lib/i18n";
 import type { TKey } from "@/lib/locales/en";
@@ -85,10 +88,20 @@ const QUICK_ADD: { labelKey: TKey; kind: EditorPreset["kind"]; category: Categor
 ];
 
 export default function LivantaApp() {
-  const [tab, setTab] = useState<Tab>("home");
-  const [module, setModule] = useState<ModuleId | null>(null);
-  const desk = useLivanta();
-  const { t } = desk;
+    const [tab, setTab] = useState<Tab>("home");
+    const [module, setModule] = useState<ModuleId | null>(null);
+    const desk = useLivanta();
+    const { t } = desk;
+    const { refresh } = desk;
+
+    const auth = useAuth();
+    const sync = useCloudSync();
+
+    // A completed sync that pulled changes writes to IndexedDB, so the desk
+    // hook has to re-read for the new state to appear.
+    useEffect(() => {
+      sync.bindRefresh(() => void refresh());
+    }, [sync, refresh]);
 
   const notified = useRef<Set<string>>(new Set());
 
@@ -222,7 +235,7 @@ export default function LivantaApp() {
             <p className="card-meta">{t("household.blurb")}</p>
           </section>
         )}
-        {tab === "profile" && <ProfileScreen desk={desk} />}
+        {tab === "profile" && <ProfileScreen desk={desk} auth={auth} sync={sync} />}
       </main>
 
       <nav className="tabbar">
@@ -556,7 +569,15 @@ function AlertsScreen({ desk }: { desk: Desk }) {
   );
 }
 
-function ProfileScreen({ desk }: { desk: Desk }) {
+function ProfileScreen({
+  desk,
+  auth,
+  sync,
+}: {
+  desk: Desk;
+  auth: ReturnType<typeof useAuth>;
+  sync: ReturnType<typeof useCloudSync>;
+}) {
   const { t } = desk;
   const permission = useSyncExternalStore(
     subscribeToPermission,
@@ -587,6 +608,8 @@ function ProfileScreen({ desk }: { desk: Desk }) {
           </span>
         </div>
       </section>
+
+      <AccountPanel t={t} auth={auth} sync={sync} />
 
       <section className="card">
         <p className="section-label">{t("profile.language")}</p>

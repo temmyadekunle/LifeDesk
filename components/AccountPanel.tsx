@@ -1,0 +1,168 @@
+/**
+ * Optional cloud sync, shown on the Profile screen.
+ *
+ * Two rules shape this component:
+ *   - It renders a plain explanation and nothing else when the app was built
+ *     without Supabase credentials, so a build without cloud support looks
+ *     deliberate rather than broken.
+ *   - Passwords are held in component state only long enough to submit, and
+ *     are never logged or stored locally.
+ */
+
+import { useState } from "react";
+
+import type { Translate } from "../lib/i18n.ts";
+import type { UseAuth } from "../lib/useAuth.ts";
+import type { UseCloudSync } from "../lib/useCloudSync.ts";
+
+interface Props {
+  t: Translate;
+  auth: UseAuth;
+  sync: UseCloudSync;
+}
+
+type Mode = "sign-in" | "sign-up";
+
+export function AccountPanel({ t, auth, sync }: Props) {
+  const [mode, setMode] = useState<Mode>("sign-in");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  if (!auth.enabled) {
+    return (
+      <section className="card">
+        <p className="section-label">{t("account.title")}</p>
+        <div className="card-meta">{t("account.notConfigured")}</div>
+      </section>
+    );
+  }
+
+  if (auth.status === "signed-in") {
+    return (
+      <section className="card">
+        <p className="section-label">{t("account.title")}</p>
+
+        <div className="row">
+          <span className="lead">👤</span>
+          <span className="grow">
+            <div className="name">{t("account.signedInAs", { email: auth.user?.email ?? "" })}</div>
+            <div className="sub">{syncLabel(t, sync)}</div>
+          </span>
+        </div>
+
+        {sync.lastResult ? (
+          <div className="card-meta">
+            {t("sync.lastSynced", { time: formatTime(sync.lastResult.at) })}
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => void auth.signOut()}
+        >
+          {t("account.signOut")}
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-secondary"
+          disabled={sync.phase === "syncing"}
+          onClick={() => void sync.syncNow()}
+        >
+          {sync.phase === "syncing" ? t("sync.syncing") : t("sync.now")}
+        </button>
+      </section>
+    );
+  }
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (busy || !email || !password) return;
+
+    setBusy(true);
+    const ok =
+      mode === "sign-in"
+        ? await auth.signIn(email, password)
+        : await auth.signUp(email, password);
+
+    // Only clear the password on failure; on success the form unmounts anyway.
+    if (!ok) setPassword("");
+    setBusy(false);
+  }
+
+  return (
+    <section className="card">
+      <p className="section-label">{t("account.title")}</p>
+      <div className="card-meta">{t("account.subtitle")}</div>
+
+      <form onSubmit={submit}>
+        <label className="field">
+          <span>{t("account.email")}</span>
+          <input
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </label>
+
+        <label className="field">
+          <span>{t("account.password")}</span>
+          <input
+            type="password"
+            autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </label>
+
+        {auth.error ? <div className="card-meta">{errorLabel(t, auth.error.code)}</div> : null}
+
+        <button type="submit" className="btn btn-primary" disabled={busy || !email || !password}>
+          {mode === "sign-in" ? t("account.signIn") : t("account.signUp")}
+        </button>
+      </form>
+
+      <button
+        type="button"
+        className="btn btn-secondary"
+        onClick={() => {
+          auth.clearError();
+          setMode(mode === "sign-in" ? "sign-up" : "sign-in");
+        }}
+      >
+        {mode === "sign-in" ? t("account.needAccount") : t("account.haveAccount")}
+      </button>
+
+      <div className="card-meta">{t("sync.offline")}</div>
+    </section>
+  );
+}
+
+function syncLabel(t: Translate, sync: UseCloudSync): string {
+  if (sync.phase === "syncing") return t("sync.syncing");
+  if (sync.phase === "error") return t("sync.failed");
+  if (sync.lastResult) return t("sync.done");
+  return t("sync.never");
+}
+
+function errorLabel(t: Translate, code: string): string {
+  if (code === "invalid-credentials") return t("auth.invalid");
+  if (code === "email-taken") return t("auth.emailTaken");
+  if (code === "rate-limited") return t("auth.rateLimited");
+  return t("auth.unknown");
+}
+
+/**
+ * A plain local timestamp rather than toLocaleTimeString, which would render
+ * in the browser's locale rather than the one the user picked in the app and
+ * so disagree with every other date in the interface.
+ */
+function formatTime(iso: string): string {
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())} ${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`;
+}

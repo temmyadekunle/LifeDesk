@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { buildAlerts, daysUntil, derivePriority, formatNaira } from "./risk.ts";
 import { computeLifeStatus } from "./status.ts";
 import { deleteThing, getAllAlerts, getAllThings, putAlert, putThing, clearAllStores } from "./db.ts";
+import { recordDeletion, recordDismissal } from "./sync/meta.ts";
 import { seedIfEmpty } from "./seed.ts";
 import { makeT } from "./i18n.ts";
 import { DEFAULT_SETTINGS, loadSettings, saveSettings, type Settings } from "./settings.ts";
@@ -233,12 +234,16 @@ export function useLivanta() {
       return next;
     });
     await putAlert({ ...alert, dismissed: true });
+    await recordDismissal(alert.id, true);
   }, []);
 
   const restoreAlerts = useCallback(async () => {
     setDismissedIds(new Set());
     const stored = await getAllAlerts();
-    for (const a of stored) await putAlert({ ...a, dismissed: false });
+    for (const a of stored) {
+      await putAlert({ ...a, dismissed: false });
+      await recordDismissal(a.id, false);
+    }
   }, []);
 
   const updateThing = useCallback(
@@ -259,6 +264,7 @@ export function useLivanta() {
   const removeThing = useCallback(
     async (id: string) => {
       await deleteThing(id);
+      await recordDeletion(id);
       await refresh();
     },
     [refresh],

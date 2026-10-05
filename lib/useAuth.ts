@@ -30,6 +30,12 @@ export interface UseAuth {
   error: AuthError | null;
   /** True right after signing up on a project that requires email confirmation. */
   needsEmailConfirmation: boolean;
+  /**
+   * True when the session in hand came from an emailed recovery link, so the
+   * only sensible next step is choosing a new password. See the PASSWORD_RECOVERY
+   * branch in the subscription below for why this is not just `signed-in`.
+   */
+  passwordResetReady: boolean;
   signIn: (email: string, password: string) => Promise<boolean>;
   signUp: (email: string, password: string) => Promise<boolean>;
   /** Sends a password-reset email. */
@@ -69,6 +75,7 @@ export function useAuth(): UseAuth {
   );
   const [error, setError] = useState<AuthError | null>(null);
   const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
+  const [passwordResetReady, setPasswordResetReady] = useState(false);
 
   useEffect(() => {
     if (!enabled) return;
@@ -80,10 +87,20 @@ export function useAuth(): UseAuth {
 
     // The callback runs outside the effect body, so this is a subscription
     // rather than a synchronous render-phase state change.
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (!active) return;
       setUser(session?.user ?? null);
       setStatus(session ? "signed-in" : "signed-out");
+
+      // A recovery link establishes a real session, so `status` alone reads as
+      // an ordinary sign-in and the app would show the signed-in screen instead
+      // of asking for the new password the user came to set. Only this event
+      // arms the reset flow, and nothing else disarms it: TOKEN_REFRESHED fires
+      // straight afterwards and must not clear the flag out from under the form.
+      if (event === "PASSWORD_RECOVERY") {
+        setPasswordResetReady(true);
+        setNeedsEmailConfirmation(false);
+      }
     });
 
     void supabase.auth.getSession().then(({ data: sessionData }) => {
@@ -162,11 +179,17 @@ export function useAuth(): UseAuth {
       setError(toAuthError(updateError));
       return false;
     }
+    // The reset is done, so stop forcing the new-password form on the next
+    // render. Clearing only on success means an expired or already-used link
+    // leaves the form up with its error rather than dropping the user back to a
+    // sign-in screen that cannot explain what went wrong.
+    setPasswordResetReady(false);
     return true;
   }, []);
 
   const signOut = useCallback(async () => {
     setNeedsEmailConfirmation(false);
+    setPasswordResetReady(false);
     const supabase = getSupabase();
     if (!supabase) return;
     await supabase.auth.signOut();
@@ -180,6 +203,7 @@ export function useAuth(): UseAuth {
     user,
     error,
     needsEmailConfirmation,
+    passwordResetReady,
     signIn,
     signUp,
     resetPassword,

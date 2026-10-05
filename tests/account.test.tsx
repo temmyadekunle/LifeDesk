@@ -31,6 +31,18 @@ define("IS_REACT_ACT_ENVIRONMENT", true);
 
 const { isCloudEnabled, getSupabase } = await import("../lib/supabase/client.ts");
 const { AccountPanel } = await import("../components/AccountPanel.tsx");
+const { AuthScreen } = await import("../components/AuthScreen.tsx");
+
+/* Supabase's User carries more than the email these tests care about, and the
+   auth surface types it structurally. */
+const fakeUser = {
+  id: "user-1",
+  email: "someone@example.com",
+  aud: "authenticated",
+  created_at: "2026-01-01T00:00:00.000Z",
+  app_metadata: {},
+  user_metadata: {},
+} as unknown as import("@supabase/supabase-js").User;
 
 test("no credentials means cloud sync reports itself unavailable", () => {
   assert.equal(isCloudEnabled(), false);
@@ -55,6 +67,7 @@ test("AccountPanel renders the unavailable notice instead of a sign-in form", as
     user: null,
     error: null,
     needsEmailConfirmation: false,
+    passwordResetReady: false,
     signIn: async () => false,
     signUp: async () => false,
     signOut: async () => {},
@@ -99,4 +112,85 @@ test("the account and sync keys exist in every catalogue", async () => {
     assert.equal(typeof en[key], "string", `${key} missing from en`);
     assert.equal(t(key).length > 0, true, `${key} is empty`);
   }
+});
+
+/* A recovery link establishes a real session, so status is "signed-in" by the
+   time the user reaches this screen. Before the fix the signed-in branch ran
+   first and won, so the new-password form could never appear and the link did
+   nothing at all. Assert the form is reachable in exactly that state. */
+test("a recovery session shows the new-password form, not the signed-in panel", async () => {
+  const t = makeT("en");
+  const container = win.document.createElement("div");
+  win.document.body.appendChild(container);
+  const root = createRoot(container as unknown as Element);
+
+  const auth = {
+    enabled: true,
+    status: "signed-in" as const,
+    user: fakeUser,
+    error: null,
+    needsEmailConfirmation: false,
+    passwordResetReady: true,
+    signIn: async () => false,
+    signUp: async () => false,
+    signOut: async () => {},
+    resetPassword: async () => true,
+    updatePassword: async () => true,
+    clearError: () => {},
+  };
+
+  await act(async () => {
+    root.render(<AuthScreen t={t} auth={auth} onClose={() => {}} onDone={() => {}} />);
+  });
+
+  const text = container.textContent ?? "";
+
+  assert.equal(text.includes(t("auth.newPasswordTitle")), true);
+  assert.equal(text.includes(t("auth.savePassword")), true);
+  // The signed-in panel must not be what the user sees.
+  assert.equal(text.includes(t("account.signOut")), false);
+  // And there is no way back to a sign-in form, because a recovery session
+  // cannot sign in again without the token.
+  assert.equal(text.includes(t("auth.backToSignIn")), false);
+
+  await act(async () => {
+    root.unmount();
+  });
+});
+
+test("an ordinary signed-in session still shows the signed-in panel", async () => {
+  const t = makeT("en");
+  const container = win.document.createElement("div");
+  win.document.body.appendChild(container);
+  const root = createRoot(container as unknown as Element);
+
+  const auth = {
+    enabled: true,
+    status: "signed-in" as const,
+    user: fakeUser,
+    error: null,
+    needsEmailConfirmation: false,
+    passwordResetReady: false,
+    signIn: async () => false,
+    signUp: async () => false,
+    signOut: async () => {},
+    resetPassword: async () => true,
+    updatePassword: async () => true,
+    clearError: () => {},
+  };
+
+  await act(async () => {
+    root.render(<AuthScreen t={t} auth={auth} onClose={() => {}} onDone={() => {}} />);
+  });
+
+  const text = container.textContent ?? "";
+
+  // Guards the other direction: the fix must not leak the recovery form into
+  // normal use.
+  assert.equal(text.includes(t("account.signOut")), true);
+  assert.equal(text.includes(t("auth.savePassword")), false);
+
+  await act(async () => {
+    root.unmount();
+  });
 });

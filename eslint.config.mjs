@@ -7,7 +7,16 @@ const config = [
   ...nextCoreWebVitals,
   ...nextTypescript,
   {
-    ignores: [".next/**", "node_modules/**"],
+    // .netlify/static is a deploy cache the Netlify CLI writes next to the
+    // project: minified vendor chunks that are not ours to lint. Listed here as
+    // well as in .gitignore, because ESLint does not read .gitignore.
+    ignores: [
+      ".next/**",
+      "node_modules/**",
+      "out/**",
+      ".netlify/**",
+      "design/**",
+    ],
   },
 ];
 

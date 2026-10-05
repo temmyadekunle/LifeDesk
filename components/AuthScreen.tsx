@@ -28,12 +28,21 @@ export function AuthScreen({
   onClose: () => void;
   onDone: (message: string) => void;
 }) {
-  const [mode, setMode] = useState<Mode>("sign-in");
+  const [manualMode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+
+  /* Arriving from an emailed recovery link means the only useful thing to show
+     is the new-password form, whichever mode the user last left this screen in.
+     Derived rather than synced in an effect: a recovery link establishes a real
+     session, so this screen can mount with manualMode at its default, and an
+     effect would need a second render to correct it. Naming the derived value
+     `mode` keeps every mode comparison below, and the submit handler, correct
+     without special-casing. */
+  const mode: Mode = auth.passwordResetReady ? "new-password" : manualMode;
 
   if (!auth.enabled) {
     return (
@@ -46,7 +55,10 @@ export function AuthScreen({
     );
   }
 
-  if (auth.status === "signed-in") {
+  /* A recovery link signs the user in, so this must not claim they are done.
+     Without the second condition the recovery session renders the signed-in
+     panel and the new-password form is unreachable. */
+  if (auth.status === "signed-in" && !auth.passwordResetReady) {
     return (
       <div className="stack">
         <div className="card">
@@ -305,7 +317,7 @@ export function AuthScreen({
           </>
         ) : null}
 
-        {mode === "new-password" ? (
+        {mode === "new-password" && !auth.passwordResetReady ? (
           <button
             type="button"
             className="btn btn--ghost btn--block"

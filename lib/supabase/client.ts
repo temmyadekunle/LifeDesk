@@ -38,7 +38,11 @@ export function getSupabase(): SupabaseClient | null {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: false,
+      // Must stay on. Supabase returns the emailed recovery link with the token
+      // in the URL fragment, and this is the only thing that exchanges it for a
+      // session and fires PASSWORD_RECOVERY. With it off, following a reset link
+      // silently did nothing.
+      detectSessionInUrl: true,
     },
   });
 

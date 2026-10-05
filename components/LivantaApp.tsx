@@ -62,7 +62,7 @@ export default function LivantaApp() {
   const [confirmThing, setConfirmThing] = useState<string | null>(null);
   const [confirmWipe, setConfirmWipe] = useState(false);
 
-  const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
+const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
   const pop = useCallback(() => setStack((s) => s.slice(0, -1)), []);
 
   // A completed sync writes to IndexedDB, so the desk has to re-read for the
@@ -185,7 +185,16 @@ export default function LivantaApp() {
     );
   }
 
-  const route = stack[stack.length - 1] ?? null;
+  /* Someone following a reset link lands on the app root, not on the account
+     screen, so the recovery session has to put that screen up by itself. Derived
+     from auth state rather than pushed onto the stack, so it costs no extra
+     render, and so the back chevron can be suppressed: a recovery session
+     cannot sign in again without its token, so there is nowhere useful to
+     return to and a live-looking back button would simply do nothing. */
+const recovering = auth.passwordResetReady;
+const route: Route | null = recovering
+    ? { kind: "auth" }
+    : (stack[stack.length - 1] ?? null);
   const open = openId ? desk.things.find((x) => x.id === openId) ?? null : null;
   const editing = editId ? desk.things.find((x) => x.id === editId) ?? null : null;
 
@@ -195,7 +204,8 @@ export default function LivantaApp() {
         <Header
           desk={desk}
           tab={tab}
-          route={route}
+route={route}
+          canGoBack={!recovering}
           onBack={pop}
           onOpenNotifications={() => push({ kind: "notifications" })}
           onOpenProfile={() => {
@@ -409,14 +419,17 @@ export default function LivantaApp() {
 function Header({
   desk,
   tab,
-  route,
+route,
+  canGoBack,
   onBack,
   onOpenNotifications,
   onOpenProfile,
 }: {
   desk: ReturnType<typeof useLivanta>;
   tab: Tab;
-  route: Route | null;
+route: Route | null;
+  /** False for a derived route, such as password recovery, that cannot be popped. */
+  canGoBack: boolean;
   onBack: () => void;
   onOpenNotifications: () => void;
   onOpenProfile: () => void;
@@ -461,7 +474,7 @@ function Header({
   return (
     <header className="appbar">
 <div className="appbar__lead">
-        {route ? (
+        {route && canGoBack ? (
           <button className="iconbtn" onClick={onBack} aria-label={t("app.back")}>
             <Icon name="chevronLeft" size={22} />
           </button>

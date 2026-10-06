@@ -67,7 +67,7 @@ export default function Onboarding({
   locale: initialLocale,
 }: {
   onDone: (result: OnboardingResult) => void;
-  onSample: (locale: Locale) => void;
+  onSample: (locale: Locale, displayName?: string) => void;
   locale: Locale;
 }) {
   const [step, setStep] = useState(0);
@@ -86,9 +86,9 @@ export default function Onboarding({
     );
   }
 
-  function finish(loadSample: boolean) {
+function finish(loadSample: boolean) {
     if (loadSample) {
-      onSample(locale);
+      onSample(locale, name.trim() || undefined);
       return;
     }
     onDone({

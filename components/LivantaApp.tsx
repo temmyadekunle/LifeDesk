@@ -32,6 +32,7 @@ import { useAuth } from "@/lib/useAuth";
 import { useCloudSync } from "@/lib/useCloudSync";
 import { greetingKey, useDayPart } from "@/lib/useDayPart";
 import { useLivanta } from "@/lib/useLivanta";
+import InstallPrompt from "./InstallPrompt";
 
 type Tab = "home" | "things" | "calendar" | "services" | "profile";
 
@@ -65,18 +66,13 @@ export default function LivantaApp() {
   const [confirmThing, setConfirmThing] = useState<string | null>(null);
   const [confirmWipe, setConfirmWipe] = useState(false);
 
-const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
+  const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
   const pop = useCallback(() => setStack((s) => s.slice(0, -1)), []);
 
-  // A completed sync writes to IndexedDB, so the desk has to re-read for the
-  // pulled state to appear.
   useEffect(() => {
     sync.bindRefresh(() => void refresh());
   }, [sync, refresh]);
 
-  /* Queue a sync whenever local data actually changed. `scheduleSync` is a
-     no-op unless the build has Supabase credentials and a session exists, so
-     this is inert for the signed-out app that ships by default. */
   const signature = useMemo(
     () =>
       `${desk.things.length}:${desk.things
@@ -143,59 +139,8 @@ const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
     showToast(t("thing.handledToast"), "ok");
   }
 
-  /* -------------------------------------------------------------- gates */
-
-  if (desk.ready && !desk.settings.onboarded) {
-    return (
-      <div className="app" lang={desk.settings.locale}>
-        <div className="app__col">
-          <div className="app__body">
-            <Onboarding
-              locale={desk.settings.locale}
-              onDone={(result) => void desk.completeOnboarding(result)}
-              onSample={(locale) => {
-                void desk.completeOnboarding({
-                  displayName: desk.settings.displayName || "Temmy",
-                  categories: ["home", "money", "transport", "documents"],
-                  firstThing: null,
-                  loadSample: true,
-                  locale,
-                });
-              }}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!desk.ready) {
-    return (
-      <div className="app" lang={desk.settings.locale}>
-        <div className="app__col">
-          <header className="appbar">
-            <div className="appbar__lead">
-              <span className="appbar__brand">Livanta</span>
-            </div>
-          </header>
-          <div className="app__body">
-            <div className="card">
-              <p className="card-meta">{t("app.loading")}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  /* Someone following a reset link lands on the app root, not on the account
-     screen, so the recovery session has to put that screen up by itself. Derived
-     from auth state rather than pushed onto the stack, so it costs no extra
-     render, and so the back chevron can be suppressed: a recovery session
-     cannot sign in again without its token, so there is nowhere useful to
-     return to and a live-looking back button would simply do nothing. */
-const recovering = auth.passwordResetReady;
-const route: Route | null = recovering
+  const recovering = auth.passwordResetReady;
+  const route: Route | null = recovering
     ? { kind: "auth" }
     : (stack[stack.length - 1] ?? null);
   const open = openId ? desk.things.find((x) => x.id === openId) ?? null : null;
@@ -207,7 +152,7 @@ const route: Route | null = recovering
         <Header
           desk={desk}
           tab={tab}
-route={route}
+          route={route}
           canGoBack={!recovering}
           onBack={pop}
           onOpenNotifications={() => push({ kind: "notifications" })}
@@ -217,7 +162,7 @@ route={route}
           }}
         />
 
-        <div className="app__body">
+        <main className="app__body">
           {desk.error ? (
             <div style={{ marginBottom: "0.875rem" }}>
               <div className="notice notice--danger">
@@ -304,7 +249,7 @@ route={route}
               showToast={showToast}
             />
           )}
-        </div>
+        </main>
 
         <nav className="bottomnav" aria-label={t("nav.primary")}>
           {TABS.map((def) => (
@@ -413,292 +358,7 @@ route={route}
           }}
         />
       ) : null}
+      <InstallPrompt />
     </div>
-  );
-}
-
-/* ----------------------------------------------------------------- header */
-
-function Header({
-  desk,
-  tab,
-route,
-  canGoBack,
-  onBack,
-  onOpenNotifications,
-  onOpenProfile,
-}: {
-  desk: ReturnType<typeof useLivanta>;
-  tab: Tab;
-route: Route | null;
-  /** False for a derived route, such as password recovery, that cannot be popped. */
-  canGoBack: boolean;
-  onBack: () => void;
-  onOpenNotifications: () => void;
-  onOpenProfile: () => void;
-}) {
-  const { t } = desk;
-  const name = desk.settings.displayName || "Temmy";
-
-  let title: string;
-  let sub: string | undefined;
-
-  if (route?.kind === "module") {
-    const mod = MODULES.find((m) => m.id === route.id);
-    title = mod ? t(mod.labelKey) : "";
-    sub = t("ui.lifeArea");
-  } else if (route?.kind === "notifications") {
-    title = t("alerts.title");
-    sub = t.n("alerts.count", desk.alerts.length, { status: desk.status.label });
-  } else if (route?.kind === "auth") {
-    title = t("account.title");
-    sub = t("account.subtitle");
-  } else if (tab === "home") {
-    title = t("app.brand");
-    sub = formatDate(new Date(), t.locale, {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    });
-  } else if (tab === "things") {
-    title = t("tab.things");
-    sub = t.n("things.count", desk.things.filter((x) => x.status === "active").length);
-  } else if (tab === "calendar") {
-    title = t("tab.calendar");
-    sub = t("cal.subtitle");
-  } else if (tab === "services") {
-    title = t("tab.services");
-    sub = t("svc.subtitle");
-  } else {
-    title = t("tab.profile");
-    sub = name;
-  }
-
-  return (
-    <header className="appbar">
-<div className="appbar__lead">
-        {route && canGoBack ? (
-          <button className="iconbtn" onClick={onBack} aria-label={t("app.back")}>
-            <Icon name="chevronLeft" size={22} />
-          </button>
-        ) : (
-          // The mark only appears at a tab root. On a pushed route the back
-          // chevron already occupies the leading slot, and a 32px logo beside
-          // it plus a title plus two actions does not fit a 360px screen.
-          <span className="appbar__logo">
-            <Logo />
-          </span>
-        )}
-        <div style={{ minWidth: 0 }}>
-          <p className="appbar__title">{title}</p>
-          {sub ? <p className="appbar__sub">{sub}</p> : null}
-        </div>
-      </div>
-      <div className="appbar__actions">
-        <button
-          className="iconbtn"
-          onClick={onOpenNotifications}
-          aria-label={t("alerts.title")}
-        >
-          <Icon name="bell" size={21} />
-          {desk.alerts.length > 0 ? (
-            <span className="iconbtn__dot">{desk.alerts.length > 9 ? "9+" : desk.alerts.length}</span>
-          ) : null}
-        </button>
-        <button
-          className="iconbtn"
-          onClick={onOpenProfile}
-          aria-label={t("tab.profile")}
-        >
-          <Avatar name={name} src={desk.settings.avatar} />
-        </button>
-      </div>
-    </header>
-  );
-}
-
-function ModuleHeader({
-  id,
-  t,
-  count,
-}: {
-  id: ModuleId;
-  t: ReturnType<typeof useLivanta>["t"];
-  count: number;
-}) {
-  const mod = MODULES.find((m) => m.id === id);
-  if (!mod) return null;
-  return (
-    <section className="section" style={{ marginTop: "0.875rem" }}>
-      <div className="card card--quiet">
-        <div className="rowline">
-          <span
-            className="module-ico"
-            style={{ color: mod.color, background: tint(mod.color, TINT_SOFT), marginBottom: 0, flex: "none" }}
-          >
-            <Icon name={MODULE_ICON[id]} size={20} />
-          </span>
-          <div className="listrow__body">
-            <p className="module-label" style={{ margin: 0 }}>
-              {t(mod.labelKey)}
-            </p>
-            <p className="module-blurb">{t(mod.blurbKey)}</p>
-          </div>
-        </div>
-        <p className="card-meta" style={{ marginTop: "0.5rem" }}>
-          {t.n("svc.items", count)}
-        </p>
-      </div>
-    </section>
-  );
-}
-
-/* ----------------------------------------------------------- desktop rail */
-
-function DesktopRail({
-  desk,
-  tab,
-  onOpenThing,
-}: {
-  desk: ReturnType<typeof useLivanta>;
-  tab: Tab;
-  onOpenThing: (thing: Thing) => void;
-}) {
-    const { t } = desk;
-    const part = useDayPart();
-    const soon = desk.things
-    .filter((x) => x.status === "active" && x.dueDate)
-    .sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? ""))
-    .slice(0, 6);
-
-  return (
-    <aside className="app__aside" aria-hidden={tab === "home" ? undefined : undefined}>
-      <div className="railhead">
-        <Avatar name={desk.settings.displayName || "Temmy"} src={desk.settings.avatar} large />
-        <div>
-          <p className="railhead__title">{t("app.tagline")}</p>
-          <p className="railhead__sub">
-            {t(greetingKey(part), { name: desk.settings.displayName || "Temmy" })}
-          </p>
-        </div>
-      </div>
-
-      <p className="railtitle">{t("home.needsAttention")}</p>
-      <div className="statgrid" style={{ marginBottom: "1.75rem" }}>
-        <div className="stat">
-          <div className="stat-num urgent">{desk.status.urgentCount}</div>
-          <div className="stat-label">{t("home.stat.urgent")}</div>
-        </div>
-        <div className="stat">
-          <div className="stat-num important">{desk.status.importantCount}</div>
-          <div className="stat-label">{t("home.stat.upcoming")}</div>
-        </div>
-        <div className="stat">
-          <div className="stat-num routine">{desk.status.onTrackCount}</div>
-          <div className="stat-label">{t("home.stat.onTrack")}</div>
-        </div>
-      </div>
-
-      {soon.length > 0 ? (
-        <>
-          <p className="railtitle">{t("home.comingSoon")}</p>
-          <div className="list" style={{ marginBottom: "1.75rem" }}>
-            {soon.map((thing) => {
-              const meta = CATEGORY_META[thing.category];
-              const due = dueMeta(thing, t);
-              return (
-                <button
-                  key={thing.id}
-                  className="listrow"
-                  onClick={() => onOpenThing(thing)}
-                >
-                  <span
-                    className="listrow__lead"
-                    style={{ color: meta.color, background: tint(meta.color, TINT_SOFT), borderColor: tint(meta.color, TINT_BORDER) }}
-                  >
-                    <Icon name={KIND_ICON[thing.kind]} size={18} />
-                  </span>
-                  <span className="listrow__body">
-                    <span className="listrow__title">{thing.name}</span>
-                    <span className="listrow__sub">
-                      {hasAmount(thing.amount) ? formatNaira(thing.amount) : t(`kind.${thing.kind}` as TKey)}
-                    </span>
-                  </span>
-                  <span className="listrow__trail">
-                    <span className={`badge ${TONE_CLASS[due.tone]}`}>{due.text}</span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </>
-      ) : null}
-
-      <p className="railtitle">{t("home.lifeAreas")}</p>
-      <div className="grid grid--3">
-        {(Object.keys(CATEGORY_META) as (keyof typeof CATEGORY_META)[]).map((id) => {
-          const meta = CATEGORY_META[id];
-          return (
-            <div key={id} className="card card--quiet">
-              <span
-                className="tile__icon"
-                style={{ color: meta.color, background: tint(meta.color, TINT_SOFT) }}
-              >
-                <Icon name={meta.icon} size={19} />
-              </span>
-              <p className="tile__label" style={{ marginTop: "0.5rem" }}>
-                {t(meta.labelKey)}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-    </aside>
-  );
-}
-
-/* --------------------------------------------------------- edit sheet host */
-
-function QuickAddEditHost({
-  thing,
-  t,
-  busy,
-  onCancel,
-  onSave,
-}: {
-  thing: Thing;
-  t: ReturnType<typeof useLivanta>["t"];
-  busy: boolean;
-  onCancel: () => void;
-  onSave: (values: ReturnType<typeof fromEditorValues>) => void;
-}) {
-  const [values, setValues] = useState(() => ({
-    name: thing.name,
-    category: thing.category,
-    kind: thing.kind,
-    amount: thing.amount === null ? "" : String(thing.amount),
-    dueDate: thing.dueDate ?? "",
-    frequency: thing.recurrence?.frequency ?? ("none" as const),
-    notes: thing.notes ?? "",
-  }));
-
-  return (
-    <Sheet title={t("things.edit")} onClose={onCancel}>
-      <ThingEditor
-        preset={{
-          label: t(`kind.${thing.kind}` as TKey),
-          kind: thing.kind,
-          category: thing.category,
-        }}
-        initial={values}
-        t={t}
-        busy={busy}
-        onSave={(v) => {
-          setValues(v);
-          onSave(fromEditorValues(v));
-        }}
-        onCancel={onCancel}
-      />
-    </Sheet>
   );
 }

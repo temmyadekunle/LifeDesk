@@ -95,9 +95,16 @@ export default function ThingEditor({
         <input
           id="e-name"
           value={v.name}
-          onChange={(e) => set("name", e.target.value)}
+          onChange={(e) => set("name", e.target.value.slice(0, 100))}
           placeholder={t("ed.whatPlaceholder")}
+          maxLength={100}
+          required
         />
+        {v.name.length >= 100 && (
+          <p className="hint" style={{ color: "var(--danger)" }}>
+            {t("ed.nameTooLong")}
+          </p>
+        )}
       </div>
 
       <div className="field field--row">
@@ -145,11 +152,22 @@ export default function ThingEditor({
           <label htmlFor="e-amount">{t("ed.amount")}</label>
           <input
             id="e-amount"
-            inputMode="numeric"
+            inputMode="decimal"
             value={v.amount}
-            onChange={(e) => set("amount", e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              // Only allow digits, decimal point, and leading minus sign
+              if (/^-?\d*\.?\d*$/.test(val) || val === "-" || val === "") {
+                set("amount", val);
+              }
+            }}
             placeholder={t("ed.amountPlaceholder")}
           />
+          {v.amount && !/^-?\d+(\.\d+)?$/.test(v.amount) && (
+            <p className="hint" style={{ color: "var(--danger)" }}>
+              {t("ed.amountInvalid")}
+            </p>
+          )}
         </div>
       </div>
       <p className="field hint" style={{ marginTop: "-0.5rem" }}>

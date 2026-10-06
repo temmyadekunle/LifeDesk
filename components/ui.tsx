@@ -30,15 +30,23 @@ export function Sheet({
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const headingId = useId();
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    // Store the element that had focus before the sheet opened.
+    previousFocusRef.current = document.activeElement as HTMLElement;
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
     // Move focus into the sheet so keyboard and screen-reader users land here.
     panelRef.current?.focus();
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      // Restore focus to the element that opened the sheet.
+      previousFocusRef.current?.focus();
+    };
   }, [onClose]);
 
   return (
@@ -228,12 +236,19 @@ export function ConfirmDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
+    previousFocusRef.current = document.activeElement as HTMLElement;
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onCancel();
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      previousFocusRef.current?.focus();
+    };
   }, [onCancel]);
 
   return (

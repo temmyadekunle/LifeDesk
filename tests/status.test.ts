@@ -12,7 +12,7 @@ test("computeLifeStatus", async (t) => {
   await t.test("needs attention when only important items exist", () => {
     const s = computeLifeStatus([], [makeAlert({ priority: "important" })], NOW);
     assert.equal(s.level, "needs-attention");
-    assert.equal(s.headline, "1 thing should be handled soon.");
+    assert.equal(s.headline, "1 alert should be handled soon.");
   });
 
   await t.test("pluralises the important headline", () => {
@@ -24,7 +24,7 @@ test("computeLifeStatus", async (t) => {
       ],
       NOW,
     );
-    assert.equal(s.headline, "2 things should be handled soon.");
+    assert.equal(s.headline, "2 alerts should be handled soon.");
   });
 
   await t.test("immediate attention when anything is urgent", () => {
@@ -37,7 +37,7 @@ test("computeLifeStatus", async (t) => {
       NOW,
     );
     assert.equal(s.level, "immediate");
-    assert.equal(s.headline, "1 thing needs attention now.");
+    assert.equal(s.headline, "1 alert needs attention now.");
   });
 
   await t.test("dismissed alerts are ignored", () => {

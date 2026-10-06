@@ -146,6 +146,12 @@ a {
   color: inherit;
 }
 
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
 /* Anchors keep the browser default underline, which is correct for prose and
    is the only cue that a legal document link leaves the app. The interactive
    rows below are navigation targets, not prose links, so the underline is

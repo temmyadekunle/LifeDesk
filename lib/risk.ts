@@ -164,7 +164,12 @@ export function buildAlerts(
       days === null
     )
       reason = "service-overdue";
-    else if (!thing.dueDate && !thing.serviceIntervalDays) reason = "no-record";
+    else if (
+      !thing.dueDate &&
+      !thing.serviceIntervalDays &&
+      !["contact", "task", "reminder", "birthday", "important-date"].includes(thing.kind)
+    )
+      reason = "no-record";
 
     if (!reason) continue;
 

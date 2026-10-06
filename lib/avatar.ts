@@ -81,7 +81,7 @@ export function isAvatarDataUrl(value: unknown): value is string {
  * failure here never surfaces as an unhandled rejection or a blank avatar with
  * no explanation.
  */
-export async function readAvatar(file: File): Promise<string> {
+export async function readAvatar(file: File | Blob): Promise<string> {
   if (file.size > AVATAR_MAX_INPUT_BYTES) throw new AvatarProblem("too-large");
   if (!file.type.startsWith("image/")) throw new AvatarProblem("not-an-image");
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 
 import { Icon } from "../Icons";
@@ -9,6 +9,7 @@ import { AccountPanel } from "../AccountPanel";
 import { Avatar } from "../Avatar";
 import { LocalePicker } from "../Onboarding";
 import { AvatarProblem, readAvatar } from "@/lib/avatar";
+import { CropSheet } from "../CropSheet";
 import {
   announcePermissionChange,
   downloadJson,
@@ -51,6 +52,7 @@ export function ProfileScreen({
     serverPermissionSnapshot,
   );
   const name = desk.settings.displayName || "Temmy";
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const upcoming = useMemo(
     () =>
@@ -87,25 +89,11 @@ export function ProfileScreen({
                 className="sr-only"
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
-                  // Cleared first so picking the same file twice in a row still
-                  // fires a change event.
                   e.target.value = "";
                   if (!file) return;
-                  try {
-                    const avatar = await readAvatar(file);
-                    await desk.updateSettings({ avatar });
-                    showToast(t("prof.photoSaved"), "ok");
-                  } catch (error) {
-                    const reason = error instanceof AvatarProblem ? error.reason : "could-not-read";
-                    showToast(
-                      reason === "too-large"
-                        ? t("prof.photoTooLarge")
-                        : reason === "not-an-image"
-                          ? t("prof.photoNotImage")
-                          : t("prof.photoFailed"),
-                      "danger",
-                    );
-                  }
+                  // Create object URL for the crop sheet
+                  const objectUrl = URL.createObjectURL(file);
+                  setCropSrc(objectUrl);
                 }}
               />
               <span className="sr-only">{t("prof.changePhoto")}</span>
@@ -391,6 +379,34 @@ export function ProfileScreen({
           </Link>
         </div>
       </section>
+      {cropSrc ? (
+        <CropSheet
+          src={cropSrc}
+          onCancel={() => {
+            URL.revokeObjectURL(cropSrc);
+            setCropSrc(null);
+          }}
+          onCrop={async (blob) => {
+            URL.revokeObjectURL(cropSrc);
+            setCropSrc(null);
+            try {
+              const avatar = await readAvatar(blob);
+              await desk.updateSettings({ avatar });
+              showToast(t("prof.photoSaved"), "ok");
+            } catch (error) {
+              const reason = error instanceof AvatarProblem ? error.reason : "could-not-read";
+              showToast(
+                reason === "too-large"
+                  ? t("prof.photoTooLarge")
+                  : reason === "not-an-image"
+                    ? t("prof.photoNotImage")
+                    : t("prof.photoFailed"),
+                "danger",
+              );
+            }
+          }}
+        />
+      ) : null}
     </>
   );
 }

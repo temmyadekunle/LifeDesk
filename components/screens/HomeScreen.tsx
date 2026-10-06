@@ -8,7 +8,9 @@ import { TINT_SOFT, tint } from "@/lib/color";
 import { QUICK_TYPES } from "../QuickAdd";
 import { formatNaira } from "@/lib/i18n";
 import { hasAmount } from "@/lib/money";
+import { greetingKey, useDayPart } from "@/lib/useDayPart";
 import type { Alert, Priority, Thing } from "@/lib/types";
+import type { DayDiff } from "@/lib/risk";
 import type { useLivanta } from "@/lib/useLivanta";
 import type { ModuleId } from "../ModuleScreen";
 import type { EditorPreset } from "@/lib/editor";
@@ -194,6 +196,9 @@ export function HomeScreen({
 function Hero({ desk }: { desk: Desk }) {
   const { t } = desk;
   const name = desk.settings.displayName || "Temmy";
+  // Subscribed rather than read once, so an app left open across lunchtime
+  // stops saying "Good morning" without needing to be closed and reopened.
+  const part = useDayPart();
   return (
     <div className="hero">
       <div className="hero__top">
@@ -201,7 +206,7 @@ function Hero({ desk }: { desk: Desk }) {
           Livanta
         </span>
       </div>
-      <p className="hero__greet">{t("app.greeting", { name })}</p>
+      <p className="hero__greet">{t(greetingKey(part), { name })}</p>
       <p className="hero__line">
         {desk.loading ? t("app.loading") : desk.status.headline}
       </p>
@@ -282,17 +287,34 @@ export function AlertCard({
 }
 
 export function ThingLine({
-  thing,
-  desk,
-  onOpen,
-}: {
-  thing: Thing;
-  desk: Desk;
-  onOpen: (thing: Thing) => void;
-}) {
-  const { t } = desk;
-  const meta = CATEGORY_META[thing.category];
-  const due = dueMeta(thing, t);
+    thing,
+    desk,
+    onOpen,
+    now,
+    dayDiff,
+  }: {
+    thing: Thing;
+    desk: Desk;
+    onOpen: (thing: Thing) => void;
+    /**
+     * Overrides the clock when the row is rendered outside the live app.
+     *
+     * The landing page reuses this component inside its phone mockups, and a
+     * statically exported page is built once and then opened on any date. Left
+     * to its own devices this component would print "Due in 2 days" into the
+     * HTML at build time and then print a different number when the reader's
+     * browser hydrated it, which React reports as a hydration mismatch. Passing
+     * one fixed instant plus a timezone-independent `dayDiff` makes the two
+     * renders agree.
+     *
+     * Both default to the real clock, so the app itself is unaffected.
+     */
+    now?: Date;
+    dayDiff?: DayDiff;
+  }) {
+    const { t } = desk;
+    const meta = CATEGORY_META[thing.category];
+    const due = dueMeta(thing, t, now, dayDiff);
 
   return (
     <button className="listrow" onClick={() => onOpen(thing)}>

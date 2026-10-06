@@ -12,6 +12,7 @@
  *
  *   node scripts/responsive-qa.mjs            # audit, non-zero exit on failure
  *   node scripts/responsive-qa.mjs --shots    # also write PNGs to qa-shots/
+ *   node scripts/responsive-qa.mjs /landing/  # audit a route other than the app
  *
  * Uses the Chrome already installed on the machine rather than a Playwright
  * browser download, so it runs without a ~150MB fetch.
@@ -24,6 +25,11 @@ import { chromium } from "playwright";
 const ROOT = resolve("out");
 const SHOTS = resolve("qa-shots");
 const wantShots = process.argv.includes("--shots");
+
+/** Which route to audit. Defaults to the app at /; pass e.g. /landing/. */
+const ROUTE = process.argv.slice(2).find((a) => !a.startsWith("--")) ?? "/";
+/** Slug for screenshot filenames, so two routes do not overwrite each other. */
+const SLUG = ROUTE.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "root";
 
 /** The widths that decide whether this app works. 360 is the narrowest phone
  *  still sold in volume; 390 and 412 are the common Android and Pro Max sizes. */
@@ -106,6 +112,14 @@ function audit(minTap) {
     return r.width > 0 && r.height > 0;
   };
 
+  /* Inside a role="img" the content is a picture, not interface.
+     The landing page's phone mockups are marked up that way on purpose: they
+     render the real app screens but their controls are inert, so a 42px-wide
+     filter chip in a 300px-wide illustration is a scale artefact of the
+     picture rather than a tap target a thumb will ever miss. Judging them
+     reports a defect that does not exist in the product. */
+  const inPicture = (el) => el.closest('[role="img"]') !== null;
+
   /* 1. Nothing may be wider than the viewport. The classic mobile bug is a
         fixed-width sheet or a long unbroken token pushing the whole document. */
   const doc = document.documentElement;
@@ -135,6 +149,7 @@ function audit(minTap) {
   );
   for (const el of controls) {
     if (!visible(el)) continue;
+    if (inPicture(el)) continue;
     const inlineInProse = el.tagName === "A" && el.closest("p, li.tip, .card-meta, .hint");
     if (inlineInProse) continue;
     const r = el.getBoundingClientRect();
@@ -154,6 +169,11 @@ function audit(minTap) {
   for (const el of document.querySelectorAll("p, h1, h2, h3, span, div, label, li, button, a")) {
     if (!visible(el)) continue;
     if (!text(el)) continue;
+    if (inPicture(el)) continue;
+    /* .sr-only is *meant* to be clipped to 1px: it is readable by a screen
+       reader and invisible on screen. Flagging it would report the utility
+       working correctly as if it were a truncation bug. */
+    if (el.closest(".sr-only")) continue;
     const s = getComputedStyle(el);
     if (s.overflow === "visible" || s.overflowX === "visible") continue;
     if (s.textOverflow === "ellipsis") continue;
@@ -198,13 +218,15 @@ function audit(minTap) {
 
   /* Every rgb() colour stop in a background-image, so a gradient can be judged
      on its worst end rather than skipped or, worse, mistaken for the page
-     background. */
+     background. Fully transparent stops are dropped: `transparent` computes to
+     rgba(0,0,0,0), which is not a colour anyone can read, and treating it as
+     black made a soft brand-coloured wash score as unreadable black. */
   const stopsOf = (bgImage) => {
     if (!bgImage || bgImage === "none") return [];
     const out = [];
     for (const m of bgImage.matchAll(/rgba?\([^)]+\)/g)) {
       const c = parse(m[0]);
-      if (c) out.push(c);
+      if (c && c.a > 0) out.push(c);
     }
     return out;
   };
@@ -212,7 +234,13 @@ function audit(minTap) {
   /* Collects every background behind this element: solid fills, and the colour
      stops of any gradient found on the way up. Returns null-ish when a gradient
      is involved, because there is no single correct answer and the honest thing
-     is to report the worst case. */
+     is to report the worst case.
+
+     The walk stops at the first opaque fill. Anything painted above an opaque
+     background is invisible, so folding its gradient in produced confident wrong
+     readings: text inside a phone mockup was judged against the dark bezel
+     gradient that surrounds it, even though the mockup's own white screen sits
+     between the two and hides the bezel completely. */
   const backdrop = (el) => {
     let solid = null;
     const gradients = [];
@@ -221,14 +249,19 @@ function audit(minTap) {
       const stops = stopsOf(s.backgroundImage);
       if (stops.length) gradients.push(...stops);
       const c = parse(s.backgroundColor);
-      if (!solid && c && c.a > 0.5) solid = c;
-      if (solid && gradients.length) break;
+      if (!solid && c && c.a > 0.5) {
+        solid = c;
+        // Opaque here: the backdrop is settled, so stop before a parent's
+        // gradient can be mistaken for something the reader can see.
+        break;
+      }
     }
     return { solid: solid ?? { r: 255, g: 255, b: 255 }, gradients };
   };
 
   for (const el of document.querySelectorAll("p, h1, h2, h3, span, label, button, a, li, div")) {
     if (!visible(el)) continue;
+    if (inPicture(el)) continue;
     // A container's own text is its descendants' text; only judge direct text.
     const direct = Array.from(el.childNodes)
       .filter((n) => n.nodeType === 3)
@@ -237,6 +270,15 @@ function audit(minTap) {
       .trim();
     if (!direct) continue;
     const s = getComputedStyle(el);
+
+    /* Text painted by clipping its own background (the gradient heading on the
+       landing page) has no real foreground colour to measure: the gradient is
+       the glyph fill, and the computed `color` is a transparent placeholder.
+       Judging that placeholder against a gradient stop reports a number that
+       looks like a failure and is not one. */
+    const bgClip = s.webkitBackgroundClip || s.backgroundClip;
+    if (bgClip === "text") continue;
+
     const fg = parse(s.color);
     if (!fg || fg.a < 0.5) continue;
     const { solid, gradients } = backdrop(el);
@@ -330,6 +372,7 @@ let failed = 0;
 let warned = 0;
 
 console.log(`Auditing ${ROOT}`);
+console.log(`Route ${ROUTE}`);
 console.log(`Serving ${base}\n`);
 
 for (const vp of VIEWPORTS) {
@@ -348,14 +391,17 @@ for (const vp of VIEWPORTS) {
   });
   page.on("pageerror", (e) => consoleErrors.push(String(e)));
 
-  await page.goto(base, { waitUntil: "networkidle" });
+  await page.goto(base + ROUTE.replace(/^\//, ""), { waitUntil: "networkidle" });
   // Onboarding renders after IndexedDB opens and the desk hydrates.
   await page.waitForTimeout(700);
 
   const { findings, metrics } = await page.evaluate(audit, MIN_TAP);
 
   if (wantShots) {
-    await page.screenshot({ path: join(SHOTS, `${vp.name}.png`), fullPage: true });
+    await page.screenshot({
+      path: join(SHOTS, `${SLUG}-${vp.name}.png`),
+      fullPage: true,
+    });
   }
 
   const errors = findings.filter((f) => f.severity !== "warn");

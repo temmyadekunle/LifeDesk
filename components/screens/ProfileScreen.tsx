@@ -6,8 +6,9 @@ import Link from "next/link";
 import { Icon } from "../Icons";
 import { Logo } from "../Logo";
 import { AccountPanel } from "../AccountPanel";
-import { initials } from "../labels";
+import { Avatar } from "../Avatar";
 import { LocalePicker } from "../Onboarding";
+import { AvatarProblem, readAvatar } from "@/lib/avatar";
 import {
   announcePermissionChange,
   downloadJson,
@@ -70,12 +71,62 @@ export function ProfileScreen({
         </div>
         <div className="card">
           <div className="rowline">
-            <span className="avatar avatar--lg">{initials(name)}</span>
+            {/* A label wrapping the file input rather than a button with an
+                onClick that calls input.click(): the picker then opens from the
+                keyboard, from a screen reader's activate, and from the tap, with
+                no extra handlers and no focus juggling. The input itself is
+                hidden but not display:none, or it would be unreachable. */}
+            <label className="avatar-edit">
+              <Avatar name={name} src={desk.settings.avatar} large />
+              <span className="avatar-edit__badge">
+                <Icon name="camera" size={15} />
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  // Cleared first so picking the same file twice in a row still
+                  // fires a change event.
+                  e.target.value = "";
+                  if (!file) return;
+                  try {
+                    const avatar = await readAvatar(file);
+                    await desk.updateSettings({ avatar });
+                    showToast(t("prof.photoSaved"), "ok");
+                  } catch (error) {
+                    const reason = error instanceof AvatarProblem ? error.reason : "could-not-read";
+                    showToast(
+                      reason === "too-large"
+                        ? t("prof.photoTooLarge")
+                        : reason === "not-an-image"
+                          ? t("prof.photoNotImage")
+                          : t("prof.photoFailed"),
+                      "danger",
+                    );
+                  }
+                }}
+              />
+              <span className="sr-only">{t("prof.changePhoto")}</span>
+            </label>
             <div className="listrow__body">
               <h2 className="card-title" style={{ fontSize: "1.0625rem" }}>
                 {name}
               </h2>
               <p className="card-meta">{t("profile.freePlan")}</p>
+              {desk.settings.avatar ? (
+                <button
+                  className="linkbtn"
+                  style={{ marginTop: "0.25rem" }}
+                  onClick={() => {
+                    void desk.updateSettings({ avatar: "" });
+                    showToast(t("prof.photoRemoved"), "info");
+                  }}
+                >
+                  {t("prof.removePhoto")}
+                </button>
+              ) : null}
             </div>
           </div>
           <div className="statgrid" style={{ marginTop: "0.875rem" }}>

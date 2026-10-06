@@ -84,8 +84,11 @@ export function settingsToRow(
 ): SettingsRow {
   return {
     user_id: userId,
-    onboarded: settings.onboarded,
-    display_name: settings.displayName,
+      onboarded: settings.onboarded,
+      display_name: settings.displayName,
+      // "" rather than null when unset: one representation is easier to reason
+      // about than "sometimes empty string, sometimes null".
+      avatar: settings.avatar || null,
     locale: settings.locale,
     data_saver: settings.dataSaver,
     notify_urgent: settings.notifyUrgent,
@@ -97,8 +100,9 @@ export function settingsToRow(
 
 export function rowToSettings(row: SettingsRow): Settings {
   return {
-    onboarded: row.onboarded,
-    displayName: row.display_name,
+      onboarded: row.onboarded,
+      displayName: row.display_name,
+      avatar: row.avatar ?? "",
     locale: row.locale as Settings["locale"],
     dataSaver: row.data_saver,
     notifyUrgent: row.notify_urgent,

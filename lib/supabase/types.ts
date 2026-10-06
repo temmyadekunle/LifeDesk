@@ -38,6 +38,7 @@ export interface SettingsRow {
   user_id: string;
   onboarded: boolean;
   display_name: string;
+  avatar: string | null;
   locale: string;
   data_saver: boolean;
   notify_urgent: boolean;

@@ -6,11 +6,43 @@ const MS_PER_DAY = 86_400_000;
 /** Default translator, so callers that do not care about locale get English. */
 export const englishT: Translate = makeT("en");
 
+/**
+ * Counts the whole days from `now`'s calendar date to a YYYY-MM-DD date.
+ *
+ * Every piece of urgency in the app is derived from this one function, so it is
+ * also the one place that decides what "today" means. It is injectable because
+ * the marketing page needs a different answer: see utcDaysUntil.
+ */
+export type DayDiff = (dueIso: string, now: Date) => number;
+
 /** Whole days from today until `iso`. Negative when already past. */
 export function daysUntil(iso: string, now: Date = new Date()): number {
   const target = new Date(`${iso}T00:00:00`);
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return Math.round((target.getTime() - start.getTime()) / MS_PER_DAY);
+}
+
+/**
+ * The same count, anchored to UTC instead of the local calendar.
+ *
+ * Local time is right for the app: someone in Lagos at half past midnight should
+ * see tomorrow's date as "in 1 day", even though UTC has not caught up yet.
+ *
+ * It is wrong for a statically generated page. That HTML is written once, on the
+ * build machine, and then read by browsers in every timezone. A due date is a
+ * bare YYYY-MM-DD with no zone attached, so a reader whose local date is one day
+ * ahead of the build machine's counts them differently: the server writes
+ * "Due in 2 days" and that reader's browser computes "Due in 1 day", which React
+ * reports as a hydration mismatch and repairs by discarding the server HTML.
+ *
+ * Pinning both the due dates and the count to UTC makes the rendered string a
+ * function of the pinned instant alone, so it is identical everywhere and at
+ * every moment after the build.
+ */
+export function utcDaysUntil(iso: string, now: Date = new Date()): number {
+  const target = Date.parse(`${iso}T00:00:00Z`);
+  const start = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return Math.round((target - start) / MS_PER_DAY);
 }
 
 export function addFrequency(
@@ -36,12 +68,16 @@ export function addFrequency(
  * Phase 1 version: rules only. The Phase 2 engine adds historical-pattern
  * signals such as unusually high electricity spend.
  */
-export function derivePriority(thing: Thing, now: Date = new Date()): Priority {
+export function derivePriority(
+  thing: Thing,
+  now: Date = new Date(),
+  dayDiff: DayDiff = daysUntil,
+): Priority {
   if (thing.status !== "active") return "routine";
   if (thing.lastHandledDate) return "routine";
 
   if (thing.dueDate) {
-    const days = daysUntil(thing.dueDate, now);
+    const days = dayDiff(thing.dueDate, now);
     if (days < 0) return "urgent";
     if (days <= 7) return "urgent";
     if (days <= 30) return "important";
@@ -105,14 +141,15 @@ export function buildAlerts(
   things: Thing[],
   now: Date = new Date(),
   tr: Translate = englishT,
+  dayDiff: DayDiff = daysUntil,
 ): Alert[] {
   const alerts: Alert[] = [];
 
   for (const thing of things) {
     if (thing.status !== "active") continue;
 
-    const priority = derivePriority(thing, now);
-    const days = thing.dueDate ? daysUntil(thing.dueDate, now) : null;
+    const priority = derivePriority(thing, now, dayDiff);
+    const days = thing.dueDate ? dayDiff(thing.dueDate, now) : null;
 
     let reason: Alert["reason"] | null = null;
 

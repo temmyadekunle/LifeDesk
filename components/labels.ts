@@ -1,6 +1,6 @@
 import type { Translate } from "@/lib/i18n";
 import type { TKey } from "@/lib/locales/en";
-import { daysUntil } from "@/lib/risk";
+import { daysUntil, type DayDiff } from "@/lib/risk";
 import type { Alert, Thing } from "@/lib/types";
 
 export type Tone = "urgent" | "warn" | "info" | "ok" | "neutral";
@@ -23,6 +23,7 @@ export function dueMeta(
   thing: Thing,
   t: Translate,
   now: Date = new Date(),
+  dayDiff: DayDiff = daysUntil,
 ): { text: string; tone: Tone } {
   if (thing.status === "completed") {
     return { text: t("row.completed"), tone: "ok" };
@@ -31,7 +32,7 @@ export function dueMeta(
     return { text: thing.notes ?? t("row.noDate"), tone: "neutral" };
   }
 
-  const days = daysUntil(thing.dueDate, now);
+  const days = dayDiff(thing.dueDate, now);
 
   if (days < 0) {
     return {

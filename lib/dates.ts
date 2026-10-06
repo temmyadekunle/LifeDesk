@@ -9,6 +9,29 @@
 
 import type { Locale } from "./i18n.ts";
 
+/**
+ * Which part of the day it is, for greetings.
+ *
+ * Unlike everything else in this file, this deliberately reads the *reader's*
+ * local clock. A due date is a calendar day that means the same thing in Lagos
+ * and in London, so it is pinned to local midnight to keep the day stable. "Good
+ * evening" is not that: it is a statement about the hour where the reader
+ * actually is, and a Londoner reading this at 21:00 should be greeted in their
+ * own evening, not in Lagos's afternoon.
+ *
+ * The three windows cover all 24 hours with no gap and no overlap. The small
+ * hours are evening rather than morning, because "Good morning" at 02:00 reads
+ * as though the app has the wrong idea of the time.
+ */
+export type DayPart = "morning" | "afternoon" | "evening";
+
+export function dayPart(date: Date): DayPart {
+  const hour = date.getHours();
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 18) return "afternoon";
+  return "evening";
+}
+
 export function parseISO(iso: string): Date {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1);

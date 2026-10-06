@@ -35,7 +35,7 @@ const send = (res, file, status) => {
   createReadStream(file).pipe(res);
 };
 
-createServer((req, res) => {
+const server = createServer((req, res) => {
   const { pathname } = new URL(req.url, "http://localhost");
   // normalize collapses ../ before it can escape the out/ directory
   const target = join(root, normalize(decodeURIComponent(pathname)));
@@ -53,6 +53,10 @@ createServer((req, res) => {
     return send(res, target, 200);
   }
   send(res, join(root, "404.html"), 404);
-}).listen(port, () => {
+}).listen(port, "0.0.0.0", () => {
   console.log(`Livanta static preview: http://localhost:${port}`);
+});
+
+server.on("error", (err) => {
+  console.error("Server error:", err);
 });

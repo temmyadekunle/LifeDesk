@@ -6,7 +6,7 @@ import { Icon } from "../Icons";
 import { EmptyState } from "../ui";
 import { ThingLine } from "./HomeScreen";
 import { CATEGORIES, CATEGORY_META } from "../maps";
-import { daysUntil } from "@/lib/risk";
+import { daysUntil, type DayDiff } from "@/lib/risk";
 import type { Category, Thing } from "@/lib/types";
 import type { useLivanta } from "@/lib/useLivanta";
 
@@ -22,24 +22,31 @@ const GROUP_LABEL: Record<Group, string> = {
   nodate: "things.group.nodate",
 };
 
-function groupOf(thing: Thing): Group {
-  if (!thing.dueDate) return "nodate";
-  const days = daysUntil(thing.dueDate);
-  if (days < 0) return "overdue";
-  if (days === 0) return "today";
-  if (days <= 7) return "week";
-  return "later";
-}
+  function groupOf(thing: Thing, now?: Date, dayDiff?: DayDiff): Group {
+    if (!thing.dueDate) return "nodate";
+    const days = (dayDiff ?? daysUntil)(thing.dueDate, now ?? new Date());
+    if (days < 0) return "overdue";
+    if (days === 0) return "today";
+    if (days <= 7) return "week";
+    return "later";
+  }
 
 export function ThingsScreen({
-  desk,
-  onOpenThing,
-  onAdd,
-}: {
-  desk: Desk;
-  onOpenThing: (thing: Thing) => void;
-  onAdd: () => void;
-}) {
+    desk,
+    onOpenThing,
+    onAdd,
+    now,
+    dayDiff,
+  }: {
+    desk: Desk;
+    onOpenThing: (thing: Thing) => void;
+    onAdd: () => void;
+    /** See ThingLine's 
+ow: pins the clock for the static mockups. */
+    now?: Date;
+    /** See ThingLine's dayDiff. */
+    dayDiff?: DayDiff;
+  }) {
   const { t } = desk;
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Category | "all">("all");
@@ -71,13 +78,14 @@ export function ThingsScreen({
   const groups = useMemo(() => {
     const map = new Map<Group, Thing[]>();
     for (const thing of filtered) {
-      const key = thing.status === "completed" ? "later" : groupOf(thing);
+      const key =
+        thing.status === "completed" ? "later" : groupOf(thing, now, dayDiff);
       const list = map.get(key) ?? [];
       list.push(thing);
       map.set(key, list);
     }
-    return map;
-  }, [filtered]);
+      return map;
+    }, [filtered, now, dayDiff]);
 
   const completedCount = desk.things.filter((x) => x.status === "completed").length;
 
@@ -179,6 +187,8 @@ export function ThingsScreen({
                       thing={thing}
                       desk={desk}
                       onOpen={onOpenThing}
+                      now={now}
+                      dayDiff={dayDiff}
                     />
                   ))}
                 </div>

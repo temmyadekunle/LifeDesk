@@ -74,6 +74,8 @@ test("AccountPanel renders the unavailable notice instead of a sign-in form", as
     resetPassword: async () => true,
     updatePassword: async () => true,
     clearError: () => {},
+    signInWithGoogle: async () => false,
+    signInWithApple: async () => false,
   };
   const sync = {
     enabled: false,
@@ -137,6 +139,8 @@ test("a recovery session shows the new-password form, not the signed-in panel", 
     resetPassword: async () => true,
     updatePassword: async () => true,
     clearError: () => {},
+    signInWithGoogle: async () => false,
+    signInWithApple: async () => false,
   };
 
   await act(async () => {
@@ -177,6 +181,8 @@ test("an ordinary signed-in session still shows the signed-in panel", async () =
     resetPassword: async () => true,
     updatePassword: async () => true,
     clearError: () => {},
+    signInWithGoogle: async () => false,
+    signInWithApple: async () => false,
   };
 
   await act(async () => {

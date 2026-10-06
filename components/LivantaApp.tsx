@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Icon, type IconName } from "./Icons";
+import { Avatar } from "./Avatar";
 import { ConfirmDialog, Sheet, Toast, useToast } from "./ui";
 import { Logo } from "./Logo";
 import { QuickAddSheet } from "./QuickAdd";
@@ -19,7 +20,7 @@ import { NotificationsScreen } from "./screens/NotificationsScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { CATEGORY_META, KIND_ICON, MODULE_ICON } from "./maps";
 import { TINT_BORDER, TINT_SOFT, tint } from "@/lib/color";
-import { dueMeta, initials, TONE_CLASS } from "./labels";
+import { dueMeta, TONE_CLASS } from "./labels";
 import { formatDate } from "@/lib/dates";
 import { formatNaira } from "@/lib/i18n";
 import { hasAmount } from "@/lib/money";
@@ -29,6 +30,7 @@ import type { TKey } from "@/lib/locales/en";
 import type { Thing } from "@/lib/types";
 import { useAuth } from "@/lib/useAuth";
 import { useCloudSync } from "@/lib/useCloudSync";
+import { greetingKey, useDayPart } from "@/lib/useDayPart";
 import { useLivanta } from "@/lib/useLivanta";
 
 type Tab = "home" | "things" | "calendar" | "services" | "profile";
@@ -508,7 +510,7 @@ route: Route | null;
           onClick={onOpenProfile}
           aria-label={t("tab.profile")}
         >
-          <span className="avatar">{initials(name)}</span>
+          <Avatar name={name} src={desk.settings.avatar} />
         </button>
       </div>
     </header>
@@ -562,8 +564,9 @@ function DesktopRail({
   tab: Tab;
   onOpenThing: (thing: Thing) => void;
 }) {
-  const { t } = desk;
-  const soon = desk.things
+    const { t } = desk;
+    const part = useDayPart();
+    const soon = desk.things
     .filter((x) => x.status === "active" && x.dueDate)
     .sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? ""))
     .slice(0, 6);
@@ -571,11 +574,11 @@ function DesktopRail({
   return (
     <aside className="app__aside" aria-hidden={tab === "home" ? undefined : undefined}>
       <div className="railhead">
-        <span className="avatar avatar--lg">{initials(desk.settings.displayName || "Temmy")}</span>
+        <Avatar name={desk.settings.displayName || "Temmy"} src={desk.settings.avatar} large />
         <div>
           <p className="railhead__title">{t("app.tagline")}</p>
           <p className="railhead__sub">
-            {t("app.greeting", { name: desk.settings.displayName || "Temmy" })}
+            {t(greetingKey(part), { name: desk.settings.displayName || "Temmy" })}
           </p>
         </div>
       </div>

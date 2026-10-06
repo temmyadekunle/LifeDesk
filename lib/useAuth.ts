@@ -51,6 +51,10 @@ export interface UseAuth {
   updatePassword: (password: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   clearError: () => void;
+  /** Sign in with Google OAuth. */
+  signInWithGoogle: () => Promise<boolean>;
+  /** Sign in with Apple OAuth. */
+  signInWithApple: () => Promise<boolean>;
 }
 
 /**
@@ -229,6 +233,42 @@ export function useAuth(): UseAuth {
     await supabase.auth.signOut();
   }, []);
 
+  const signInWithGoogle = useCallback(async () => {
+    emit({ error: null });
+    const supabase = getSupabase();
+    if (!supabase) return false;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}${window.location.pathname}`,
+      },
+    });
+    if (error) {
+      emit({ error: toAuthError(error) });
+      return false;
+    }
+    return true;
+  }, []);
+
+  const signInWithApple = useCallback(async () => {
+    emit({ error: null });
+    const supabase = getSupabase();
+    if (!supabase) return false;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "apple",
+      options: {
+        redirectTo: `${window.location.origin}${window.location.pathname}`,
+      },
+    });
+    if (error) {
+      emit({ error: toAuthError(error) });
+      return false;
+    }
+    return true;
+  }, []);
+
   const clearError = useCallback(() => emit({ error: null }), []);
 
   return {
@@ -244,5 +284,7 @@ export function useAuth(): UseAuth {
     updatePassword,
     signOut,
     clearError,
+    signInWithGoogle,
+    signInWithApple,
   };
 }

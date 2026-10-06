@@ -16,7 +16,9 @@ export const en = {
 
   /* ---------- app shell ---------- */
   "app.tagline": "One place to manage the things that keep your life running.",
-  "app.greeting": "Good morning, {name}",
+  "app.greeting.morning": "Good morning, {name}",
+  "app.greeting.afternoon": "Good afternoon, {name}",
+  "app.greeting.evening": "Good evening, {name}",
   "app.loading": "Opening your Livanta…",
   "app.error.label": "Local database",
   "app.error.title": "Could not open storage",
@@ -272,6 +274,13 @@ export const en = {
   "prof.daysShort": "{n}d",
   "prof.manageAccount": "Manage account",
   "prof.manageAccountSub": "Sync across your devices",
+  "prof.changePhoto": "Change photo",
+  "prof.removePhoto": "Remove photo",
+  "prof.photoSaved": "Photo updated",
+  "prof.photoRemoved": "Photo removed",
+  "prof.photoFailed": "That image could not be read",
+  "prof.photoNotImage": "That file is not an image",
+  "prof.photoTooLarge": "That image is too large",
   "prof.signedIn": "Signed in",
 
   /* ---------- thing row ---------- */
@@ -395,6 +404,8 @@ export const en = {
   "account.needAccount": "Create an account to turn on sync",
   "account.signedInAs": "Signed in as {email}",
   "account.notConfigured": "Cloud sync is not part of this build.",
+  "account.offlineOnly": "Works completely offline",
+  "account.offlineOnlyBody": "Livanta stores everything on this device. Cloud sync is optional — you only need an account if you want to sync across multiple devices.",
   "sync.now": "Sync now",
   "sync.syncing": "Syncing…",
   "sync.done": "Up to date",
@@ -424,6 +435,9 @@ export const en = {
   "auth.forgotLink": "Forgot password?",
   "auth.haveResetLink": "Already have a reset link?",
   "auth.backToSignIn": "Back to sign in",
+  "auth.or": "or",
+  "auth.signInWithGoogle": "Continue with Google",
+  "auth.signInWithApple": "Continue with Apple",
   "auth.checkEmail": "Check your inbox",
   "auth.checkEmailTitle": "Check your email",
   "auth.checkEmailBody": "If that address is new, a confirmation link is on its way.",

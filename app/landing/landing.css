@@ -1,0 +1,1384 @@
+/*
+ * Landing page styles.
+ *
+ * Scoped entirely under .lp so nothing here can reach the app at / or change its
+ * behaviour. Only .sr-only is shared, and that lives in globals.css.
+ *
+ * The tokens reused here are the app's own --brand-*, --ink-*, --surface-* and
+ * category colours, so the marketing page and the product cannot drift apart
+ * visually. Nothing new is invented unless a value genuinely has no equivalent.
+ */
+
+/* ==================================================================
+   Layout primitives
+   ================================================================== */
+
+.lp {
+  /* The app sizes itself against a 15px root for a phone. The marketing page
+     reads better a touch larger, but the phone mockups inside it still use the
+     app's rem scale, which is why the root font-size is left alone. */
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink-700);
+  background: var(--bg);
+  overflow-x: hidden;
+}
+
+.lp-wrap {
+  width: 100%;
+  max-width: 1140px;
+  margin-inline: auto;
+  padding-inline: 20px;
+}
+
+.lp-wrap--narrow {
+  max-width: 760px;
+}
+
+.lp-section {
+  padding-block: 72px;
+  scroll-margin-top: 72px;
+}
+
+.lp-section--tint {
+  background: var(--surface);
+  border-block: 1px solid var(--line);
+}
+
+.lp h1,
+.lp h2,
+.lp h3 {
+  color: var(--ink-900);
+  text-wrap: balance;
+}
+
+/* ==================================================================
+   Typography
+   ================================================================== */
+
+.lp-h1 {
+  margin: 0 0 20px;
+  font-size: clamp(2.1rem, 1.35rem + 3.3vw, 3.6rem);
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.lp-h1__accent {
+  background: linear-gradient(100deg, var(--brand-600), var(--brand-800));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  /* Keeps the gradient legible if background-clip:text is unsupported. */
+  -webkit-text-fill-color: transparent;
+}
+
+.lp-h2 {
+  margin: 0 0 14px;
+  font-size: clamp(1.6rem, 1.2rem + 1.7vw, 2.35rem);
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.lp-lede {
+  margin: 0 auto;
+  max-width: 62ch;
+  font-size: 1.0625rem;
+  color: var(--ink-500);
+  text-wrap: pretty;
+}
+
+.lp-eyebrow {
+  margin: 0 0 12px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--brand-600);
+}
+
+.lp-head {
+  margin-bottom: 40px;
+}
+
+.lp-head--start {
+  text-align: left;
+}
+
+.lp-head--start .lp-lede {
+  margin-inline: 0;
+}
+
+/* ==================================================================
+   Buttons (extending the app's own .btn)
+   ================================================================== */
+
+.lp .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.lp .btn--lg {
+  padding: 14px 26px;
+  font-size: 1rem;
+}
+
+.lp .btn--sm {
+  /* 10px, not 8: that leaves the nav's two links at 40px tall, a miss against
+     the 44px target every other control on the page meets. */
+  padding: 10px 16px;
+  font-size: 0.875rem;
+}
+
+.lp .btn--primary {
+  background: var(--brand-700);
+  color: #fff;
+  border: 1px solid transparent;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.16), 0 8px 20px -10px var(--brand-700);
+}
+
+.lp .btn--primary:hover {
+  background: var(--brand-800);
+  transform: translateY(-1px);
+}
+
+.lp .btn--ghost {
+  background: var(--surface);
+  color: var(--ink-800);
+  border: 1px solid var(--line-strong);
+}
+
+.lp .btn--ghost:hover {
+  background: var(--brand-50);
+  border-color: var(--brand-500);
+}
+
+/* A control that is visibly unavailable, and says so. Never a link. */
+.lp .btn.is-disabled,
+.lp .btn.is-disabled:hover {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Visible focus for every interactive element on the page. */
+.lp a:focus-visible,
+.lp button:focus-visible,
+.lp summary:focus-visible {
+  outline: 3px solid var(--brand-500);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ==================================================================
+   Navigation
+   ================================================================== */
+
+.lp-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+
+.lp-nav__inner {
+  max-width: 1140px;
+  margin-inline: auto;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lp-nav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding-block: 6px;
+  text-decoration: none;
+  margin-right: auto;
+}
+
+.lp-nav__word {
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink-900);
+}
+
+.lp-nav__links {
+  display: none;
+  gap: 4px;
+}
+
+.lp-nav__links a {
+  /* 13px of vertical padding, not 8: at 16px text a smaller pad leaves the
+     link at 40px tall, under the 44px the project's own --tap token sets for
+     a comfortable target. */
+  padding: 13px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--ink-500);
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.lp-nav__links a:hover {
+  background: var(--brand-50);
+  color: var(--brand-700);
+}
+
+.lp-nav__actions {
+  display: none;
+  gap: 8px;
+}
+
+.lp-nav__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  color: var(--ink-800);
+  cursor: pointer;
+}
+
+/* Mobile menu */
+
+.lp-menu {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 0.22s ease, visibility 0.22s;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.lp-menu.is-open {
+  grid-template-rows: 1fr;
+  visibility: visible;
+}
+
+.lp-menu__links,
+.lp-menu__actions {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.lp-menu__links {
+  display: flex;
+  flex-direction: column;
+  padding-inline: 20px;
+}
+
+.lp-menu__links a {
+  padding: 14px 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--ink-800);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+}
+
+.lp-menu__links a:last-child {
+  border-bottom: 0;
+}
+
+.lp-menu__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 20px 22px;
+}
+
+/* ==================================================================
+   Hero
+   ================================================================== */
+
+.lp-hero {
+  position: relative;
+  padding-block: 56px 64px;
+  overflow: hidden;
+}
+
+/* A soft brand-coloured wash behind the hero. Purely decorative. */
+.lp-hero__glow {
+  position: absolute;
+  inset: -30% -10% auto -10%;
+  height: 620px;
+  background:
+    radial-gradient(60% 60% at 20% 20%, color-mix(in srgb, var(--brand-500) 16%, transparent), transparent 70%),
+    radial-gradient(50% 50% at 80% 10%, color-mix(in srgb, var(--accent-400) 14%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+.lp-hero__grid {
+  position: relative;
+  display: grid;
+  gap: 56px;
+  align-items: center;
+}
+
+.lp-hero__copy > * + * {
+  margin-top: 20px;
+}
+
+.lp-hero__sub {
+  margin: 0;
+  max-width: 54ch;
+  font-size: 1.0625rem;
+  color: var(--ink-500);
+  text-wrap: pretty;
+}
+
+.lp-hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.lp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 10px;
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+  border-radius: var(--radius-pill);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--brand-700);
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.lp-pill__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand-500);
+}
+
+.lp-promises {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lp-promises li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.9375rem;
+  color: var(--ink-500);
+}
+
+.lp-promises svg {
+  color: var(--brand-600);
+  flex-shrink: 0;
+}
+
+/* Hero artwork */
+
+.lp-hero__art {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.lp-hero__phone {
+  transform: none;
+}
+
+.lp-hero__chip {
+  display: none;
+  position: absolute;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-800);
+  white-space: nowrap;
+}
+
+.lp-hero__chip svg {
+  flex-shrink: 0;
+}
+
+.lp-hero__chip--a {
+  top: 14%;
+  left: 0;
+  color: var(--warn);
+}
+
+.lp-hero__chip--b {
+  bottom: 12%;
+  right: 0;
+  color: var(--danger);
+}
+
+/* ==================================================================
+   Store badges
+   ================================================================== */
+
+.lp-downloads {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lp-downloads--center {
+  align-items: center;
+}
+
+.lp-downloads--start {
+  align-items: flex-start;
+}
+
+.lp-downloads__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.lp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-radius: 12px;
+  background: #101418;
+  color: #fff;
+  text-decoration: none;
+  border: 1px solid #101418;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.lp-badge:hover {
+  transform: translateY(-1px);
+}
+
+.lp-badge--lg {
+  padding: 12px 22px;
+}
+
+.lp-badge--md {
+  padding: 8px 14px;
+}
+
+/*
+ * The pending state. Lower contrast than a live badge on purpose: it should
+ * read as not-yet-available rather than as a broken button, and it must not
+ * invite a tap it cannot honour.
+ */
+.lp-badge.is-pending {
+  background: var(--surface-2);
+  border-color: var(--line-strong);
+  border-style: dashed;
+  color: var(--ink-400);
+  cursor: not-allowed;
+}
+
+.lp-badge.is-pending:hover {
+  transform: none;
+}
+
+.lp-badge__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.lp-badge__small {
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.lp-badge__name {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.lp-badge__soon {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--brand-50);
+  color: var(--brand-700);
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.lp-downloads__note {
+  margin: 0;
+  font-size: 0.875rem;
+  /* --ink-400 lands at 4.48:1 on --bg, just under the 4.5:1 that WCAG AA wants
+     for body text. --ink-500 is the next step darker and clears it. */
+  color: var(--ink-500);
+  text-wrap: pretty;
+}
+
+.lp-downloads__note strong {
+  color: var(--ink-700);
+}
+
+/* ==================================================================
+   Cards and grids
+   ================================================================== */
+
+.lp-grid-2,
+.lp-grid-3 {
+  display: grid;
+  gap: 18px;
+}
+
+.lp-card {
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.lp-grid-2 .lp-card:hover,
+.lp-grid-3 .lp-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--brand-100);
+  box-shadow: var(--shadow-lg);
+}
+
+.lp-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  background: var(--brand-50);
+  color: var(--brand-700);
+}
+
+.lp-card__title {
+  margin: 0 0 8px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.lp-card__body {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--ink-500);
+  text-wrap: pretty;
+}
+
+.lp-card__body a,
+.lp-note a {
+  color: var(--brand-700);
+  font-weight: 600;
+}
+
+/* ==================================================================
+   Split sections
+   ================================================================== */
+
+.lp-split {
+  display: grid;
+  gap: 40px;
+  align-items: center;
+}
+
+.lp-split__copy > * + * {
+  margin-top: 22px;
+}
+
+.lp-split__copy .lp-lede {
+  max-width: 52ch;
+}
+
+.lp-split__art {
+  display: flex;
+  justify-content: center;
+}
+
+.lp-split__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.lp-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lp-checks li {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  font-size: 0.9375rem;
+  color: var(--ink-500);
+}
+
+.lp-checks svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--brand-600);
+}
+
+.lp-checks strong {
+  color: var(--ink-800);
+}
+
+/* ==================================================================
+   How it works
+   ================================================================== */
+
+.lp-steps {
+  display: grid;
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.lp-step {
+  position: relative;
+  padding: 26px 24px 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.lp-step__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 14px;
+  border-radius: 50%;
+  background: var(--brand-700);
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.lp-step h3 {
+  margin: 0 0 8px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.lp-step p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--ink-500);
+  text-wrap: pretty;
+}
+
+/* ==================================================================
+   Killer feature
+   ================================================================== */
+
+.lp-killer__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lp-killer__body p {
+  margin: 0;
+  color: var(--ink-500);
+  text-wrap: pretty;
+}
+
+/* ==================================================================
+   Screen gallery
+   ================================================================== */
+
+.lp-screens {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 16px;
+}
+
+.lp-screen {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.lp-screen__cap {
+  max-width: 30ch;
+  font-size: 0.875rem;
+  color: var(--ink-400);
+  text-align: center;
+  text-wrap: pretty;
+}
+
+/* ==================================================================
+   Upcoming list (real data)
+   ================================================================== */
+
+.lp-upcoming {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.lp-upcoming__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.lp-upcoming__row:last-child {
+  border-bottom: 0;
+}
+
+.lp-upcoming__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.lp-upcoming__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ink-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lp-upcoming__meta {
+  font-size: 0.8125rem;
+  color: var(--ink-400);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lp-upcoming__trail {
+  flex-shrink: 0;
+}
+
+/* ==================================================================
+   Why / trust
+   ================================================================== */
+
+.lp-note {
+  margin: 28px auto 0;
+  max-width: 60ch;
+  padding: 16px 20px;
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+  color: var(--brand-800);
+  text-align: center;
+  text-wrap: pretty;
+}
+
+.lp-card--quote {
+  border-left: 3px solid var(--brand-500);
+}
+
+.lp-quote__label {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brand-600);
+}
+
+/* ==================================================================
+   FAQ
+   ================================================================== */
+
+.lp-faq {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lp-faq__item {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.18s ease;
+}
+
+.lp-faq__item[open] {
+  border-color: var(--brand-100);
+}
+
+.lp-faq__q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink-900);
+  cursor: pointer;
+  list-style: none;
+}
+
+/* Hide the default disclosure triangle; the chevron is ours. */
+.lp-faq__q::-webkit-details-marker {
+  display: none;
+}
+
+.lp-faq__chev {
+  flex-shrink: 0;
+  color: var(--ink-400);
+  transition: transform 0.2s ease;
+}
+
+.lp-faq__item[open] .lp-faq__chev {
+  transform: rotate(180deg);
+}
+
+.lp-faq__a {
+  padding: 0 18px 18px;
+  font-size: 0.9375rem;
+  color: var(--ink-500);
+  text-wrap: pretty;
+}
+
+.lp-faq__a p {
+  margin: 0;
+}
+
+.lp-faq__a a {
+  color: var(--brand-700);
+  font-weight: 600;
+}
+
+/* ==================================================================
+   Final CTA
+   ================================================================== */
+
+.lp-final {
+  text-align: center;
+  background:
+    radial-gradient(70% 100% at 50% 0%, var(--brand-50), transparent 70%),
+    var(--surface);
+  border-top: 1px solid var(--line);
+}
+
+.lp-final__inner > * + * {
+  margin-top: 22px;
+}
+
+.lp-final__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.lp-final__trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 26px;
+  justify-content: center;
+  font-size: 0.875rem;
+  /* --ink-500, not --ink-400: this row sits on the brand-50 end of the radial
+     wash above, where --ink-400 lands at 4.24:1 and misses AA for 14px text. */
+  color: var(--ink-500);
+}
+
+.lp-final__trust span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.lp-final__trust svg {
+  color: var(--brand-600);
+}
+
+/* ==================================================================
+   Footer
+   ================================================================== */
+
+.lp-footer {
+  padding-block: 48px 32px;
+  background: var(--ink-900);
+  color: rgb(255 255 255 / 0.72);
+}
+
+.lp-footer__inner {
+  display: grid;
+  gap: 32px;
+}
+
+.lp-footer__brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 34ch;
+}
+
+.lp-footer__name {
+  margin: 0 0 4px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.lp-footer__tag {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.lp-footer__nav {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 24px;
+}
+
+.lp-footer__nav a {
+  display: block;
+  /* 13px, so each link clears the 44px target height the footer list would
+     otherwise miss at 32px. */
+  padding-block: 13px;
+  font-size: 0.875rem;
+  color: rgb(255 255 255 / 0.72);
+  text-decoration: none;
+}
+
+.lp-footer__nav a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.lp-footer__label {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.lp-footer__base {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+  justify-content: space-between;
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px solid rgb(255 255 255 / 0.14);
+  font-size: 0.8125rem;
+}
+
+.lp-footer__base p {
+  margin: 0;
+}
+
+.lp-footer__fine {
+  color: rgb(255 255 255 / 0.55);
+}
+
+/* ==================================================================
+   Sticky mobile CTA
+   ================================================================== */
+
+.lp-sticky {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 45;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+}
+
+.lp-sticky__inner {
+  max-width: 480px;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.lp-sticky__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.lp-sticky__text strong {
+  font-size: 0.9375rem;
+  color: var(--ink-900);
+}
+
+.lp-sticky__text span {
+  font-size: 0.8125rem;
+  color: var(--ink-400);
+}
+
+/*
+ * When the sticky bar is on screen it would otherwise sit over the footer's
+ * last line, so the page keeps that clearance at every breakpoint where the bar
+ * exists. The short-viewport query at the bottom removes the bar instead.
+ */
+.lp .lp-footer {
+  padding-bottom: 92px;
+}
+
+/* ==================================================================
+   Phone mockups
+   ==================================================================
+   The frame is decorative, so everything inside inherits the app's own classes
+   straight from globals.css. The frame's job is to crop the real UI to
+   phone-shaped proportions and to hide the parts that would need interaction.
+   ================================================================== */
+
+.lp-phone {
+  width: 100%;
+  max-width: 300px;
+}
+
+.lp-phone__frame {
+  position: relative;
+  padding: 10px;
+  border-radius: 38px;
+  background: linear-gradient(160deg, #23282e, #10131a);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.06) inset,
+    var(--shadow-lg);
+}
+
+.lp-phone__notch {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92px;
+  height: 22px;
+  border-radius: 0 0 14px 14px;
+  background: #10131a;
+  z-index: 2;
+}
+
+.lp-phone__screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 580px;
+  border-radius: 28px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.lp-phone__statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 18px 2px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--ink-700);
+  background: var(--surface);
+}
+
+.lp-phone__statusright {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.lp-signal {
+  display: inline-block;
+  width: 3px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.lp-signal:nth-child(1) { height: 4px; }
+.lp-signal:nth-child(2) { height: 6px; }
+.lp-signal:nth-child(3) { height: 8px; }
+
+/* Clips the real screen to the visible window, the way a screenshot would. */
+.lp-phone__body {
+  flex: 1;
+  overflow: hidden;
+  /* The app's own scrollbars would be visible and look like a bug. */
+  scrollbar-width: none;
+}
+
+.lp-phone__body::-webkit-scrollbar {
+  display: none;
+}
+
+.lp-bottomnav {
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.lp-bottomnav__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 7px 2px 8px;
+  color: var(--ink-400);
+}
+
+.lp-bottomnav__item.is-on {
+  color: var(--brand-700);
+}
+
+.lp-bottomnav__label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+}
+
+/*
+ * Inside a frame the app is scaled down slightly. The real UI is designed for a
+ * ~390px viewport; at 280px it would set cramped, so the content is scaled
+ * rather than re-laid out. This is a presentation transform, so nothing about
+ * the components themselves changes.
+ */
+.lp-phone__body > * {
+  font-size: 0.875rem;
+}
+
+/* Calendar grid, built by PhoneCalendar */
+
+.lp-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.lp-cal__dow {
+  padding-block: 4px;
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--ink-400);
+}
+
+.lp-cal__day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  color: var(--ink-700);
+}
+
+/* A due date. The dot is what makes the month view worth looking at. */
+.lp-cal__day.has-item::after {
+  content: "";
+  position: absolute;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--brand-600);
+}
+
+.lp-cal__day.is-today {
+  background: var(--brand-700);
+  color: #fff;
+  font-weight: 700;
+}
+
+.lp-cal__day.is-today::after {
+  background: #fff;
+}
+
+.lp-cal__day.is-empty {
+  visibility: hidden;
+}
+
+/* ==================================================================
+   Motion
+   ==================================================================
+   Everything above is a plain CSS transition, so it needs no JavaScript and
+   cannot strand the page in an invisible state. The single scroll-driven
+   reveal below is progressive enhancement wrapped in @media, and the
+   no-preference query disables it entirely for anyone who asked for less
+   motion.
+   ================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .lp *,
+  .lp *::before,
+  .lp *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==================================================================
+   Responsive
+   ================================================================== */
+
+@media (min-width: 620px) {
+  .lp-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lp-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 780px) {
+  .lp-section {
+    padding-block: 96px;
+  }
+
+  .lp-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .lp-screens {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .lp-footer__inner {
+    grid-template-columns: 1.2fr 1.8fr;
+    gap: 48px;
+  }
+}
+
+@media (min-width: 900px) {
+  .lp-nav__links,
+  .lp-nav__actions {
+    display: flex;
+  }
+
+  .lp-nav__toggle {
+    display: none;
+  }
+
+  .lp-menu {
+    display: none;
+  }
+
+  .lp-hero {
+    padding-block: 88px 104px;
+  }
+
+  .lp-hero__grid {
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 48px;
+  }
+
+  .lp-hero__chip {
+    display: inline-flex;
+  }
+
+  .lp-split {
+    grid-template-columns: 1fr 0.85fr;
+    gap: 56px;
+  }
+
+  .lp-split--reverse .lp-split__art {
+    order: -1;
+  }
+
+  .lp .lp-footer {
+    padding-bottom: 32px;
+  }
+}
+
+@media (min-width: 1080px) {
+  .lp-screens {
+    gap: 32px;
+  }
+}
+
+/*
+ * Narrow phones. The hero and split layouts collapse to one column well before
+ * the device gets small, and the two-column screen gallery becomes a single
+ * column so a mockup is never squeezed below the width it was designed at.
+ */
+@media (max-width: 420px) {
+  .lp-screens {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-hero__cta .btn,
+  .lp-final__cta .btn {
+    width: 100%;
+  }
+}
+
+/*
+ * Short and wide, or a very small viewport height: the sticky bar would eat the
+ * content, and the nav does not need to be tall.
+ */
+@media (max-height: 520px) {
+  .lp-sticky {
+    display: none;
+  }
+}

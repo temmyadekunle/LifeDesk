@@ -47,7 +47,11 @@ export function AuthScreen({
   if (!auth.enabled) {
     return (
       <div className="stack">
-        <Notice tone="info">{t("account.notConfigured")}</Notice>
+        <Notice tone="info" icon="cloud">
+          <strong>{t("account.offlineOnly")}</strong>
+          <br />
+          {t("account.offlineOnlyBody")}
+        </Notice>
         <button className="btn btn--secondary btn--block" onClick={onClose}>
           {t("app.back")}
         </button>
@@ -231,7 +235,7 @@ export function AuthScreen({
           </div>
         ) : null}
 
-        <button
+<button
           type="submit"
           className="btn btn--primary btn--lg btn--block"
           disabled={
@@ -251,9 +255,36 @@ export function AuthScreen({
             t("auth.savePassword")
           )}
         </button>
-      </form>
 
-      <div className="stack stack--tight" style={{ marginTop: "0.875rem" }}>
+        {mode === "sign-in" && auth.enabled && (
+          <div className="stack stack--tight" style={{ marginTop: "0.875rem" }}>
+            <div className="divider" style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--ink-400)", fontSize: "0.75rem" }}>
+              <span style={{ flex: 1, borderTop: "1px solid var(--line)" }} />
+              {t("auth.or")}
+              <span style={{ flex: 1, borderTop: "1px solid var(--line)" }} />
+            </div>
+            <button
+              type="button"
+              className="btn btn--secondary btn--block"
+              onClick={() => void auth.signInWithGoogle()}
+              disabled={busy}
+            >
+              <Icon name="google" size={20} />
+              <span style={{ marginLeft: "0.5rem" }}>{t("auth.signInWithGoogle")}</span>
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary btn--block"
+              onClick={() => void auth.signInWithApple()}
+              disabled={busy}
+            >
+              <Icon name="apple" size={20} />
+              <span style={{ marginLeft: "0.5rem" }}>{t("auth.signInWithApple")}</span>
+            </button>
+          </div>
+        )}
+
+        <div className="stack stack--tight" style={{ marginTop: "0.875rem" }}>
         {mode === "sign-in" ? (
           <>
             <button
@@ -329,6 +360,8 @@ export function AuthScreen({
           </button>
         ) : null}
       </div>
+
+      </form>
 
       <p className="card-meta" style={{ marginTop: "1rem", textAlign: "center" }}>
         {t("sync.offline")}

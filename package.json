@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./tests/register.mjs --test \"tests/*.test.ts\" \"tests/*.test.tsx\"",
     "qa:responsive": "npm run build && node scripts/responsive-qa.mjs",
-    "check:csp": "npm run build && node scripts/check-csp.mjs"
+    "check:csp": "npm run build && node scripts/check-csp.mjs",
+    "smoke": "npm run build && node scripts/smoke-screens.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

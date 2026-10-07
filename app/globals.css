@@ -1561,6 +1561,22 @@ button.listrow:active {
   }
 }
 
+/* Suspense fallback for a code-split screen. Tall enough to hold the space the
+   real screen will take, so the bottom nav does not jump when it arrives. */
+.screen-skel {
+  padding: 1.25rem 1rem;
+}
+
+.screen-skel__bar {
+  height: 3.25rem;
+  margin-bottom: 0.75rem;
+  border-radius: var(--radius);
+}
+
+.screen-skel__bar:last-child {
+  width: 70%;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;

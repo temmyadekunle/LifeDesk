@@ -4,9 +4,8 @@ import { useMemo } from "react";
 
 import { Icon } from "../Icons";
 import { EmptyState, IconTile } from "../ui";
-import { CATEGORY_META, MODULE_ICON } from "../maps";
+import { CATEGORY_META, MODULE_ICON, MODULES, type ModuleId } from "../maps";
 import { TINT_SOFT, tint } from "@/lib/color";
-import { MODULES, type ModuleId } from "../ModuleScreen";
 import type { Category, Thing } from "@/lib/types";
 import type { useLivanta } from "@/lib/useLivanta";
 

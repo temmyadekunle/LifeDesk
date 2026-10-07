@@ -1,6 +1,5 @@
 import type { IconName } from "./Icons";
 import type { Category, ThingKind } from "@/lib/types";
-import type { ModuleId } from "./ModuleScreen";
 import type { TKey } from "@/lib/locales/en";
 
 /**
@@ -8,6 +7,52 @@ import type { TKey } from "@/lib/locales/en";
  * be changed in one place, and so the same category never looks like two
  * different things on two different screens.
  */
+
+export type ModuleId = "home" | "vehicles" | "bills" | "documents" | "assets";
+
+export const MODULES: {
+  id: ModuleId;
+  labelKey: TKey;
+  blurbKey: TKey;
+  ico: string;
+  color: string;
+}[] = [
+  {
+    id: "home",
+    labelKey: "module.home",
+    blurbKey: "module.home.blurb",
+    ico: "🏠",
+    color: "var(--home)",
+  },
+  {
+    id: "vehicles",
+    labelKey: "module.vehicles",
+    blurbKey: "module.vehicles.blurb",
+    ico: "🚗",
+    color: "var(--transport)",
+  },
+  {
+    id: "bills",
+    labelKey: "module.bills",
+    blurbKey: "module.bills.blurb",
+    ico: "💳",
+    color: "var(--money)",
+  },
+  {
+    id: "documents",
+    labelKey: "module.documents",
+    blurbKey: "module.documents.blurb",
+    ico: "📄",
+    color: "var(--documents)",
+  },
+  {
+    id: "assets",
+    labelKey: "module.assets",
+    blurbKey: "module.assets.blurb",
+    ico: "📦",
+    color: "var(--assets)",
+  },
+];
 
 export const CATEGORY_META: Record<
   Category,

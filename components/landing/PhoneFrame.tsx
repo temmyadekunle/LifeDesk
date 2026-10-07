@@ -16,8 +16,7 @@ import { ThingLine } from "@/components/screens/HomeScreen";
 import { ThingsScreen } from "@/components/screens/ThingsScreen";
 import { Icon } from "@/components/Icons";
 import { IconTile, EmptyState } from "@/components/ui";
-import { CATEGORY_META, KIND_ICON, MODULE_ICON } from "@/components/maps";
-import { MODULES } from "@/components/ModuleScreen";
+import { CATEGORY_META, KIND_ICON, MODULE_ICON, MODULES } from "@/components/maps";
 import { dueMeta, TONE_CLASS } from "@/components/labels";
 import { makeShowcase } from "@/lib/landing/showcase";
 import { dayPart } from "@/lib/dates";
@@ -26,7 +25,7 @@ import { utcDaysUntil } from "@/lib/risk";
 import type { Category } from "@/lib/types";
 import { formatNaira } from "@/lib/i18n";
 import { hasAmount } from "@/lib/money";
-import type { ModuleId } from "@/components/ModuleScreen";
+import type { ModuleId } from "@/components/maps";
 
 const TABS = [
   { id: "home", label: "Home", icon: "home" },

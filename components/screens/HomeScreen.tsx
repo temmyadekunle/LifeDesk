@@ -12,9 +12,8 @@ import { greetingKey, useDayPart } from "@/lib/useDayPart";
 import type { Alert, Priority, Thing } from "@/lib/types";
 import type { DayDiff } from "@/lib/risk";
 import type { useLivanta } from "@/lib/useLivanta";
-import type { ModuleId } from "../ModuleScreen";
 import type { EditorPreset } from "@/lib/editor";
-import { MODULES } from "../ModuleScreen";
+import { MODULES, type ModuleId } from "../maps";
 
 type Desk = ReturnType<typeof useLivanta>;
 

@@ -12,57 +12,7 @@ import { daysUntil } from "@/lib/risk";
 import { formatNaira, type Translate } from "@/lib/i18n";
 import type { TKey } from "@/lib/locales/en";
 import type { Thing } from "@/lib/types";
-
-export type ModuleId =
-  | "home"
-  | "vehicles"
-  | "bills"
-  | "documents"
-  | "assets";
-
-export const MODULES: {
-  id: ModuleId;
-  labelKey: TKey;
-  blurbKey: TKey;
-  ico: string;
-  color: string;
-}[] = [
-  {
-    id: "home",
-    labelKey: "module.home",
-    blurbKey: "module.home.blurb",
-    ico: "🏠",
-    color: "var(--home)",
-  },
-  {
-    id: "vehicles",
-    labelKey: "module.vehicles",
-    blurbKey: "module.vehicles.blurb",
-    ico: "🚗",
-    color: "var(--transport)",
-  },
-  {
-    id: "bills",
-    labelKey: "module.bills",
-    blurbKey: "module.bills.blurb",
-    ico: "💳",
-    color: "var(--money)",
-  },
-  {
-    id: "documents",
-    labelKey: "module.documents",
-    blurbKey: "module.documents.blurb",
-    ico: "📄",
-    color: "var(--documents)",
-  },
-  {
-    id: "assets",
-    labelKey: "module.assets",
-    blurbKey: "module.assets.blurb",
-    ico: "📦",
-    color: "var(--assets)",
-  },
-];
+import type { ModuleId } from "./maps";
 
 export default function ModuleScreen({
   module,

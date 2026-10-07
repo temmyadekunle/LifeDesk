@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { Icon } from "../Icons";
 import { Logo } from "../Logo";
-import { AccountPanel } from "../AccountPanel";
+import { AccountPanel, errorLabel, formatTime, syncLabel } from "../AccountPanel";
 import { Avatar } from "../Avatar";
 import { LocalePicker } from "../Onboarding";
 import { AvatarProblem, readAvatar } from "@/lib/avatar";
@@ -21,7 +21,7 @@ import {
   serverPermissionSnapshot,
   subscribeToPermission,
 } from "@/lib/notifications";
-import type { Locale } from "@/lib/i18n";
+import type { Locale, Translate } from "@/lib/i18n";
 import type { useAuth } from "@/lib/useAuth";
 import type { useCloudSync } from "@/lib/useCloudSync";
 import type { useLivanta } from "@/lib/useLivanta";
@@ -150,10 +150,38 @@ export function ProfileScreen({
               <Icon name="chevronRight" size={18} />
             </span>
           </button>
+          {auth.status === "signed-in" ? (
+            <p className="card-meta" style={{ margin: "0.5rem 0 0" }}>
+              {syncLabel(t, sync)}
+              {sync.lastResult && sync.lastResult.at
+                ? ` · ${t("sync.lastSynced", { time: formatTime(sync.lastResult.at) })}`
+                : ""}
+            </p>
+          ) : null}
         </section>
       ) : (
         <AccountPanel t={t} auth={auth} sync={sync} />
       )}
+
+      <section className="section">
+        <div className="section__head">
+          <h2 className="section__title">{t("profile.security")}</h2>
+        </div>
+        {auth.enabled && auth.status === "signed-in" ? (
+          <SecurityForm t={t} auth={auth} showToast={showToast} />
+        ) : auth.enabled ? (
+          <div className="card">
+            <p className="card-meta">{t("profile.signInForPassword")}</p>
+          </div>
+        ) : (
+          <div className="card">
+            <p className="card-meta">{t("account.offlineOnly")}</p>
+            <p className="card-meta" style={{ marginTop: "0.375rem" }}>
+              {t("account.offlineOnlyBody")}
+            </p>
+          </div>
+        )}
+      </section>
 
       <section className="section">
         <div className="section__head">
@@ -236,13 +264,14 @@ export function ProfileScreen({
           <h2 className="section__title">{t("profile.reminderSchedule")}</h2>
         </div>
         <div className="card">
-          <div className="chips">
+          <div className="chips" role="group" aria-label={t("profile.reminderSchedule")}>
             {LEAD_CHOICES.map((n) => (
               <button
                 key={n}
                 className={
                   desk.settings.leadDays.includes(n) ? "chip chip--on" : "chip chip--quiet"
                 }
+                aria-pressed={desk.settings.leadDays.includes(n)}
                 onClick={() =>
                   void desk.updateSettings({
                     leadDays: desk.settings.leadDays.includes(n)
@@ -417,5 +446,61 @@ function MiniStat({ n, label }: { n: number; label: string }) {
       <div className="stat-num">{n}</div>
       <div className="stat-label">{label}</div>
     </div>
+  );
+}
+
+function SecurityForm({
+  t,
+  auth,
+  showToast,
+}: {
+  t: Translate;
+  auth: ReturnType<typeof useAuth>;
+  showToast: (text: string, tone?: "ok" | "info" | "danger") => void;
+}) {
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const longEnough = password.length >= 8;
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (busy || !longEnough) return;
+    setBusy(true);
+    const ok = await auth.updatePassword(password);
+    setBusy(false);
+    if (ok) {
+      setPassword("");
+      showToast(t("auth.passwordUpdated"), "ok");
+    }
+  }
+
+  return (
+    <form className="card" onSubmit={submit}>
+      <label className="field">
+        <span>{t("auth.newPasswordTitle")}</span>
+        <input
+          type="password"
+          autoComplete="new-password"
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            auth.clearError();
+          }}
+        />
+      </label>
+      <p className="hint">{t("auth.passwordHint")}</p>
+      {auth.error ? (
+        <p className="hint" style={{ color: "var(--danger)" }}>
+          {errorLabel(t, auth.error.code)}
+        </p>
+      ) : null}
+      <button
+        type="submit"
+        className="btn btn--primary btn--block"
+        disabled={busy || !longEnough}
+      >
+        {busy ? t("auth.working") : t("auth.savePassword")}
+      </button>
+    </form>
   );
 }

@@ -253,6 +253,8 @@ export const en = {
 
   /* ---------- profile ---------- */
   "profile.account": "Account",
+  "profile.security": "Security",
+  "profile.signInForPassword": "Sign in to change your password.",
   "profile.freePlan": "Free plan · local only",
   "profile.language": "Language",
   "profile.languageHint": "Choose the language Livanta uses.",

@@ -137,6 +137,8 @@ export const ig: Dict = {
   "household.blurb": "Ahụrụla ndị jikọtara na ikere ohere ndị otu ga-akọta ebe a.",
 
   "profile.account": "Akaụntụ",
+  "profile.security": "Nchebe",
+  "profile.signInForPassword": "Banye ka gbanwee okwuntughe gị.",
   "profile.freePlan": "Plan n'efu · dị n'ime naanị",
   "profile.language": "Asụsụ",
   "profile.languageHint": "Họrọ asụsụ Livanta na-eji.",

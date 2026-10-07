@@ -149,6 +149,8 @@ export const yo: Dict = {
 
   /* ---------- profile ---------- */
   "profile.account": "Akàǹtì",
+  "profile.security": "Ààbò",
+  "profile.signInForPassword": "Wọlé kí o tún ìgbaniwọlé rẹ̀ seto.",
   "profile.freePlan": "Ètò òfẹ́ · lórí ẹ̀rọ̀ nìkan",
   "profile.language": "Èdè",
   "profile.languageHint": "Yan èdè tó fẹ́ kí Livanta máa lo.",

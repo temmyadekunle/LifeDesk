@@ -152,6 +152,8 @@ export const ha: Dict = {
 
   /* ---------- profile ---------- */
   "profile.account": "Asusu",
+  "profile.security": "Tsaro",
+  "profile.signInForPassword": "Shiga don canja kalmar sirrinka.",
   "profile.freePlan": "Shirin kyauta · gida kawai",
   "profile.language": "Harshe",
   "profile.languageHint": "Zaɓi harshen da Livanta zai yi amfani da shi.",

@@ -13,14 +13,34 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
+  # HSTS: the app stores health data locally and talks to Supabase over HTTPS, so
+  # one plaintext request would already be a leak. One year, includeSubDomains;
+  # no preload because that commits the whole domain before we have tested it.
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  # The avatar flow can open the camera via an <input capture>, so camera stays
+  # on for this origin only. Everything else powerful is denied outright: the
+  # app never records audio, never reads sensors, never takes payment.
+  Permissions-Policy: camera=(self), microphone=(), geolocation=(), gyroscope=(), magnetometer=(), accelerometer=(), payment=(), usb=()
+  # Isolates the browsing context so a compromised opener cannot reach this app
+  # through window.opener. Nothing here opens cross-origin popups, so the cost
+  # is zero.
+  Cross-Origin-Opener-Policy: same-origin
+  # Flash/Silverlight-style cross-domain policy files are dead; denying them
+  # stops an old plugin from ever being pointed at this origin.
+  X-Permitted-Cross-Domain-Policies: none
   # No X- prefix here, unlike the headers below. X-Content-Security-Policy was
   # deprecated years ago and is ignored by every current browser, so spelling it
   # that way looks like protection while enforcing nothing.
+  # script-src keeps 'unsafe-inline' only because the App Router ships its flight
+  # payload in inline <script> tags that a static export cannot nonce; hashes are
+  # not viable because they differ per route. style-src needs it for React style
+  # attributes. Everything else is origin-locked. connect-src lists both Supabase
+  # domain families: projects created recently resolve to *.supabase.in.
   # worker-src is stated even though it currently falls back to script-src, which
   # already allows 'self' and so permits the service worker. Stating it means a
   # later tightening of script-src cannot silently break offline support, which
   # would be a confusing way to discover the dependency.
-  Content-Security-Policy: default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; worker-src 'self'; connect-src 'self' https://*.supabase.co
+  Content-Security-Policy: default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; worker-src 'self'; connect-src 'self' https://*.supabase.co https://*.supabase.in
 
 /_next/static/*
   # Next.js emits content-hashed filenames here, so the bytes behind a given URL

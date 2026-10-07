@@ -69,6 +69,11 @@ const targets = [
   { name: "icon-maskable-512.png", size: 512, inset: 0.2 },
 ];
 
+const logoTargets = [
+  { name: "logo-256.png", size: 256, inset: 0 },
+  { name: "logo-512.png", size: 512, inset: 0 },
+];
+
 function hasMagick() {
   try {
     execFileSync("magick", ["-version"], { stdio: "ignore" });
@@ -106,6 +111,30 @@ function runMagick() {
     execFileSync("magick", args);
     console.log(`wrote public/${name}`);
   }
+
+  // Generate optimized logo versions (PNG, smaller size)
+  for (const { name, size, inset } of logoTargets) {
+    const pad = Math.round(size * inset);
+    const inner = size - 2 * pad;
+    const args =
+      pad === 0 && square
+        ? [source, "-resize", `${size}x${size}`, "-quality", "85", "-strip", resolve(publicDir, name)]
+        : [
+            source,
+            "-background", BG,
+            "-gravity", "center",
+            "-extent", `${size}x${size}`,
+            "-resize", `${inner}x${inner}`,
+            "-background", BG,
+            "-gravity", "center",
+            "-extent", `${size}x${size}`,
+            "-quality", "85",
+            "-strip",
+            resolve(publicDir, name),
+          ];
+    execFileSync("magick", args);
+    console.log(`wrote public/${name}`);
+  }
 }
 
 /**
@@ -117,7 +146,8 @@ function runMagick() {
 function runSystemDrawing() {
   const square = width === height;
   const escaped = (p) => p.replace(/'/g, "''");
-  const jobs = targets
+  const allTargets = [...targets, ...logoTargets];
+  const jobs = allTargets
     .map(({ name, size, inset }) => {
       const out = resolve(publicDir, name);
       const pad = inset > 0 ? Math.round(size * inset) : square ? 0 : Math.round(size * 0.06);
@@ -179,6 +209,15 @@ if (!ok) {
 // Next.js emits a link for every declared icon, so a stale file from an earlier
 // run would otherwise be served instead of the regenerated one.
 for (const { name } of targets) {
+  const p = resolve(publicDir, name);
+  if (!existsSync(p)) {
+    console.error(`Expected public/${name} to exist but it does not.`);
+    process.exit(1);
+  }
+}
+
+// Validate optimized logo versions exist
+for (const { name } of logoTargets) {
   const p = resolve(publicDir, name);
   if (!existsSync(p)) {
     console.error(`Expected public/${name} to exist but it does not.`);

@@ -16,18 +16,24 @@
  *   Hashed build output  cache-first. Filenames under /_next/static/ contain a
  *                       content hash, so the bytes behind a URL can never
  *                       change and revalidation is pure latency.
- *   Icons and manifest   cache-first, same reasoning: these are unhashed but
- *                       rarely change, and a stale icon is invisible.
+ *   Icons and manifest   stale-while-revalidate: served from cache instantly,
+ *                       then refreshed in the background. These are unhashed,
+ *                       so cache-first would pin the old bytes forever and
+ *                       every icon change would need a CACHE_VERSION bump to
+ *                       become visible. SWR means one reload picks up a
+ *                       redeployed icon with no coordination at all.
  *   Everything else      straight to the network, never cached. Supabase
  *                       especially: auth and sync responses must never be
  *                       replayed from cache.
  *
- * CACHE_VERSION is the single lever for shipping an update. Bumping it creates
- * a new cache, and activate deletes every cache that is not the new one, so a
- * stale shell cannot survive an update. Bump it in any commit that changes
- * app/layout.tsx, app/globals.css or this file.
+ * CACHE_VERSION is the lever for shipping an update to the shell itself.
+ * Bumping it creates a new cache, and activate deletes every cache that is
+ * not the new one, so a stale shell cannot survive an update. Bump it in any
+ * commit that changes app/layout.tsx, app/globals.css or this file. Unhashed
+ * icons and the manifest no longer need a bump (see SWR above), and hashed
+ * /_next/static/ output never did.
  */
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const SHELL_CACHE = `livanta-shell-${CACHE_VERSION}`;
 const ASSET_CACHE = `livanta-assets-${CACHE_VERSION}`;
 
@@ -100,11 +106,8 @@ function isHashedBuildAsset(url) {
   return url.pathname.startsWith("/_next/static/");
 }
 
-function isCacheableAsset(url) {
-  return (
-    url.pathname.startsWith("/_next/static/") ||
-    PRECACHE_URLS.includes(url.pathname)
-  );
+function isPrecachedAsset(url) {
+  return PRECACHE_URLS.includes(url.pathname);
 }
 
 self.addEventListener("fetch", (event) => {
@@ -125,8 +128,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (isHashedBuildAsset(url) || isCacheableAsset(url)) {
+  if (isHashedBuildAsset(url)) {
     event.respondWith(cacheFirst(request));
+    return;
+  }
+
+  if (isPrecachedAsset(url)) {
+    event.respondWith(staleWhileRevalidate(request));
     return;
   }
 
@@ -174,5 +182,33 @@ async function cacheFirst(request) {
   if (fresh && fresh.ok && fresh.type === "basic") {
     await cache.put(request, fresh.clone());
   }
+  return fresh;
+}
+
+/**
+ * Serve the cached copy immediately, then fetch the truth and store it for the
+ * next visit. The user never waits on the network, and a redeployed icon or
+ * manifest still lands after a single reload instead of surviving forever in a
+ * cache that only a version bump would clear.
+ */
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(ASSET_CACHE);
+  const cached = await cache.match(request);
+  const refresh = fetch(request)
+    .then(async (fresh) => {
+      if (fresh && fresh.ok && fresh.type === "basic") {
+        await cache.put(request, fresh.clone());
+      }
+      return fresh;
+    })
+    .catch(() => undefined);
+
+  if (cached) {
+    // Wait for the refresh only long enough to surface a network error; the
+    // cached copy is the answer regardless, since this is an offline-first app.
+    return cached;
+  }
+  const fresh = await refresh;
+  if (!fresh) return new Response("", { status: 504 });
   return fresh;
 }

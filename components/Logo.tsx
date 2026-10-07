@@ -15,12 +15,18 @@ import Image from "next/image";
  * wordmark, and this artwork has been a 3:2 landscape photo.
  */
 
-/** Source artwork. Replace the file, or point this at a new path. */
-export const LOGO_SRC = "/logo.jpeg";
+/**
+ * Source artwork. Replace the file, or point this at a new path.
+ * This is the 256px PNG that scripts/make-favicons.mjs renders from
+ * public/logo.jpeg; the original JPEG stays in public/ as that script's
+ * input. The generated file must exist — a path that 404s renders a broken
+ * image in the app bar and onboarding, and nothing else complains.
+ */
+export const LOGO_SRC = "/logo-256.png";
 
-/** Intrinsic size of the source artwork. */
-export const LOGO_WIDTH = 1080;
-export const LOGO_HEIGHT = 1080;
+/** Intrinsic size of the rendered source artwork. */
+export const LOGO_WIDTH = 256;
+export const LOGO_HEIGHT = 256;
 
 /** Rendered height of the small mark, in px. */
 const MARK_PX = 32;

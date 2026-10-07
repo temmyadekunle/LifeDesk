@@ -2,26 +2,20 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Livanta",
+  title: "CareNBuddi",
   description:
-    "One place to manage the things that keep your life running.",
+    "Your Health, Your Buddi - Personal health navigation system for finding care, booking appointments, and managing health records.",
   icons: {
-    // Square set generated from the same source artwork by
-    // scripts/make-favicons.mjs, so the tab icon cannot drift from the in-app
-    // mark. The source is a 3:2 landscape image, so a square pad is used
-    // rather than a crop.
     icon: [
       { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-      // Android picks this one for the launcher. It is the same artwork with the
-      // mark inset to the safe zone, because the launcher crops to a shape.
       { url: "/icon-maskable-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   appleWebApp: {
     capable: true,
-    title: "Livanta",
+    title: "CareNBuddi",
     statusBarStyle: "default",
   },
   manifest: "/manifest.webmanifest",

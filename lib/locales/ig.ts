@@ -328,8 +328,11 @@ export const ig: Dict = {
   "cal.prevMonth": "Ọnwa tupu",
   "cal.nextMonth": "Ọnwa ọ ga-abị",
   "cal.upcoming": "Ihe ga-abị",
-  "cal.noEvents": "Enweghị ihe na ụbọchị a",
+"cal.noEvents": "Enweghị ihe na ụbọchị a",
   "cal.noEventsBody": "Họọ ụbọchị ọzọ, maọbụ nwee ihe ọhụrụ.",
+  "cal.emptyTitle": "Enweghị ihe ụbọchị a",
+  "cal.emptyBody": "Enweghị ihe ọ bụla emezie. Nyocha onwebu ụbọchị ịzọ ị tinye ihe ọhụrụ.",
+
   "svc.subtitle": "Akụkụ ndụọdụ gị na ndị ịhigba ha.",
   "svc.blurb": "Ihe niile ihe e gụghara, ebe e nwere ya n'akụkụ ụtọ ndụọdụ ya bụ.",
   "svc.areas": "Akụkụ ndụọdụ",

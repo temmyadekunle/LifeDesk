@@ -354,6 +354,8 @@ export const ha: Dict = {
   "cal.upcoming": "Zai zo",
   "cal.noEvents": "Babuga a wannan rana",
   "cal.noEventsBody": "Zaɓi wata rana, ko ƙara abin da a sabo.",
+  "cal.emptyTitle": "Babuga salloni yau",
+  "cal.emptyBody": "Babuga abin da a sanya. Danna rafin na ƙara abin da ya kamata.",
 
   "svc.subtitle": "Wurinai na rayuwa da kake da mutane masu taimakon ka.",
   "svc.blurb": "Duk abin da aka ba da hannu da shi, an tsaya shi yadda yake da sa ido a rayuwarka.",

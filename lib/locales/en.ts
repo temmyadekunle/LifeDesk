@@ -195,6 +195,8 @@ export const en = {
   "cal.upcoming": "Upcoming",
   "cal.noEvents": "Nothing on this day",
   "cal.noEventsBody": "Pick another day, or add something new.",
+  "cal.emptyTitle": "No events today",
+  "cal.emptyBody": "Nothing scheduled. Tap the button below to add something.",
 
   /* ---------- services screen ---------- */
   "svc.subtitle": "The life areas you manage and the people you rely on.",

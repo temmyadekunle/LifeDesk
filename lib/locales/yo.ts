@@ -346,6 +346,8 @@ export const yo: Dict = {
   "cal.upcoming": "Tí ó bọ̀",
   "cal.noEvents": "Kò sí ohun ní ọjọ́ yìí",
   "cal.noEventsBody": "Yí ọjọ́ mìíràn, tàbí fi ohun tuntun kún un.",
+  "cal.emptyTitle": "Kò sí ìsìnmi ní ọjọ́ yìí",
+  "cal.emptyBody": "Kò sí ohun tí a dá sílẹ̀. Tẹ́ àgbòfíwọ́ míì ní kẹ́kẹ́ láti fi ohun tuntun kún un.",
 
   "svc.subtitle": "Àwọn apá ìwé ayé rẹ àti àwọn ẹni tí o gbà kún iwọ.",
   "svc.blurb": "Gbogbo ohun tí a fún ni ọwọ́, wọn wà pẹ̀lú apá ìwé ayé tó ń tẹ̀lé wọn.",

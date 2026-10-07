@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import { useMemo, useState } from "react";
 
 import { Icon } from "../Icons";
@@ -9,7 +10,10 @@ import { TINT_SOFT, tint } from "@/lib/color";
 import { dueMeta, TONE_CLASS } from "../labels";
 import { formatNaira } from "@/lib/i18n";
 import { hasAmount } from "@/lib/money";
-import { addMonths, daysUntil, formatDate, toISO, type DayDiff, monthMatrix, utcDaysUntil, weekdayInitials } from "@/lib/dates";
+import { addMonths, formatDate, formatMonthYear, toISO, monthMatrix, weekdayInitials } from "@/lib/dates";
+import { type DayDiff } from "@/lib/risk";
+import { TINT_BORDER } from "@/lib/color";
+import { parseISO } from "@/lib/dates";
 import type { Thing } from "@/lib/types";
 import type { useLivanta } from "@/lib/useLivanta";
 import type { TKey } from "@/lib/locales/en";
@@ -26,8 +30,7 @@ export function CalendarScreen({
   desk: Desk;
   onOpenThing: (thing: Thing) => void;
   onAdd: () => void;
-  /** See ThingLine's 
- ow: pins the clock for the static mockups. */
+  /** See ThingLine's docs: pins the clock for the static mockups. */
   now?: Date;
   /** See ThingLine's dayDiff. */
   dayDiff?: DayDiff;
@@ -87,7 +90,7 @@ export function CalendarScreen({
         </div>
 
         <div className="month__dow" aria-hidden="true">
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => (
+          {dow.map((d, i) => (
             <span key={i}>{d}</span>
           ))}
         </div>
@@ -96,7 +99,6 @@ export function CalendarScreen({
           {cells.map((date) => {
             const iso = toISO(date);
             const items = byDate.get(iso) ?? [];
-            const outside = date.getMonth() !== cursor.getMonth();
             const classes = [
               "day",
               date.getMonth() !== cursor.getMonth() ? "day--out" : "",
@@ -253,6 +255,7 @@ export function CalendarScreen({
             })}
           </div>
         </section>
-      </>
+      )}
+    </>
   );
 }

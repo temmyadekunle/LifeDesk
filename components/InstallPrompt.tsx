@@ -25,15 +25,20 @@ import {
 
 /** iPadOS reports as Macintosh, so the touch-point count is the real tell. */
 function detectPlatform() {
-  if (typeof navigator === "undefined") return { ios: false, safari: false };
+  if (typeof navigator === "undefined")
+    return { ios: false, safari: false, android: false };
   const ua = navigator.userAgent;
   const ios =
     /iPad|iPhone|iPod/.test(ua) ||
     // iPadOS 13+ masquerades as desktop Safari.
     (/Macintosh/.test(ua) && Number(navigator.maxTouchPoints ?? 0) > 1);
   const safari = /^((?!chrome|android|crios|fxios|edgios).)*safari/i.test(ua);
-  return { ios, safari };
+  const android = /android/i.test(ua);
+  return { ios, safari, android };
 }
+
+const ANDROID_APK_URL =
+  "https://github.com/temmyadekunle/Livanta/releases/download/v0.1.0/livanta-0.1.0-release.apk";
 
 /**
  * Whether the app is already running as an installed app. Read lazily rather
@@ -69,7 +74,7 @@ export default function InstallPrompt() {
   // app.
   const [installed, setInstalled] = useState(isRunningStandalone);
   const [swState, setSwState] = useState<SwUpdateState>("none");
-  const { ios, safari } = detectPlatform();
+  const { ios, safari, android } = detectPlatform();
 
   useEffect(() => {
     const clean = registerServiceWorker({
@@ -136,6 +141,27 @@ export default function InstallPrompt() {
   }
 
   if (installed || dismissed) return null;
+
+  if (android) {
+    return (
+      <div className="installbar" role="region" aria-label="Get Livanta for Android">
+        <Icon name="download" />
+        <span className="installbar__text">Get the Livanta app for Android</span>
+        <a className="installbar__btn" href={ANDROID_APK_URL}>
+          Download APK
+        </a>
+        <button
+          type="button"
+          className="installbar__close"
+          aria-label="Dismiss install prompt"
+          onClick={() => setDismissed(true)}
+        >
+          <Icon name="x" />
+        </button>
+      </div>
+    );
+  }
+
   if (!deferred && !(ios && safari)) return null;
 
   return (

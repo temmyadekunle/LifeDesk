@@ -2158,6 +2158,9 @@ button.listrow:active {
 
 .installbar__btn {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   /* 44px is the minimum target this app holds everywhere else. */
   min-height: 2.75rem;
   padding: 0 1rem;
@@ -2168,6 +2171,7 @@ button.listrow:active {
   font: inherit;
   font-weight: 600;
   font-size: 0.875rem;
+  text-decoration: none;
   cursor: pointer;
 }
 

@@ -16,6 +16,7 @@ const config = [
       "out/**",
       ".netlify/**",
       "design/**",
+      "android/**",
     ],
   },
 ];

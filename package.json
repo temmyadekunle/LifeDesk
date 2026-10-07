@@ -14,6 +14,9 @@
     "smoke": "npm run build && node scripts/smoke-screens.mjs"
   },
   "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.5.2",
     "@supabase/supabase-js": "^2.117.2",
     "eslint-config-next": "^16.3.8",
     "next": "^16.3.8",
@@ -21,6 +24,7 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.5.2",
     "@playwright/test": "^1.63.0",
     "@types/node": "26.6.4",
     "@types/react": "19.3.0",

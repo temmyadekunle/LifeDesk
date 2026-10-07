@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from "react";
 import dynamic from "next/dynamic";
+import { App } from "@capacitor/app";
 
 import { Icon, type IconName } from "./Icons";
 import { Avatar } from "./Avatar";
@@ -106,6 +107,37 @@ export default function LivantaApp() {
 
 const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
   const pop = useCallback(() => setStack((s) => s.slice(0, -1)), []);
+
+  useEffect(() => {
+    let cancelled = false;
+    let handle: { remove: () => Promise<void> } | undefined;
+    void App.addListener("backButton", () => {
+      if (confirmWipe || confirmThing !== null) {
+        setConfirmWipe(false);
+        setConfirmThing(null);
+      } else if (quickOpen) {
+        setQuickOpen(false);
+      } else if (openId !== null) {
+        setOpenId(null);
+      } else if (editId !== null) {
+        setEditId(null);
+      } else if (stack.length > 0) {
+        pop();
+      } else if (tab !== "home") {
+        setStack([]);
+        setTab("home");
+      } else {
+        void App.exitApp();
+      }
+    }).then((h) => {
+      if (cancelled) void h.remove();
+      else handle = h;
+    });
+    return () => {
+      cancelled = true;
+      void handle?.remove();
+    };
+  }, [confirmWipe, confirmThing, quickOpen, openId, editId, stack, tab, pop]);
 
   // A completed sync writes to IndexedDB, so the desk has to re-read for the
   // pulled state to appear.

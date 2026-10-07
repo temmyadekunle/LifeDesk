@@ -33,6 +33,16 @@ export function isSupported(): boolean {
   return typeof navigator !== "undefined" && "serviceWorker" in navigator;
 }
 
+function inNativeContainer(): boolean {
+  if (typeof window === "undefined") return false;
+  const bridge = (
+    window as unknown as {
+      Capacitor?: { isNativePlatform?: () => boolean };
+    }
+  ).Capacitor;
+  return Boolean(bridge?.isNativePlatform?.());
+}
+
 /**
  * Registers /sw.js and wires up update handling. Returns a cleanup function.
  *
@@ -42,7 +52,7 @@ export function isSupported(): boolean {
 export function registerServiceWorker(options: RegisterOptions = {}): () => void {
   const { onUpdate, onError } = options;
 
-  if (typeof window === "undefined" || !isSupported()) {
+  if (typeof window === "undefined" || !isSupported() || inNativeContainer()) {
     onUpdate?.("none");
     return () => {};
   }

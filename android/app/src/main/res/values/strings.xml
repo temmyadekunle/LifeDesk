@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Livanta</string>
+    <string name="title_activity_main">Livanta</string>
+    <string name="package_name">com.temmyadekunle.livanta</string>
+    <string name="custom_url_scheme">com.temmyadekunle.livanta</string>
+</resources>

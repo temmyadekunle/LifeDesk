@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Icon } from "./Icons";
 import type { EditorPreset, EditorValues } from "@/lib/editor";
 import type { Translate } from "@/lib/i18n";
@@ -78,9 +78,23 @@ export default function ThingEditor({
       notes: "",
     },
   );
+  const [attempted, setAttempted] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  const nameOk = v.name.trim().length > 0;
+  const amountOk = !v.amount || /^-?\d+(\.\d+)?$/.test(v.amount);
 
   const set = <K extends keyof EditorValues>(key: K, value: EditorValues[K]) =>
     setV((prev) => ({ ...prev, [key]: value }));
+
+  function submit() {
+    if (!nameOk || !amountOk) {
+      setAttempted(true);
+      if (!nameOk) nameRef.current?.focus();
+      return;
+    }
+    onSave(v);
+  }
 
   return (
     <div className="editor">
@@ -94,12 +108,19 @@ export default function ThingEditor({
         <label htmlFor="e-name">{t("ed.whatIsIt")}</label>
         <input
           id="e-name"
+          ref={nameRef}
           value={v.name}
           onChange={(e) => set("name", e.target.value.slice(0, 100))}
           placeholder={t("ed.whatPlaceholder")}
           maxLength={100}
           required
+          aria-invalid={attempted && !nameOk ? true : undefined}
         />
+        {attempted && !nameOk && (
+          <p className="hint" style={{ color: "var(--danger)" }}>
+            {t("ed.nameRequired")}
+          </p>
+        )}
         {v.name.length >= 100 && (
           <p className="hint" style={{ color: "var(--danger)" }}>
             {t("ed.nameTooLong")}
@@ -162,6 +183,7 @@ export default function ThingEditor({
               }
             }}
             placeholder={t("ed.amountPlaceholder")}
+            aria-invalid={v.amount && !amountOk ? true : undefined}
           />
           {v.amount && !/^-?\d+(\.\d+)?$/.test(v.amount) && (
             <p className="hint" style={{ color: "var(--danger)" }}>
@@ -206,8 +228,8 @@ export default function ThingEditor({
         </button>
         <button
           className="btn btn--primary"
-          onClick={() => onSave(v)}
-          disabled={!v.name.trim() || busy}
+          onClick={submit}
+          disabled={busy}
           type="button"
         >
           <Icon name="check" size={18} />

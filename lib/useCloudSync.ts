@@ -17,6 +17,8 @@ export interface UseCloudSync {
   signedIn: boolean;
   phase: SyncPhase;
   lastResult: SyncResult | null;
+  online: boolean;
+  dataSaver: boolean;
   /** Called when a cycle pulled changes down, so the app re-reads local data. */
   bindRefresh: (refresh: () => void) => void;
   /** Queue a sync, coalescing rapid calls. */
@@ -41,6 +43,20 @@ export function useCloudSync({ dataSaver = false }: CloudSyncOptions = {}): UseC
 
   const [phase, setPhase] = useState<SyncPhase>("idle");
   const [lastResult, setLastResult] = useState<SyncResult | null>(null);
+  const [online, setOnline] = useState(
+    () => typeof window === "undefined" || window.navigator.onLine,
+  );
+
+  useEffect(() => {
+    const goOnline = () => setOnline(true);
+    const goOffline = () => setOnline(false);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, []);
 
   const refreshRef = useRef<(() => void) | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -110,5 +126,15 @@ export function useCloudSync({ dataSaver = false }: CloudSyncOptions = {}): UseC
     };
   }, [enabled, signedIn, dataSaver, syncNow]);
 
-  return { enabled, signedIn, phase, lastResult, bindRefresh, scheduleSync, syncNow };
+  return {
+    enabled,
+    signedIn,
+    phase,
+    lastResult,
+    online,
+    dataSaver,
+    bindRefresh,
+    scheduleSync,
+    syncNow,
+  };
 }

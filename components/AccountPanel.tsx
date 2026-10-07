@@ -51,7 +51,7 @@ export function AccountPanel({ t, auth, sync }: Props) {
           </span>
         </div>
 
-        {sync.lastResult ? (
+        {sync.lastResult && sync.lastResult.at ? (
           <div className="card-meta">
             {t("sync.lastSynced", { time: formatTime(sync.lastResult.at) })}
           </div>
@@ -141,14 +141,16 @@ export function AccountPanel({ t, auth, sync }: Props) {
   );
 }
 
-function syncLabel(t: Translate, sync: UseCloudSync): string {
+export function syncLabel(t: Translate, sync: UseCloudSync): string {
+  if (!sync.online) return t("sync.offlineNet");
   if (sync.phase === "syncing") return t("sync.syncing");
   if (sync.phase === "error") return t("sync.failed");
-  if (sync.lastResult) return t("sync.done");
-  return t("sync.never");
+  if (sync.enabled && sync.signedIn && sync.dataSaver) return t("sync.paused");
+  if (!sync.lastResult || !sync.lastResult.at) return t("sync.never");
+  return t("sync.done");
 }
 
-function errorLabel(t: Translate, code: string): string {
+export function errorLabel(t: Translate, code: string): string {
   if (code === "invalid-credentials") return t("auth.invalid");
   if (code === "email-taken") return t("auth.emailTaken");
   if (code === "rate-limited") return t("auth.rateLimited");
@@ -160,7 +162,7 @@ function errorLabel(t: Translate, code: string): string {
  * in the browser's locale rather than the one the user picked in the app and
  * so disagree with every other date in the interface.
  */
-function formatTime(iso: string): string {
+export function formatTime(iso: string): string {
   const parsed = new Date(iso);
   if (Number.isNaN(parsed.getTime())) return "";
   const pad = (n: number) => String(n).padStart(2, "0");

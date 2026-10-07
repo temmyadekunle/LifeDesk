@@ -106,7 +106,7 @@ function finish(loadSample: boolean) {
     <div className="ob" lang={locale}>
 <div className="ob-brand">
         <Logo variant="wordmark" priority />
-        <h1>Livanta</h1>
+        <h1>{t("app.brand")}</h1>
         <p>{t("app.tagline")}</p>
       </div>
 

@@ -41,9 +41,10 @@ export function dueMeta(
     };
   }
   if (days === 0) return { text: t("ui.dueToday"), tone: "urgent" };
-  if (days === 1) return { text: t("ui.dueTomorrow"), tone: "warn" };
-  if (days <= 7) return { text: t.n("row.dueIn", days), tone: "warn" };
-  if (days <= 30) return { text: t.n("row.dueIn", days), tone: "info" };
+  if (days === 1) return { text: t("ui.dueTomorrow"), tone: "urgent" };
+  if (days <= 7) return { text: t.n("row.dueIn", days), tone: "urgent" };
+  if (days <= 30) return { text: t.n("row.dueIn", days), tone: "warn" };
+  if (days <= 90) return { text: t.n("row.dueIn", days), tone: "info" };
   return { text: t.n("row.dueIn", days), tone: "neutral" };
 }
 

@@ -120,6 +120,25 @@ html {
   border: 0;
 }
 
+.skiplink {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  transform: translateY(-300%);
+  z-index: 90;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--radius);
+  background: var(--ink-900);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skiplink:focus {
+  transform: translateY(0);
+}
+
 body {
   background: var(--bg);
   color: var(--ink-800);
@@ -246,6 +265,7 @@ button:disabled {
 }
 
 .app__col {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -312,7 +332,7 @@ button:disabled {
 }
 
 .appbar__brand {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -431,7 +451,7 @@ button:disabled {
   border-radius: var(--radius-pill);
   background: var(--danger);
   color: #fff;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 700;
   line-height: 17px;
   text-align: center;
@@ -465,7 +485,7 @@ button:disabled {
   border-radius: var(--radius-sm);
   background: none;
   color: var(--ink-500);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: -0.005em;
   transition: color 0.15s ease, background 0.15s ease;
@@ -683,7 +703,7 @@ button:disabled {
 /* Legacy label used by the module screens. */
 .section-label {
   margin: 0 0 0.5rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -829,7 +849,7 @@ button:disabled {
 
 .stat-label {
   margin-top: 0.125rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--ink-500);
   line-height: 1.25;
@@ -981,7 +1001,7 @@ button.listrow:active {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 0.1875rem 0.5rem;
   border-radius: var(--radius-pill);
@@ -1347,7 +1367,7 @@ button.listrow:active {
 
 .month__dow span {
   text-align: center;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1421,7 +1441,7 @@ button.listrow:active {
 }
 
 .agenda__day {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -2071,7 +2091,7 @@ button.listrow:active {
 
 .railtitle {
   margin: 0 0 0.75rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -2081,16 +2101,17 @@ button.listrow:active {
 /* ==========================================================================
    Install bar
 
-   The PWA install / update notice. It is position: fixed rather than in flow
-   because it appears over the app at a moment the user did not ask for, and
-   pushing the layout down to make room would move the tab bar and every tile
-   beneath it at the worst possible time. It sits above the bottom navigation
-   and clears the home indicator via env(), so it never covers the one control
-   the user reaches for most.
+   The PWA install / update notice. It is absolutely positioned inside the app
+   column rather than fixed to the viewport: on desktop the phone column is
+   only one half of the shell, and a viewport-fixed pill would float over the
+   sidebar instead of the app. Anchoring it to the column keeps it centred
+   over the app, and the FAB is hidden while it is visible so the two never
+   overlap. It sits above the bottom navigation and clears the home indicator
+   via env(), so it never covers the one control the user reaches for most.
    ========================================================================== */
 
 .installbar {
-  position: fixed;
+  position: absolute;
   left: 50%;
   transform: translateX(-50%);
   bottom: calc(env(safe-area-inset-bottom, 0px) + 5.25rem);
@@ -2098,7 +2119,7 @@ button.listrow:active {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  width: min(28rem, calc(100vw - 2rem));
+  width: min(28rem, calc(100% - 2rem));
   padding: 0.5rem 0.5rem 0.5rem 0.875rem;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -2106,6 +2127,14 @@ button.listrow:active {
   box-shadow: 0 12px 32px rgb(16 35 63 / 18%);
   color: var(--ink);
   font-size: 0.875rem;
+}
+
+.app__col:has(.installbar) .fab {
+  display: none;
+}
+
+.app__col:has(.installbar) .app__body {
+  padding-bottom: 6.5rem;
 }
 
 .installbar__text {

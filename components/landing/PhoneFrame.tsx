@@ -135,7 +135,7 @@ export function PhoneHome({ now }: { now: Date }) {
           </div>
           <div className="stat">
             <div className="stat-num important">{desk.status.importantCount}</div>
-            <div className="stat-label">{desk.t("home.stat.upcoming")}</div>
+            <div className="stat-label">{desk.t("home.stat.important")}</div>
           </div>
           <div className="stat">
             <div className="stat-num routine">{desk.status.onTrackCount}</div>

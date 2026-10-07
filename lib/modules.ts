@@ -68,13 +68,17 @@ export interface HomeSummary {
   properties: Thing[];
   maintenance: Thing[];
   overdueMaintenance: Thing[];
+  other: Thing[];
   monthlyOutgoings: number;
 }
 
 export function summariseHome(things: Thing[], now: Date = new Date()): HomeSummary {
-  const home = things.filter((t) => t.category === "home" && isActive(t));
+  const home = things.filter(
+    (t) => t.category === "home" && t.kind !== "asset" && isActive(t),
+  );
   const rent = home.filter((t) => t.kind === "rent");
   const maintenance = home.filter((t) => t.kind === "maintenance");
+  const other = home.filter((t) => t.kind !== "rent" && t.kind !== "maintenance");
 
   const HORIZON = 30;
   const monthly = things.filter((t) => {
@@ -89,6 +93,7 @@ export function summariseHome(things: Thing[], now: Date = new Date()): HomeSumm
     overdueMaintenance: maintenance.filter(
       (m) => m.priority === "urgent" || m.priority === "important",
     ),
+    other,
     monthlyOutgoings: monthly.reduce((s, t) => s + amountOrZero(t.amount), 0),
   };
 }
@@ -104,7 +109,9 @@ export interface VehicleGroup {
 }
 
 export function summariseVehicles(things: Thing[]): VehicleGroup[] {
-  const transport = things.filter((t) => t.category === "transport" && isActive(t));
+  const transport = things.filter(
+    (t) => t.category === "transport" && t.kind !== "asset" && isActive(t),
+  );
 
   const groups = groupBy(
     transport,
@@ -138,7 +145,9 @@ export interface BillsSummary {
 }
 
 export function summariseBills(things: Thing[], now: Date = new Date()): BillsSummary {
-  const money = things.filter((t) => t.category === "money" && isActive(t));
+  const money = things.filter(
+    (t) => t.category === "money" && t.kind !== "asset" && isActive(t),
+  );
   const recurring = money.filter((t) => t.recurrence !== null);
   const oneOff = money.filter((t) => t.recurrence === null);
 
@@ -179,7 +188,7 @@ export function summariseDocuments(
   now: Date = new Date(),
 ): DocumentsSummary {
   const docs = things.filter(
-    (t) => t.category === "documents" && isActive(t) && t.kind === "document",
+    (t) => t.category === "documents" && t.kind !== "asset" && isActive(t),
   );
 
   const endOfYear = new Date(now.getFullYear(), 11, 31);

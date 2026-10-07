@@ -4,20 +4,12 @@ import { useMemo } from "react";
 
 import { Icon } from "../Icons";
 import { EmptyState, IconTile } from "../ui";
-import { CATEGORY_META, MODULE_ICON, MODULES, type ModuleId } from "../maps";
+import { CATEGORY_META, MODULE_ICON, MODULES, moduleThings, type ModuleId } from "../maps";
 import { TINT_SOFT, tint } from "@/lib/color";
 import type { Category, Thing } from "@/lib/types";
 import type { useLivanta } from "@/lib/useLivanta";
 
 type Desk = ReturnType<typeof useLivanta>;
-
-const MODULE_CATEGORY: Record<ModuleId, Category | "asset"> = {
-  home: "home",
-  vehicles: "transport",
-  bills: "money",
-  documents: "documents",
-  assets: "asset",
-};
 
 export function ServicesScreen({
   desk,
@@ -35,14 +27,9 @@ export function ServicesScreen({
   const { t } = desk;
 
   const counts = useMemo(() => {
-    const active = desk.things.filter((x) => x.status === "active");
     const out = {} as Record<ModuleId, number>;
     for (const m of MODULES) {
-      const target = MODULE_CATEGORY[m.id];
-      out[m.id] =
-        target === "asset"
-          ? active.filter((x) => x.kind === "asset").length
-          : active.filter((x) => x.category === target).length;
+      out[m.id] = moduleThings(desk.things, m.id).length;
     }
     return out;
   }, [desk.things]);
@@ -154,7 +141,7 @@ export function ServicesScreen({
           {(Object.keys(CATEGORY_META) as Category[]).map((id) => {
             const meta = CATEGORY_META[id];
             const count = desk.things.filter(
-              (x) => x.status === "active" && x.category === id,
+              (x) => x.status === "active" && x.category === id && x.kind !== "asset",
             ).length;
             return (
               <div key={id} className="card card--quiet">

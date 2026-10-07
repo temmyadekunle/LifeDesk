@@ -110,7 +110,7 @@ export const ha: Dict = {
   /* ---------- home screen ---------- */
   "home.thisWeek": "Wannan makon",
   "home.stat.urgent": "mai gaggawa",
-  "home.stat.upcoming": "mai zuwa",
+  "home.stat.important": "mai muhimmanci",
   "home.stat.onTrack": "kan hanya",
   "home.needsAttention": "Ya buƙaci kulawa",
   "home.reading": "Ana karanta bayanan gida…",
@@ -127,6 +127,7 @@ export const ha: Dict = {
   "things.search": "Nema",
   "things.searchPlaceholder": "Nemi abubuwa da rubutu",
   "things.filterAll": "Duka",
+  "things.statusFilter": "Yanayi",
   "things.showCompleted": "Nuna waɗanda aka gama ({n})",
   "things.count_one": "{n} abu",
   "things.count_many": "{n} abubuwa",
@@ -141,7 +142,7 @@ export const ha: Dict = {
   "alerts.count_many": "{n} gargaɗi · {status}",
   "alerts.none": "Ba gargaɗi. Ba abin da ke buƙatar kulawa.",
   "alerts.restore": "Mayar da gargaɗin da aka share",
-  "action.remindLater": "Tunatar da ni daga baya",
+  "action.remindLater": "Rufe shi",
   "action.markHandled": "Marka cewa an gama",
 
   /* ---------- household placeholder ---------- */
@@ -220,6 +221,7 @@ export const ha: Dict = {
   "ed.dueDate": "Ranar da za ta zo ko ta ƙare",
   "ed.dueHint": "Bar shi babu komai idan babu ranar tukuna.",
   "ed.nameTooLong": "Sunan ya wuce cikakkiyar 100 haruffa.",
+  "ed.nameRequired": "Sanya suna don adana shi.",
   "ed.amountInvalid": "Da fatan za ka shigar da adadi daidai.",
   "ed.repeats": "Yana maimaituwa",
   "ed.note": "Rubutu (ba dole ba)",
@@ -250,6 +252,7 @@ export const ha: Dict = {
   "mod.nothingMaintenance": "Ba a lura da komai don kulawa ba.",
   "mod.next30": "Kwanaki 30 masu zuwa",
   "mod.knownOutgoings": "Kuɗin fita na gida da aka sani.",
+  "mod.otherHome": "Wasu abubuwan gida",
   "mod.daysAgo": "{n} d da suka gabata",
 
   "mod.noVehicles": "Har yanzu ba a ƙara mota ba.",
@@ -302,6 +305,8 @@ export const ha: Dict = {
   "sync.never": "Ba a ta fara synchronization ba",
   "sync.failed": "Synchronization ya gaza. Za a sake gwada.",
   "sync.offline": "Synchronization ba ta kunna ba sai ka shiga.",
+  "sync.offlineNet": "Ba ka da intanet. Za a sake daidaitawa sauransu idan ka dawo kan yanar gizo.",
+  "sync.paused": "An hana shi ta yanayin adana bayanai.",
   "sync.lastSynced": "An sabunta shi karshe a {time}",
   "auth.invalid": "Wannan imel da kalmar sirri ba tare ba.",
   "auth.emailTaken": "An riga da asusun da wannan imel.",
@@ -314,6 +319,7 @@ export const ha: Dict = {
   "ui.dueToday": "Zai a yau",
   "ui.dueTomorrow": "Zai a al'ada",
   "ui.lifeArea": "Wurin rayuwa",
+  "ui.skipToContent": "Tsallaka zuwa abin da ke ciki",
   "nav.primary": "Babban menu",
   "tab.calendar": "Kalanda",
   "tab.services": "Ayyuka",

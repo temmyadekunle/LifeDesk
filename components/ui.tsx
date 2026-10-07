@@ -15,6 +15,27 @@ import { Icon, type IconName } from "./Icons";
 
 /* ------------------------------------------------------------------ sheet */
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function trapTab(e: KeyboardEvent, container: HTMLElement) {
+  const nodes = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE));
+  if (nodes.length === 0) return;
+  const first = nodes[0];
+  const last = nodes[nodes.length - 1];
+  const active = document.activeElement;
+
+  if (e.shiftKey) {
+    if (active === first || active === container || !container.contains(active)) {
+      e.preventDefault();
+      last.focus();
+    }
+  } else if (active === last || !container.contains(active)) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
 export function Sheet({
   title,
   onClose,
@@ -37,7 +58,11 @@ export function Sheet({
     previousFocusRef.current = document.activeElement as HTMLElement;
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key === "Tab" && panelRef.current) trapTab(e, panelRef.current);
     };
     document.addEventListener("keydown", onKey);
     // Move focus into the sheet so keyboard and screen-reader users land here.
@@ -54,7 +79,8 @@ export function Sheet({
       <button
         type="button"
         className="sheet__backdrop"
-        aria-label={title}
+        tabIndex={-1}
+        aria-hidden="true"
         onClick={onClose}
       />
       <div
@@ -237,12 +263,18 @@ export function ConfirmDialog({
   onCancel: () => void;
 }) {
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     previousFocusRef.current = document.activeElement as HTMLElement;
+    panelRef.current?.focus();
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
+      if (e.key === "Escape") {
+        onCancel();
+        return;
+      }
+      if (e.key === "Tab" && panelRef.current) trapTab(e, panelRef.current);
     };
     document.addEventListener("keydown", onKey);
     return () => {
@@ -253,13 +285,21 @@ export function ConfirmDialog({
 
   return (
     <div className="sheet" role="presentation">
-      <button type="button" className="sheet__backdrop" aria-label={cancelLabel} onClick={onCancel} />
+      <button
+        type="button"
+        className="sheet__backdrop"
+        tabIndex={-1}
+        aria-hidden="true"
+        onClick={onCancel}
+      />
       <div
         className="sheet__panel"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-title"
         aria-describedby="confirm-body"
+        tabIndex={-1}
+        ref={panelRef}
         style={{ margin: "auto 1rem 1rem" }}
       >
         <div className="sheet__body">

@@ -54,6 +54,10 @@ test("reminderCopy for documents", async (t) => {
     assert.equal(reminderCopy(doc(), 30).title, "Passport expires next month");
   });
 
+  await t.test("uses a day count at 60 days rather than next month", () => {
+    assert.equal(reminderCopy(doc(), 60).title, "Passport expires in 60 days");
+  });
+
   await t.test("uses a day count between 2 and 29 days", () => {
     assert.equal(reminderCopy(doc(), 14).title, "Passport expires in 14 days");
   });

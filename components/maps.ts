@@ -1,5 +1,5 @@
 import type { IconName } from "./Icons";
-import type { Category, ThingKind } from "@/lib/types";
+import type { Category, Thing, ThingKind } from "@/lib/types";
 import type { TKey } from "@/lib/locales/en";
 
 /**
@@ -9,6 +9,23 @@ import type { TKey } from "@/lib/locales/en";
  */
 
 export type ModuleId = "home" | "vehicles" | "bills" | "documents" | "assets";
+
+const MODULE_CATEGORY: Record<ModuleId, Category | "asset"> = {
+  home: "home",
+  vehicles: "transport",
+  bills: "money",
+  documents: "documents",
+  assets: "asset",
+};
+
+export function moduleThings(things: Thing[], id: ModuleId): Thing[] {
+  const target = MODULE_CATEGORY[id];
+  return things.filter((x) => {
+    if (x.status !== "active") return false;
+    if (target === "asset") return x.kind === "asset";
+    return x.category === target && x.kind !== "asset";
+  });
+}
 
 export const MODULES: {
   id: ModuleId;

@@ -263,9 +263,17 @@ test("summariseDocuments", async (t) => {
     assert.equal(s.noExpiry.length, 1);
   });
 
-  await t.test("ignores non-document kinds in this category", () => {
+  await t.test("includes non-document kinds in this category", () => {
     const s = summariseDocuments(
       [makeThing({ category: "documents", kind: "reminder", dueDate: iso(5) })],
+      NOW,
+    );
+    assert.equal(s.expiringSoon.length, 1);
+  });
+
+  await t.test("leaves assets to the assets module", () => {
+    const s = summariseDocuments(
+      [makeThing({ category: "documents", kind: "asset", dueDate: iso(5) })],
       NOW,
     );
     assert.equal(s.expiringSoon.length, 0);

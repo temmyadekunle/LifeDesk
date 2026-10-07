@@ -82,6 +82,8 @@ test("AccountPanel renders the unavailable notice instead of a sign-in form", as
     signedIn: false,
     phase: "idle" as const,
     lastResult: null,
+    online: true,
+    dataSaver: false,
     bindRefresh: () => {},
     scheduleSync: () => {},
     syncNow: async () => {},

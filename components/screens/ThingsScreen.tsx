@@ -113,10 +113,16 @@ ow: pins the clock for the static mockups. */
         ) : null}
       </div>
 
-      <div className="chips" style={{ marginTop: "0.625rem" }}>
+      <div
+        className="chips"
+        role="group"
+        aria-label={t("ed.category")}
+        style={{ marginTop: "0.625rem" }}
+      >
         <button
           className={category === "all" ? "chip chip--on" : "chip"}
           onClick={() => setCategory("all")}
+          aria-pressed={category === "all"}
         >
           {t("things.filterAll")}
         </button>
@@ -127,6 +133,7 @@ ow: pins the clock for the static mockups. */
               key={id}
               className={category === id ? "chip chip--on" : "chip"}
               onClick={() => setCategory(id)}
+              aria-pressed={category === id}
               style={
                 category === id
                   ? undefined
@@ -140,7 +147,12 @@ ow: pins the clock for the static mockups. */
         })}
       </div>
 
-      <div className="chips" style={{ marginTop: "0.5rem" }}>
+      <div
+        className="chips"
+        role="group"
+        aria-label={t("things.statusFilter")}
+        style={{ marginTop: "0.5rem" }}
+      >
         {(
           [
             ["active", t("things.active")],
@@ -152,6 +164,7 @@ ow: pins the clock for the static mockups. */
             key={id}
             className={status === id ? "chip chip--on" : "chip chip--quiet"}
             onClick={() => setStatus(id)}
+            aria-pressed={status === id}
           >
             {label}
           </button>

@@ -30,6 +30,7 @@ export const en = {
   "ui.dueToday": "Due today",
   "ui.dueTomorrow": "Due tomorrow",
   "ui.lifeArea": "Life area",
+  "ui.skipToContent": "Skip to content",
 
   /* ---------- tabs ---------- */
   "tab.home": "Home",
@@ -130,7 +131,7 @@ export const en = {
   /* ---------- home screen ---------- */
   "home.thisWeek": "This week",
   "home.stat.urgent": "urgent",
-  "home.stat.upcoming": "upcoming",
+  "home.stat.important": "important",
   "home.stat.onTrack": "on track",
   "home.needsAttention": "Needs attention",
   "home.reading": "Reading your local records…",
@@ -155,6 +156,7 @@ export const en = {
   "things.search": "Search",
   "things.searchPlaceholder": "Search things and notes",
   "things.filterAll": "All",
+  "things.statusFilter": "Status",
   "things.showCompleted": "Show completed ({n})",
   "things.count_one": "{n} thing",
   "things.count_many": "{n} things",
@@ -182,7 +184,7 @@ export const en = {
   "alerts.emptyTitle": "Nothing needs attention",
   "alerts.emptyBody": "When something gets urgent or overdue, it will show up here.",
   "alerts.restoreShort": "Restore",
-  "action.remindLater": "Remind me later",
+  "action.remindLater": "Dismiss",
   "action.markHandled": "Mark as handled",
   "action.review": "Review",
 
@@ -339,6 +341,7 @@ export const en = {
   "ed.dueDate": "Due or expiry date",
   "ed.dueHint": "Leave empty if there is no date yet.",
   "ed.nameTooLong": "Name is too long (max 100 characters).",
+  "ed.nameRequired": "Give it a name to save.",
   "ed.amountInvalid": "Please enter a valid amount.",
   "ed.repeats": "Repeats",
   "ed.note": "Note (optional)",
@@ -369,6 +372,7 @@ export const en = {
   "mod.nothingMaintenance": "Nothing tracked for maintenance.",
   "mod.next30": "Next 30 days",
   "mod.knownOutgoings": "Known household outgoings.",
+  "mod.otherHome": "Other home items",
   "mod.daysAgo": "{n} d ago",
 
   "mod.noVehicles": "No vehicles added yet.",
@@ -421,6 +425,8 @@ export const en = {
   "sync.never": "Not synced yet",
   "sync.failed": "Could not sync. It will try again.",
   "sync.offline": "Sync is off until you sign in.",
+  "sync.offlineNet": "You're offline. Sync will resume when you reconnect.",
+  "sync.paused": "Paused by Data Saver mode.",
   "sync.lastSynced": "Last synced {time}",
   "auth.invalid": "That email and password do not match.",
   "auth.emailTaken": "An account already exists for that email.",

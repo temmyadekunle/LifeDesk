@@ -47,7 +47,7 @@ export function HomeScreen({
       <section className="section">
         <div className="statgrid">
           <Stat n={desk.status.urgentCount} label={t("home.stat.urgent")} tone="urgent" />
-          <Stat n={desk.status.importantCount} label={t("home.stat.upcoming")} tone="important" />
+          <Stat n={desk.status.importantCount} label={t("home.stat.important")} tone="important" />
           <Stat n={desk.status.onTrackCount} label={t("home.stat.onTrack")} tone="routine" />
         </div>
       </section>

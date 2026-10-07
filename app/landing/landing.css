@@ -515,7 +515,7 @@
 }
 
 .lp-badge__small {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   opacity: 0.75;
@@ -531,7 +531,7 @@
   border-radius: var(--radius-pill);
   background: var(--brand-50);
   color: var(--brand-700);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1132,7 +1132,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 18px 2px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--ink-700);
   background: var(--surface);
@@ -1190,7 +1190,7 @@
 }
 
 .lp-bottomnav__label {
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
@@ -1215,7 +1215,7 @@
 .lp-cal__dow {
   padding-block: 4px;
   text-align: center;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--ink-400);
 }

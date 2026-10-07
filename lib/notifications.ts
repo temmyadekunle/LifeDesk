@@ -80,6 +80,11 @@ export function reminderCopy(
         title: tr("reminder.doc.long.title", { name }),
         body: tr("reminder.doc.long.body"),
       };
+    if (lead >= 60)
+      return {
+        title: tr("reminder.doc.days.title", { name, n: lead }),
+        body: tr("reminder.doc.days.body"),
+      };
     if (lead >= 30)
       return {
         title: tr("reminder.doc.month.title", { name }),

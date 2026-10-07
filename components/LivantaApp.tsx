@@ -13,7 +13,7 @@ import { AuthScreen } from "./AuthScreen";
 import Onboarding from "./Onboarding";
 import ThingEditor from "./ThingEditor";
 import { HomeScreen } from "./screens/HomeScreen";
-import { CATEGORY_META, KIND_ICON, MODULE_ICON, MODULES, type ModuleId } from "./maps";
+import { CATEGORY_META, KIND_ICON, MODULE_ICON, MODULES, moduleThings, type ModuleId } from "./maps";
 import { TINT_BORDER, TINT_SOFT, tint } from "@/lib/color";
 import { dueMeta, TONE_CLASS } from "./labels";
 import { formatDate } from "@/lib/dates";
@@ -21,6 +21,7 @@ import { formatNaira } from "@/lib/i18n";
 import { hasAmount } from "@/lib/money";
 import { notifyUrgentAlert } from "@/lib/notifications";
 import { fromEditorValues, type EditorPreset } from "@/lib/editor";
+import InstallPrompt from "./InstallPrompt";
 import type { TKey } from "@/lib/locales/en";
 import type { Thing } from "@/lib/types";
 import { useAuth } from "@/lib/useAuth";
@@ -157,20 +158,30 @@ const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
 
   async function saveNew(values: ReturnType<typeof fromEditorValues>) {
     setBusy(true);
-    const thing = await desk.addThing(values);
-    setBusy(false);
-    closeSheets();
-    showToast(t("thing.savedToast", { name: thing.name }), "ok");
+    try {
+      const thing = await desk.addThing(values);
+      closeSheets();
+      showToast(t("thing.savedToast", { name: thing.name }), "ok");
+    } catch {
+      showToast(t("auth.unknown"), "danger");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function saveEdit(values: ReturnType<typeof fromEditorValues>) {
     const target = desk.things.find((x) => x.id === editId);
     if (!target) return;
     setBusy(true);
-    await desk.updateThing(target, values);
-    setBusy(false);
-    setEditId(null);
-    showToast(t("thing.savedToast", { name: values.name }), "ok");
+    try {
+      await desk.updateThing(target, values);
+      setEditId(null);
+      showToast(t("thing.savedToast", { name: values.name }), "ok");
+    } catch {
+      showToast(t("auth.unknown"), "danger");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function handleThing(thing: Thing) {
@@ -191,9 +202,12 @@ const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
             <Onboarding
               locale={desk.settings.locale}
               onDone={(result) => void desk.completeOnboarding(result)}
-              onSample={(locale) => {
+              onSample={(locale, displayName) => {
                 void desk.completeOnboarding({
-                  displayName: desk.settings.displayName || "Temmy",
+                  displayName:
+                    displayName ||
+                    desk.settings.displayName ||
+                    "Temmy",
                   categories: ["home", "money", "transport", "documents"],
                   firstThing: null,
                   loadSample: true,
@@ -211,9 +225,9 @@ const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
     return (
       <div className="app" lang={desk.settings.locale}>
         <div className="app__col">
-          <header className="appbar">
+            <header className="appbar">
             <div className="appbar__lead">
-              <span className="appbar__brand">Livanta</span>
+              <span className="appbar__brand">{t("app.brand")}</span>
             </div>
           </header>
           <div className="app__body">
@@ -242,6 +256,9 @@ const route: Route | null = recovering
   return (
     <div className="app" lang={desk.settings.locale}>
       <div className="app__col">
+        <a className="skiplink" href="#app-main">
+          {t("ui.skipToContent")}
+        </a>
         <Header
           desk={desk}
           tab={tab}
@@ -255,7 +272,7 @@ route={route}
           }}
         />
 
-        <div className="app__body">
+        <main className="app__body" id="app-main" tabIndex={-1}>
           {desk.error ? (
             <div style={{ marginBottom: "0.875rem" }}>
               <div className="notice notice--danger">
@@ -273,7 +290,7 @@ route={route}
             <ModuleHeader
               id={route.id}
               t={t}
-              count={desk.things.filter((x) => x.status === "active").length}
+              count={moduleThings(desk.things, route.id).length}
             />
           ) : null}
 
@@ -344,7 +361,7 @@ route={route}
               />
             )}
           </Suspense>
-        </div>
+        </main>
 
         <nav className="bottomnav" aria-label={t("nav.primary")}>
           {TABS.map((def) => (
@@ -368,6 +385,8 @@ route={route}
           ))}
         </nav>
 
+        <InstallPrompt />
+
         <button
           type="button"
           className="fab"
@@ -378,7 +397,7 @@ route={route}
         </button>
       </div>
 
-      <DesktopRail desk={desk} tab={tab} onOpenThing={openThing} />
+      <DesktopRail desk={desk} onOpenThing={openThing} />
 
       {/* ---------------------------------------------------------- sheets */}
 
@@ -421,7 +440,9 @@ route={route}
       {confirmThing ? (
         <ConfirmDialog
           title={t("thing.deleteTitle")}
-          message={t("thing.deleteBody")}
+          message={t("thing.deleteBody", {
+            name: desk.things.find((x) => x.id === confirmThing)?.name ?? "",
+          })}
           confirmLabel={t("things.delete")}
           cancelLabel={t("ed.cancel")}
           destructive
@@ -530,7 +551,7 @@ route: Route | null;
           </span>
         )}
         <div style={{ minWidth: 0 }}>
-          <p className="appbar__title">{title}</p>
+          <h1 className="appbar__title">{title}</h1>
           {sub ? <p className="appbar__sub">{sub}</p> : null}
         </div>
       </div>
@@ -597,11 +618,9 @@ function ModuleHeader({
 
 function DesktopRail({
   desk,
-  tab,
   onOpenThing,
 }: {
   desk: ReturnType<typeof useLivanta>;
-  tab: Tab;
   onOpenThing: (thing: Thing) => void;
 }) {
     const { t } = desk;
@@ -612,7 +631,7 @@ function DesktopRail({
     .slice(0, 6);
 
   return (
-    <aside className="app__aside" aria-hidden={tab === "home" ? undefined : undefined}>
+    <aside className="app__aside">
       <div className="railhead">
         <Avatar name={desk.settings.displayName || "Temmy"} src={desk.settings.avatar} large />
         <div>
@@ -631,7 +650,7 @@ function DesktopRail({
         </div>
         <div className="stat">
           <div className="stat-num important">{desk.status.importantCount}</div>
-          <div className="stat-label">{t("home.stat.upcoming")}</div>
+          <div className="stat-label">{t("home.stat.important")}</div>
         </div>
         <div className="stat">
           <div className="stat-num routine">{desk.status.onTrackCount}</div>

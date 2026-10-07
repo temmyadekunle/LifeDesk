@@ -42,7 +42,7 @@ export function CalendarScreen({
   const byDate = useMemo(() => {
     const map = new Map<string, Thing[]>();
     for (const thing of desk.things) {
-      if (thing.dueDate) {
+      if (thing.status === "active" && thing.dueDate) {
         const list = map.get(thing.dueDate) ?? [];
         list.push(thing);
         map.set(thing.dueDate, list);
@@ -95,7 +95,7 @@ export function CalendarScreen({
           ))}
         </div>
 
-        <div className="month__grid" role="grid" aria-label={t("cal.title")}>
+        <div className="month__grid" role="group" aria-label={t("cal.title")}>
           {cells.map((date) => {
             const iso = toISO(date);
             const items = byDate.get(iso) ?? [];
@@ -120,6 +120,7 @@ export function CalendarScreen({
                 type="button"
                 className={classes}
                 onClick={() => setSelected(iso)}
+                aria-pressed={iso === selected}
                 aria-label={dotLabel
                   ? `${formatDate(date, t.locale, { day: "numeric", month: "long" })}, ${dotLabel}`
                   : formatDate(date, t.locale, { day: "numeric", month: "long" })}
@@ -127,12 +128,11 @@ export function CalendarScreen({
                 >
                   {date.getDate()}
                   {items.length > 0 ? (
-                    <span className="day__dots">
+                    <span className="day__dots" aria-hidden="true">
                       {items.slice(0, 3).map((item) => (
                         <span
                           key={item.id}
                           className={`day__dot${item.priority === "urgent" ? " day__dot--urgent" : ""}`}
-                          aria-label={item.priority === "urgent" ? "Urgent item" : "Item"}
                         />
                       ))}
                     </span>

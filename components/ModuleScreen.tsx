@@ -141,6 +141,28 @@ function HomeModule({
         <div className="amount">{formatNaira(s.monthlyOutgoings)}</div>
         <p className="card-meta">{t("mod.knownOutgoings")}</p>
       </section>
+
+      {s.other.length > 0 && (
+        <section className="card">
+          <p className="section-label">{t("mod.otherHome")}</p>
+          {s.other.map((item) => (
+            <Row
+              key={item.id}
+              thing={item}
+              onOpen={() => onOpenThing(item)}
+              right={
+                item.amount ? (
+                  <span className="sub">{formatNaira(item.amount)}</span>
+                ) : item.dueDate ? (
+                  <span className="sub">
+                    {t("mod.daysLeft", { n: daysUntil(item.dueDate) })}
+                  </span>
+                ) : undefined
+              }
+            />
+          ))}
+        </section>
+      )}
     </>
   );
 }

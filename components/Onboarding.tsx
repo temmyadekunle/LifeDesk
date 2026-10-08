@@ -4,26 +4,21 @@ import { useState } from "react";
 
 import { Icon, type IconName } from "./Icons";
 import { Logo } from "./Logo";
-import { BrandPanel } from "./BrandArt";
+import { CATEGORY_META } from "./maps";
 import { LOCALES, LOCALE_NAMES, makeT, type Locale, type Translate } from "@/lib/i18n";
 import type { TKey } from "@/lib/locales/en";
-import type { Category } from "@/lib/types";
+import type { Category, ThingKind } from "@/lib/types";
 import { TINT_SOFT, tint } from "@/lib/color";
-
-const OPTIONS: { id: Category; labelKey: TKey; icon: IconName; color: string }[] = [
-  { id: "home", labelKey: "cat.home", icon: "home", color: "var(--home)" },
-  { id: "transport", labelKey: "cat.transport", icon: "car", color: "var(--transport)" },
-  { id: "money", labelKey: "cat.money", icon: "wallet", color: "var(--money)" },
-  { id: "documents", labelKey: "cat.documents", icon: "file", color: "var(--documents)" },
-  { id: "family", labelKey: "cat.family", icon: "users", color: "var(--family)" },
-  { id: "services", labelKey: "cat.services", icon: "wrench", color: "var(--services)" },
-];
+import { announcePermissionChange, requestNotificationPermission } from "@/lib/notifications";
 
 export interface OnboardingResult {
-  displayName: string;
   categories: Category[];
-  firstThing: { name: string; amount: string; dueDate: string } | null;
-  loadSample: boolean;
+  firstThings: {
+    name: string;
+    category: Category;
+    kind: ThingKind;
+    dueDate: string;
+  }[];
   locale: Locale;
 }
 
@@ -55,28 +50,92 @@ export function LocalePicker({
   );
 }
 
-const STEP_FEATURE: { icon: IconName; labelKey: TKey }[] = [
-  { icon: "bell", labelKey: "ob.f.early" },
-  { icon: "calendar", labelKey: "ob.f.calendar" },
-  { icon: "cloud", labelKey: "ob.f.sync" },
+const OPTIONS: { id: Category; labelKey: TKey; icon: IconName; color: string }[] = (
+  Object.keys(CATEGORY_META) as Category[]
+).map((id) => ({ id, ...CATEGORY_META[id] }));
+
+const HOW_CARDS: {
+  icon: IconName;
+  color: string;
+  titleKey: TKey;
+  bodyKey: TKey;
+}[] = [
+  {
+    icon: "calendar",
+    color: "var(--brand-700)",
+    titleKey: "ob.remember",
+    bodyKey: "ob.rememberBody",
+  },
+  {
+    icon: "bell",
+    color: "var(--warn)",
+    titleKey: "ob.notified",
+    bodyKey: "ob.notifiedBody",
+  },
+  {
+    icon: "checkCircle",
+    color: "var(--ok)",
+    titleKey: "ob.organized",
+    bodyKey: "ob.organizedBody",
+  },
 ];
 
+const EXAMPLES: {
+  id: string;
+  nameKey: TKey;
+  dateKey: TKey;
+  icon: IconName;
+  color: string;
+  category: Category;
+  kind: ThingKind;
+}[] = [
+  {
+    id: "insurance",
+    nameKey: "ob.ex.vehicle",
+    dateKey: "ob.ex.expires",
+    icon: "car",
+    color: "var(--transport)",
+    category: "transport",
+    kind: "insurance",
+  },
+  {
+    id: "power",
+    nameKey: "ob.ex.power",
+    dateKey: "ob.ex.due",
+    icon: "zap",
+    color: "var(--money)",
+    category: "money",
+    kind: "utility",
+  },
+  {
+    id: "passport",
+    nameKey: "ob.ex.passport",
+    dateKey: "ob.ex.expires",
+    icon: "file",
+    color: "var(--documents)",
+    category: "documents",
+    kind: "document",
+  },
+];
+
+const STEPS = [0, 1, 2, 3, 4];
+
 export default function Onboarding({
-  onDone,
-  onSample,
   locale: initialLocale,
+  step,
+  onStepChange,
+  onDone,
+  onSignIn,
 }: {
-  onDone: (result: OnboardingResult) => void;
-  onSample: (locale: Locale, displayName?: string) => void;
   locale: Locale;
+  step: number;
+  onStepChange: (step: number) => void;
+  onDone: (result: OnboardingResult) => void;
+  onSignIn: () => void;
 }) {
-  const [step, setStep] = useState(0);
   const [locale, setLocale] = useState<Locale>(initialLocale);
-  const [name, setName] = useState("");
   const [picked, setPicked] = useState<Category[]>([]);
-  const [thingName, setThingName] = useState("");
-  const [amount, setAmount] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [dates, setDates] = useState<Record<string, string>>({});
 
   const t = makeT(locale);
 
@@ -86,94 +145,110 @@ export default function Onboarding({
     );
   }
 
-function finish(loadSample: boolean) {
-    if (loadSample) {
-      onSample(locale, name.trim() || undefined);
-      return;
-    }
+  function finish() {
     onDone({
-      displayName: name.trim(),
       categories: picked,
-      firstThing: thingName.trim()
-        ? { name: thingName.trim(), amount, dueDate }
-        : null,
-      loadSample: false,
+      firstThings: EXAMPLES.flatMap((e) => {
+        const dueDate = dates[e.id];
+        return dueDate
+          ? [{ name: t(e.nameKey), category: e.category, kind: e.kind, dueDate }]
+          : [];
+      }),
       locale,
     });
   }
 
+  async function allowNotifications() {
+    await requestNotificationPermission();
+    announcePermissionChange();
+    finish();
+  }
+
   return (
     <div className="ob" lang={locale}>
-<div className="ob-brand">
+      <div className="ob-brand">
         <Logo variant="wordmark" priority />
         <h1>{t("app.brand")}</h1>
         <p>{t("app.tagline")}</p>
       </div>
 
       <div className="ob-steps" role="presentation">
-        {[0, 1, 2].map((i) => (
+        {STEPS.map((i) => (
           <span key={i} className={step === i ? "ob-step ob-step--on" : "ob-step"} />
         ))}
       </div>
 
       {step === 0 ? (
         <>
-          <BrandPanel variant="adire" height={124}>
-            <p style={{ margin: 0, fontSize: "0.9375rem", fontWeight: 600 }}>
-              {t("ob.welcome")}
-            </p>
-            <p style={{ margin: "0.25rem 0 0", fontSize: "0.8125rem", opacity: 0.9 }}>
-              {t("ob.localOnly")}
-            </p>
-          </BrandPanel>
-
-          <h2 className="ob-h">{t("ob.whatCallYou")}</h2>
+          <h2 className="ob-h">{t("ob.welcome")}</h2>
           <p className="card-meta" style={{ marginBottom: "0.875rem" }}>
-            {t("ob.nameBlurb")}
+            {t("ob.lead")}
           </p>
 
           <div className="field">
-            <label htmlFor="ob-name">{t("ob.firstName")}</label>
-            <input
-              id="ob-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t("ob.namePlaceholder")}
-              autoComplete="given-name"
-            />
-          </div>
-
-          <div className="field">
-            <label htmlFor="ob-lang">{t("ob.language")}</label>
+            <span>{t("ob.language")}</span>
             <LocalePicker locale={locale} onChange={setLocale} t={t} />
-          </div>
-
-          <div className="stack stack--tight" style={{ marginTop: "0.25rem" }}>
-            {STEP_FEATURE.map((f) => (
-              <div className="rowline" key={f.labelKey}>
-                <span className="listrow__lead" style={{ color: "var(--brand-700)" }}>
-                  <Icon name={f.icon} size={18} />
-                </span>
-                <span className="listrow__sub" style={{ whiteSpace: "normal" }}>
-                  {t(f.labelKey)}
-                </span>
-              </div>
-            ))}
           </div>
 
           <button
             className="btn btn--primary btn--lg btn--block"
-            onClick={() => setStep(1)}
-            disabled={!name.trim()}
-            style={{ marginTop: "1rem" }}
+            style={{ marginTop: "0.25rem" }}
+            onClick={() => onStepChange(1)}
           >
-            {t("ob.continue")}
+            {t("ob.getStarted")}
             <Icon name="arrowRight" size={18} />
+          </button>
+
+          <button
+            className="btn btn--ghost btn--block"
+            style={{ marginTop: "0.5rem" }}
+            onClick={onSignIn}
+          >
+            {t("ob.signInAccount")}
           </button>
         </>
       ) : null}
 
       {step === 1 ? (
+        <>
+          <h2 className="ob-h">{t("ob.howTitle")}</h2>
+          <p className="card-meta" style={{ marginBottom: "0.875rem" }}>
+            {t("ob.howBody")}
+          </p>
+
+          <div className="stack stack--tight">
+            {HOW_CARDS.map((c) => (
+              <div className="card card--quiet" key={c.titleKey}>
+                <div className="rowline">
+                  <span
+                    className="listrow__lead"
+                    style={{ color: c.color, background: tint(c.color, TINT_SOFT) }}
+                  >
+                    <Icon name={c.icon} size={19} />
+                  </span>
+                  <div className="listrow__body">
+                    <p className="listrow__title">{t(c.titleKey)}</p>
+                    <p className="listrow__sub" style={{ whiteSpace: "normal" }}>
+                      {t(c.bodyKey)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="quick-grid" style={{ marginTop: "1rem" }}>
+            <button className="btn btn--secondary" onClick={() => onStepChange(0)}>
+              {t("ob.back")}
+            </button>
+            <button className="btn btn--primary" onClick={() => onStepChange(2)}>
+              {t("ob.continue")}
+            </button>
+          </div>
+        </>
+      ) : null}
+
+      {step === 2 ? (
         <>
           <h2 className="ob-h">{t("ob.whatManage")}</h2>
           <p className="card-meta" style={{ marginBottom: "0.875rem" }}>
@@ -218,90 +293,122 @@ function finish(loadSample: boolean) {
           </div>
 
           <div className="quick-grid" style={{ marginTop: "1rem" }}>
-            <button className="btn btn--secondary" onClick={() => setStep(0)}>
+            <button className="btn btn--secondary" onClick={() => onStepChange(1)}>
               {t("ob.back")}
             </button>
             <button
               className="btn btn--primary"
-              onClick={() => setStep(2)}
+              onClick={() => onStepChange(3)}
               disabled={picked.length === 0}
             >
               {t("ob.continue")}
             </button>
           </div>
+
+          <button
+            className="btn btn--ghost btn--block"
+            style={{ marginTop: "0.5rem" }}
+            onClick={() => onStepChange(3)}
+          >
+            {t("ob.skipNow")}
+          </button>
         </>
       ) : null}
 
-      {step === 2 ? (
+      {step === 3 ? (
         <>
-          <BrandPanel variant="chevron" height={96}>
-            <p style={{ margin: 0, fontSize: "0.875rem", fontWeight: 600 }}>
-              {t("ob.addFirst")}
-            </p>
-            <p style={{ margin: "0.25rem 0 0", fontSize: "0.8125rem", opacity: 0.9 }}>
-              {t("ob.willRemind")}
-            </p>
-          </BrandPanel>
+          <h2 className="ob-h">{t("ob.firstTitle")}</h2>
+          <p className="card-meta" style={{ marginBottom: "0.875rem" }}>
+            {t("ob.firstBody")}
+          </p>
 
-          <h2 className="ob-h" style={{ marginTop: "0.25rem" }}>
-            {t("ob.firstThingTitle")}
-          </h2>
+          <p className="section-label" style={{ marginBottom: "0.5rem" }}>
+            {t("ob.exHint")}
+          </p>
 
-          <div className="field">
-            <label htmlFor="ob-thing">{t("ob.whatIsIt")}</label>
-            <input
-              id="ob-thing"
-              value={thingName}
-              onChange={(e) => setThingName(e.target.value)}
-              placeholder={t("ob.thingPlaceholder")}
-            />
+          <div className="stack stack--tight">
+            {EXAMPLES.map((e) => (
+              <div className="ob-ex" key={e.id}>
+                <span
+                  className="tile__icon"
+                  style={{ color: e.color, background: tint(e.color, TINT_SOFT) }}
+                >
+                  <Icon name={e.icon} size={19} />
+                </span>
+                <span className="ob-ex__body">
+                  <span className="listrow__title">{t(e.nameKey)}</span>
+                  <span className="ob-ex__label">{t(e.dateKey)}</span>
+                </span>
+                <input
+                  className="ob-ex__date"
+                  type="date"
+                  aria-label={`${t(e.nameKey)} — ${t(e.dateKey)}`}
+                  value={dates[e.id] ?? ""}
+                  onChange={(ev) =>
+                    setDates((d) => ({ ...d, [e.id]: ev.target.value }))
+                  }
+                />
+              </div>
+            ))}
           </div>
 
-          <div className="field field--row">
-            <div>
-              <label htmlFor="ob-amount">{t("ob.amount")}</label>
-              <input
-                id="ob-amount"
-                inputMode="numeric"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder={t("ob.amountPlaceholder")}
-              />
-            </div>
-            <div>
-              <label htmlFor="ob-due">{t("ob.dueDate")}</label>
-              <input
-                id="ob-due"
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="quick-grid">
-            <button className="btn btn--secondary" onClick={() => setStep(1)}>
+          <div className="quick-grid" style={{ marginTop: "1rem" }}>
+            <button className="btn btn--secondary" onClick={() => onStepChange(2)}>
               {t("ob.back")}
             </button>
             <button
               className="btn btn--primary"
-              onClick={() => finish(false)}
-              disabled={!thingName.trim()}
+              onClick={() => onStepChange(4)}
+              disabled={!Object.values(dates).some(Boolean)}
             >
-              {t("ob.finish")}
+              {t("ob.continue")}
             </button>
           </div>
 
           <button
-            className="btn btn--soft btn--block"
+            className="btn btn--ghost btn--block"
             style={{ marginTop: "0.5rem" }}
-            onClick={() => finish(true)}
+            onClick={() => onStepChange(4)}
           >
-            <Icon name="sparkles" size={18} />
-            {t("ob.sample")}
+            {t("ob.skipExplore")}
+          </button>
+        </>
+      ) : null}
+
+      {step === 4 ? (
+        <>
+          <div className="ob-notif-ico" aria-hidden="true">
+            <span
+              className="tile__icon"
+              style={{
+                color: "var(--brand-700)",
+                background: tint("var(--brand-700)", TINT_SOFT),
+              }}
+            >
+              <Icon name="bell" size={26} />
+            </span>
+          </div>
+
+          <h2 className="ob-h">{t("ob.notifTitle")}</h2>
+          <p className="card-meta" style={{ marginBottom: "1rem" }}>
+            {t("ob.notifBody")}
+          </p>
+
+          <button
+            className="btn btn--primary btn--lg btn--block"
+            onClick={() => void allowNotifications()}
+          >
+            {t("ob.allowNotif")}
+            <Icon name="bell" size={18} />
           </button>
 
-          <p className="phase-note">{t("ob.sampleHint")}</p>
+          <button
+            className="btn btn--ghost btn--block"
+            style={{ marginTop: "0.5rem" }}
+            onClick={finish}
+          >
+            {t("ob.notNow")}
+          </button>
         </>
       ) : null}
     </div>

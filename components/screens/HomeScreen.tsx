@@ -8,7 +8,7 @@ import { TINT_SOFT, tint } from "@/lib/color";
 import { QUICK_TYPES } from "../QuickAdd";
 import { formatNaira } from "@/lib/i18n";
 import { hasAmount } from "@/lib/money";
-import { greetingKey, useDayPart } from "@/lib/useDayPart";
+import { greetingKeyFor, useDayPart } from "@/lib/useDayPart";
 import type { Alert, Priority, Thing } from "@/lib/types";
 import type { DayDiff } from "@/lib/risk";
 import type { useLivanta } from "@/lib/useLivanta";
@@ -68,17 +68,31 @@ export function HomeScreen({
             <p className="card-meta">{t("home.reading")}</p>
           </div>
         ) : attention.length === 0 ? (
-          <EmptyState
-            icon="shieldCheck"
-            title={t("home.allClearTitle")}
-            body={t("home.allClearBody")}
-            action={
-              <button className="btn btn--soft" onClick={() => onAdd()}>
-                <Icon name="plus" size={18} />
-                {t("home.quickAdd")}
-              </button>
-            }
-          />
+          desk.things.length === 0 ? (
+            <EmptyState
+              icon="sparkles"
+              title={t("home.freshTitle")}
+              body={t("home.freshBody")}
+              action={
+                <button className="btn btn--soft" onClick={() => onAdd()}>
+                  <Icon name="plus" size={18} />
+                  {t("home.freshAction")}
+                </button>
+              }
+            />
+          ) : (
+            <EmptyState
+              icon="shieldCheck"
+              title={t("home.allClearTitle")}
+              body={t("home.allClearBody")}
+              action={
+                <button className="btn btn--soft" onClick={() => onAdd()}>
+                  <Icon name="plus" size={18} />
+                  {t("home.quickAdd")}
+                </button>
+              }
+            />
+          )
         ) : (
           <div className="stack stack--tight">
             {attention.map((a) => (
@@ -194,7 +208,7 @@ export function HomeScreen({
 
 function Hero({ desk }: { desk: Desk }) {
   const { t } = desk;
-  const name = desk.settings.displayName || "Temmy";
+  const name = desk.settings.displayName;
   // Subscribed rather than read once, so an app left open across lunchtime
   // stops saying "Good morning" without needing to be closed and reopened.
   const part = useDayPart();
@@ -205,9 +219,9 @@ function Hero({ desk }: { desk: Desk }) {
           Livanta
         </span>
       </div>
-      <p className="hero__greet">{t(greetingKey(part), { name })}</p>
+      <p className="hero__greet">{t(greetingKeyFor(part, name), { name })}</p>
       <p className="hero__line">
-        {desk.loading ? t("app.loading") : desk.status.headline}
+        {desk.loading ? t("app.loading") : t("home.heroLine")}
       </p>
       <span className={`statuspill ${levelClass(desk.status.level)}`}>
         <span className="dot" />

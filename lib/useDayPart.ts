@@ -66,3 +66,15 @@ export function useDayPart(): DayPart {
 export function greetingKey(part: DayPart): "app.greeting.morning" | "app.greeting.afternoon" | "app.greeting.evening" {
   return `app.greeting.${part}`;
 }
+
+/**
+ * The greeting key that fits the reader: with a name when one is set, and the
+ * nameless form otherwise. Onboarding no longer asks for a name, so a fresh
+ * install greets by the clock rather than inventing one.
+ */
+export function greetingKeyFor(
+  part: DayPart,
+  name: string,
+): "app.greeting.morning" | "app.greeting.afternoon" | "app.greeting.evening" | "app.greeting.morning.none" | "app.greeting.afternoon.none" | "app.greeting.evening.none" {
+  return name.trim() ? greetingKey(part) : `app.greeting.${part}.none`;
+}

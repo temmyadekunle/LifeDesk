@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { buildAlerts, daysUntil, derivePriority, formatNaira } from "./risk.ts";
-import { amountOrZero, parseAmount } from "./money.ts";
+import { amountOrZero } from "./money.ts";
 import { computeLifeStatus } from "./status.ts";
 import { deleteThing, getAllAlerts, getAllThings, putAlert, putThing, clearAllStores } from "./db.ts";
 import { recordDeletion, recordDismissal } from "./sync/meta.ts";
@@ -95,39 +95,34 @@ export function useLivanta() {
 
   const completeOnboarding = useCallback(
     async (input: {
-      displayName: string;
       categories: Settings["managedCategories"];
-      firstThing: { name: string; amount: string; dueDate: string } | null;
-      loadSample: boolean;
+      firstThings: {
+        name: string;
+        category: Category;
+        kind: ThingKind;
+        dueDate: string;
+      }[];
       locale?: Settings["locale"];
     }) => {
       const next: Settings = {
         ...settings,
         onboarded: true,
-        displayName: input.displayName || settings.displayName,
         managedCategories: input.categories,
         locale: input.locale ?? settings.locale,
       };
       setSettings(next);
       await saveSettings(next);
 
-      if (input.loadSample) {
-        await seedIfEmpty();
-      }
-
-      if (input.firstThing) {
-        const now = new Date().toISOString();
-        const category = input.categories[0] ?? "money";
+      const now = new Date().toISOString();
+      for (const first of input.firstThings) {
         const thing: Thing = {
           id: makeId(),
-          name: input.firstThing.name,
-          category,
-          kind: input.firstThing.name.toLowerCase().includes("rent")
-            ? "rent"
-            : "bill",
-          amount: parseAmount(input.firstThing.amount),
+          name: first.name,
+          category: first.category,
+          kind: first.kind,
+          amount: null,
           currency: "NGN",
-          dueDate: input.firstThing.dueDate || null,
+          dueDate: first.dueDate || null,
           lastHandledDate: null,
           recurrence: null,
           serviceIntervalDays: null,

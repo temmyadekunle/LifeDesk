@@ -36,7 +36,7 @@ export const QUICK_TYPES: QuickType[] = [
   { key: "qa.family", icon: "users", kind: "birthday", category: "family", color: "var(--family)", frequency: "annual" },
   { key: "qa.appointment", icon: "calendar", kind: "appointment", category: "family", color: "var(--family)" },
   { key: "qa.service", icon: "wrench", kind: "service-provider", category: "services", color: "var(--services)" },
-  { key: "qa.task", icon: "checkSquare", kind: "task", category: "family", color: "var(--family)" },
+  { key: "qa.task", icon: "checkSquare", kind: "task", category: "tasks", color: "var(--tasks)" },
   { key: "qa.importantDate", icon: "flag", kind: "important-date", category: "documents", color: "var(--documents)", frequency: "annual" },
 ];
 

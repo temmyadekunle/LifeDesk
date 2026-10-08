@@ -51,7 +51,8 @@ export function ProfileScreen({
     notificationPermission,
     serverPermissionSnapshot,
   );
-  const name = desk.settings.displayName || "Temmy";
+  const name = desk.settings.displayName;
+  const [nameDraft, setNameDraft] = useState(name);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const upcoming = useMemo(
@@ -79,7 +80,7 @@ export function ProfileScreen({
                 no extra handlers and no focus juggling. The input itself is
                 hidden but not display:none, or it would be unreachable. */}
             <label className="avatar-edit">
-              <Avatar name={name} src={desk.settings.avatar} large />
+              <Avatar name={name || t("app.brand")} src={desk.settings.avatar} large />
               <span className="avatar-edit__badge">
                 <Icon name="camera" size={15} />
               </span>
@@ -99,9 +100,11 @@ export function ProfileScreen({
               <span className="sr-only">{t("prof.changePhoto")}</span>
             </label>
             <div className="listrow__body">
-              <h2 className="card-title" style={{ fontSize: "1.0625rem" }}>
-                {name}
-              </h2>
+              {name ? (
+                <h2 className="card-title" style={{ fontSize: "1.0625rem" }}>
+                  {name}
+                </h2>
+              ) : null}
               <p className="card-meta">{t("profile.freePlan")}</p>
               {desk.settings.avatar ? (
                 <button
@@ -116,6 +119,23 @@ export function ProfileScreen({
                 </button>
               ) : null}
             </div>
+          </div>
+          <div className="field" style={{ marginTop: "0.875rem" }}>
+            <label htmlFor="prof-name">{t("prof.name")}</label>
+            <input
+              id="prof-name"
+              value={nameDraft}
+              autoComplete="name"
+              placeholder={t("prof.namePlaceholder")}
+              onChange={(e) => setNameDraft(e.target.value)}
+              onBlur={() => {
+                const next = nameDraft.trim();
+                if (next !== desk.settings.displayName) {
+                  void desk.updateSettings({ displayName: next });
+                }
+              }}
+            />
+            <p className="hint">{t("prof.nameHint")}</p>
           </div>
           <div className="statgrid" style={{ marginTop: "0.875rem" }}>
             <MiniStat n={desk.things.filter((x) => x.status === "active").length} label={t("prof.active")} />

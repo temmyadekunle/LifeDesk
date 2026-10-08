@@ -80,6 +80,7 @@ export const CATEGORY_META: Record<
   money: { icon: "wallet", color: "var(--money)", labelKey: "cat.money" },
   documents: { icon: "file", color: "var(--documents)", labelKey: "cat.documents" },
   family: { icon: "users", color: "var(--family)", labelKey: "cat.family" },
+  tasks: { icon: "checkSquare", color: "var(--tasks)", labelKey: "cat.tasks" },
   services: { icon: "wrench", color: "var(--services)", labelKey: "cat.services" },
 };
 

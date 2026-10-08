@@ -49,6 +49,7 @@ test("ThingEditor renders every category in the active language", async (t) => {
         "cat.documents",
         "cat.family",
         "cat.services",
+        "cat.tasks",
       ] as const) {
         assert.ok(shown.includes(tr(key)), `${locale} missing ${key}`);
       }

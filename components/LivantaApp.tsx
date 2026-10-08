@@ -27,7 +27,7 @@ import type { TKey } from "@/lib/locales/en";
 import type { Thing } from "@/lib/types";
 import { useAuth } from "@/lib/useAuth";
 import { useCloudSync } from "@/lib/useCloudSync";
-import { greetingKey, useDayPart } from "@/lib/useDayPart";
+import { greetingKeyFor, useDayPart } from "@/lib/useDayPart";
 import { useLivanta } from "@/lib/useLivanta";
 
 type Tab = "home" | "things" | "calendar" | "services" | "profile";
@@ -104,6 +104,8 @@ export default function LivantaApp() {
   const [busy, setBusy] = useState(false);
   const [confirmThing, setConfirmThing] = useState<string | null>(null);
   const [confirmWipe, setConfirmWipe] = useState(false);
+  const [obStep, setObStep] = useState(0);
+  const [obAuthOpen, setObAuthOpen] = useState(false);
 
 const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
   const pop = useCallback(() => setStack((s) => s.slice(0, -1)), []);
@@ -115,6 +117,10 @@ const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
       if (confirmWipe || confirmThing !== null) {
         setConfirmWipe(false);
         setConfirmThing(null);
+      } else if (obAuthOpen) {
+        setObAuthOpen(false);
+      } else if (!desk.settings.onboarded && obStep > 0) {
+        setObStep(obStep - 1);
       } else if (quickOpen) {
         setQuickOpen(false);
       } else if (openId !== null) {
@@ -137,7 +143,7 @@ const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
       cancelled = true;
       void handle?.remove();
     };
-  }, [confirmWipe, confirmThing, quickOpen, openId, editId, stack, tab, pop]);
+  }, [confirmWipe, confirmThing, obAuthOpen, obStep, desk.settings.onboarded, quickOpen, openId, editId, stack, tab, pop]);
 
   // A completed sync writes to IndexedDB, so the desk has to re-read for the
   // pulled state to appear.
@@ -230,25 +236,55 @@ const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
     return (
       <div className="app" lang={desk.settings.locale}>
         <div className="app__col">
-          <div className="app__body">
+          <div
+            className="app__body"
+            style={obAuthOpen ? { display: "none" } : undefined}
+          >
             <Onboarding
               locale={desk.settings.locale}
+              step={obStep}
+              onStepChange={setObStep}
               onDone={(result) => void desk.completeOnboarding(result)}
-              onSample={(locale, displayName) => {
-                void desk.completeOnboarding({
-                  displayName:
-                    displayName ||
-                    desk.settings.displayName ||
-                    "Temmy",
-                  categories: ["home", "money", "transport", "documents"],
-                  firstThing: null,
-                  loadSample: true,
-                  locale,
-                });
-              }}
+              onSignIn={() => setObAuthOpen(true)}
             />
           </div>
+          {obAuthOpen ? (
+            <>
+              <header className="appbar">
+                <div className="appbar__lead">
+                  <button
+                    className="iconbtn"
+                    onClick={() => setObAuthOpen(false)}
+                    aria-label={t("app.back")}
+                  >
+                    <Icon name="chevronLeft" size={22} />
+                  </button>
+                  <div style={{ minWidth: 0 }}>
+                    <h1 className="appbar__title">{t("account.title")}</h1>
+                    <p className="appbar__sub">{t("account.subtitle")}</p>
+                  </div>
+                </div>
+              </header>
+              <div className="app__body">
+                <AuthScreen
+                  t={t}
+                  auth={auth}
+                  onClose={() => setObAuthOpen(false)}
+                  onDone={(message) => {
+                    showToast(message, "ok");
+                    setObAuthOpen(false);
+                    void desk.completeOnboarding({
+                      categories: [],
+                      firstThings: [],
+                      locale: desk.settings.locale,
+                    });
+                  }}
+                />
+              </div>
+            </>
+          ) : null}
         </div>
+        <Toast toast={toast} />
       </div>
     );
   }
@@ -531,7 +567,7 @@ route: Route | null;
   onOpenProfile: () => void;
 }) {
   const { t } = desk;
-  const name = desk.settings.displayName || "Temmy";
+  const name = desk.settings.displayName;
 
   let title: string;
   let sub: string | undefined;
@@ -603,7 +639,7 @@ route: Route | null;
           onClick={onOpenProfile}
           aria-label={t("tab.profile")}
         >
-          <Avatar name={name} src={desk.settings.avatar} />
+          <Avatar name={name || t("app.brand")} src={desk.settings.avatar} />
         </button>
       </div>
     </header>
@@ -665,11 +701,13 @@ function DesktopRail({
   return (
     <aside className="app__aside">
       <div className="railhead">
-        <Avatar name={desk.settings.displayName || "Temmy"} src={desk.settings.avatar} large />
+        <Avatar name={desk.settings.displayName || t("app.brand")} src={desk.settings.avatar} large />
         <div>
           <p className="railhead__title">{t("app.tagline")}</p>
           <p className="railhead__sub">
-            {t(greetingKey(part), { name: desk.settings.displayName || "Temmy" })}
+            {t(greetingKeyFor(part, desk.settings.displayName), {
+              name: desk.settings.displayName,
+            })}
           </p>
         </div>
       </div>

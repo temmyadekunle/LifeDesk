@@ -16,6 +16,7 @@ const CATEGORY_OPTIONS: { id: Category; labelKey: TKey }[] = [
   { id: "money", labelKey: "cat.money" },
   { id: "documents", labelKey: "cat.documents" },
   { id: "family", labelKey: "cat.family" },
+  { id: "tasks", labelKey: "cat.tasks" },
   { id: "services", labelKey: "cat.services" },
 ];
 

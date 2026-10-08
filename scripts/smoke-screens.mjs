@@ -101,33 +101,32 @@ await page.goto(`http://localhost:${PORT}/`, { waitUntil: "networkidle" });
 
 // --- onboarding -------------------------------------------------------------
 await step("onboarding completes", async () => {
-  await page.fill("#ob-name", "Temmy");
-  await page.locator("#ob-name").press("Tab");
-  await page.waitForTimeout(300);
-  for (let i = 0; i < 10; i++) {
-    if (await page.isVisible('button:has-text("Explore with sample data instead")')) {
-      await page.click('button:has-text("Explore with sample data instead")');
-      await page.waitForTimeout(150);
-      continue;
-    }
-    if (await page.isVisible('button:has-text("Finish")')) {
-      await page.click('button:has-text("Finish")');
-      break;
-    }
-    const cont = page.locator('button:has-text("Continue")').first();
-    if (await cont.isVisible().catch(() => false)) {
-      if (await cont.isDisabled().catch(() => false)) {
-        // Step 2 wants at least one module tile before Continue enables.
-        const tiles = page.locator("button.tile");
-        const n = await tiles.count();
-        for (let c = 0; c < n && (await cont.isDisabled().catch(() => false)); c++) {
-          await tiles.nth(c).click().catch(() => {});
-        }
-      }
-      await cont.click({ timeout: 5000 }).catch(() => {});
-      await page.waitForTimeout(250);
-    }
-  }
+  // Screen 1: welcome. Get Started and the sign-in link are both visible.
+  await page.waitForSelector('button:has-text("Get Started")', { timeout: 10000 });
+  await page.locator('button:has-text("I already have an account")').waitFor({
+    state: "visible",
+    timeout: 5000,
+  });
+  await page.locator('button:has-text("Get Started")').click();
+  await page.waitForTimeout(200);
+
+  // Screen 2: what Livanta does.
+  await page.locator('button:has-text("Continue")').click({ timeout: 5000 });
+  await page.waitForTimeout(200);
+
+  // Screen 3: pick one area so Continue enables.
+  const cont = page.locator('button:has-text("Continue")').first();
+  await page.locator("button.tile").first().click();
+  await cont.click({ timeout: 5000 });
+  await page.waitForTimeout(200);
+
+  // Screen 4: give the first example a date so Continue enables.
+  await page.locator('.ob-ex input[type="date"]').first().fill("2027-06-30");
+  await cont.click({ timeout: 5000 });
+  await page.waitForTimeout(200);
+
+  // Screen 5: decline the permission prompt and land on the dashboard.
+  await page.locator('button:has-text("Not Now")').click({ timeout: 5000 });
   await page.waitForSelector(".bottomnav", { timeout: 10000 });
   booted = true;
 });

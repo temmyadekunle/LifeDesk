@@ -4,6 +4,7 @@ export type Category =
   | "money"
   | "documents"
   | "family"
+  | "tasks"
   | "services";
 
 export type ThingKind =

@@ -399,6 +399,38 @@ export function ProfileScreen({
 
       <section className="section">
         <div className="section__head">
+          <h2 className="section__title">{t("profile.more")}</h2>
+        </div>
+        <div className="list">
+          <Link className="setrow" href="/landing/#faq">
+            <span className="listrow__lead">
+              <Icon name="info" size={18} />
+            </span>
+            <span className="setrow__body">
+              <span className="setrow__title">{t("profile.help")}</span>
+              <span className="setrow__sub">{t("profile.helpSub")}</span>
+            </span>
+            <span className="setrow__trail">
+              <Icon name="chevronRight" size={18} />
+            </span>
+          </Link>
+          <Link className="setrow" href="/landing/">
+            <span className="listrow__lead">
+              <Icon name="sparkles" size={18} />
+            </span>
+            <span className="setrow__body">
+              <span className="setrow__title">{t("profile.about")}</span>
+              <span className="setrow__sub">{t("app.slogan")}</span>
+            </span>
+            <span className="setrow__trail">
+              <Icon name="chevronRight" size={18} />
+            </span>
+          </Link>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="section__head">
           <h2 className="section__title">{t("profile.legal")}</h2>
         </div>
         {/* Anchors rather than buttons: these leave the app. trailingSlash is

@@ -1598,6 +1598,64 @@ button.listrow:active {
   width: 70%;
 }
 
+/* Boot splash: shown while the local database opens, so the first frame is the
+   brand rather than a loading card. Reduced motion (enforced globally below)
+   drops the animation and keeps the frame. */
+.splash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  text-align: center;
+  animation: splash-fade 0.45s ease both;
+}
+
+.splash__logo {
+  display: block;
+  animation: splash-pop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.splash__logo .logo--wordmark {
+  width: min(180px, 56vw);
+  height: auto;
+}
+
+.splash__slogan {
+  margin: 0;
+  color: var(--ink-500);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  animation: splash-fade 0.5s 0.15s ease both;
+}
+
+@keyframes splash-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes splash-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.attention-lead {
+  margin: 0 0 0.625rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--ink-500);
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;

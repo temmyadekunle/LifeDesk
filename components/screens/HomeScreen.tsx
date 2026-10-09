@@ -23,18 +23,18 @@ export function HomeScreen({
   onAdd,
   onAddMore,
   onOpenModule,
-  onOpenNotifications,
+  onOpenAlerts,
   onOpenCalendar,
-  onOpenThings,
+  onOpenLife,
 }: {
   desk: Desk;
   onOpenThing: (thing: Thing) => void;
   onAdd: (preset?: EditorPreset) => void;
   onAddMore: () => void;
   onOpenModule: (id: ModuleId) => void;
-  onOpenNotifications: () => void;
+  onOpenAlerts: () => void;
   onOpenCalendar: () => void;
-  onOpenThings: () => void;
+  onOpenLife: () => void;
 }) {
   const { t } = desk;
   const attention = desk.alerts.slice(0, 3);
@@ -56,7 +56,7 @@ export function HomeScreen({
         <div className="section__head">
           <h2 className="section__title">{t("home.needsAttention")}</h2>
           {desk.alerts.length > attention.length ? (
-            <button className="section__link" onClick={onOpenNotifications}>
+            <button className="section__link" onClick={onOpenAlerts}>
               {t.n("home.seeAllCount", desk.alerts.length)}
               <Icon name="chevronRight" size={14} />
             </button>
@@ -94,11 +94,16 @@ export function HomeScreen({
             />
           )
         ) : (
-          <div className="stack stack--tight">
-            {attention.map((a) => (
-              <AlertCard key={a.id} alert={a} desk={desk} onOpen={onOpenThing} />
-            ))}
-          </div>
+          <>
+            <p className="attention-lead">
+              {t.n("home.attentionLead", desk.alerts.length)}
+            </p>
+            <div className="stack stack--tight">
+              {attention.map((a) => (
+                <AlertCard key={a.id} alert={a} desk={desk} onOpen={onOpenThing} />
+              ))}
+            </div>
+          </>
         )}
       </section>
 
@@ -117,8 +122,8 @@ export function HomeScreen({
             title={t("home.nothing30Title")}
             body={t("home.nothing30")}
             action={
-              <button className="btn btn--soft" onClick={onOpenThings}>
-                {t("tab.things")}
+              <button className="btn btn--soft" onClick={onOpenLife}>
+                {t("tab.life")}
               </button>
             }
           />
@@ -163,6 +168,10 @@ export function HomeScreen({
       <section className="section">
         <div className="section__head">
           <h2 className="section__title">{t("home.lifeAreas")}</h2>
+          <button className="section__link" onClick={onOpenLife}>
+            {t("tab.life")}
+            <Icon name="chevronRight" size={14} />
+          </button>
         </div>
         <div className="module-grid">
           {MODULES.map((m) => (

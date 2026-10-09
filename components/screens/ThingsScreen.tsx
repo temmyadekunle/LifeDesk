@@ -37,6 +37,7 @@ export function ThingsScreen({
     onAdd,
     now,
     dayDiff,
+    excludeProviders,
   }: {
     desk: Desk;
     onOpenThing: (thing: Thing) => void;
@@ -46,6 +47,9 @@ ow: pins the clock for the static mockups. */
     now?: Date;
     /** See ThingLine's dayDiff. */
     dayDiff?: DayDiff;
+    /** Keeps service providers out of the list when a section above already
+     * shows them (the Life screen renders them separately). */
+    excludeProviders?: boolean;
   }) {
   const { t } = desk;
   const [query, setQuery] = useState("");
@@ -56,6 +60,7 @@ ow: pins the clock for the static mockups. */
     const q = query.trim().toLowerCase();
     return desk.things
       .filter((thing) => {
+        if (excludeProviders && thing.kind === "service-provider") return false;
         if (status === "active" && thing.status !== "active") return false;
         if (status === "completed" && thing.status !== "completed") return false;
         return true;
@@ -73,7 +78,7 @@ ow: pins the clock for the static mockups. */
         if (b.dueDate === null) return -1;
         return a.dueDate.localeCompare(b.dueDate);
       });
-  }, [desk.things, query, category, status]);
+  }, [desk.things, query, category, status, excludeProviders]);
 
   const groups = useMemo(() => {
     const map = new Map<Group, Thing[]>();

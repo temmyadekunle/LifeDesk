@@ -262,8 +262,8 @@ export default function LandingPage() {
             </div>
             <div className="lp-split__art">
               <PhoneFrame
-                tab="things"
-                label="Livanta's Things screen: every item, searchable, with filters."
+                tab="life"
+                label="Livanta's Life screen: every item, searchable, with filters."
               >
                 <PhoneThings now={BUILD_NOW} />
               </PhoneFrame>
@@ -312,7 +312,7 @@ export default function LandingPage() {
           <div className="lp-wrap lp-split lp-split--reverse">
             <div className="lp-split__art">
               <PhoneFrame
-                tab="services"
+                tab="life"
                 label="Livanta's assets screen, showing tracked items and their service state."
               >
                 <PhoneModule moduleId="assets" now={BUILD_NOW} />
@@ -407,7 +407,7 @@ export default function LandingPage() {
               </Screen>
               <Screen caption="Adding something is a name, an amount and a date.">
                 <PhoneFrame
-                  tab="things"
+                  tab="life"
                   label="Livanta's add screen: pick a type, then a name, amount and due date."
                 >
                   <PhoneAdd />
@@ -415,8 +415,8 @@ export default function LandingPage() {
               </Screen>
               <Screen caption="Alerts, grouped by how much trouble they are in.">
                 <PhoneFrame
-                  tab="home"
-                  label="Livanta's notifications screen, listing alerts by urgency."
+                  tab="alerts"
+                  label="Livanta's alerts screen, listing alerts by urgency."
                 >
                   <PhoneAlerts now={BUILD_NOW} />
                 </PhoneFrame>

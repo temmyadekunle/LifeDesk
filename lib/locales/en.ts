@@ -16,6 +16,7 @@ export const en = {
 
   /* ---------- app shell ---------- */
   "app.tagline": "One place to manage the things that keep your life running.",
+  "app.slogan": "Your life, organized.",
   "app.greeting.morning": "Good morning, {name} 👋",
   "app.greeting.afternoon": "Good afternoon, {name} 👋",
   "app.greeting.evening": "Good evening, {name} 👋",
@@ -25,6 +26,7 @@ export const en = {
   "app.loading": "Opening your Livanta…",
   "app.error.label": "Local database",
   "app.error.title": "Could not open storage",
+  "app.retry": "Try again",
   "app.back": "Back",
   "app.brand": "Livanta",
 
@@ -37,6 +39,7 @@ export const en = {
 
   /* ---------- tabs ---------- */
   "tab.home": "Home",
+  "tab.life": "Life",
   "tab.things": "Things",
   "tab.alerts": "Alerts",
   "tab.household": "Household",
@@ -44,6 +47,10 @@ export const en = {
   "tab.services": "Services",
   "tab.profile": "Profile",
   "nav.primary": "Primary",
+
+  /* ---------- life screen ---------- */
+  "life.title": "Your Life",
+  "life.subtitle": "Everything important, in one place.",
 
   /* ---------- categories ---------- */
   "cat.home": "Home",
@@ -138,6 +145,8 @@ export const en = {
   "home.stat.important": "important",
   "home.stat.onTrack": "on track",
   "home.needsAttention": "What's about to become a problem?",
+  "home.attentionLead_one": "{n} thing needs your attention",
+  "home.attentionLead_many": "{n} things need your attention",
   "home.heroLine": "Here's what's happening in your life.",
   "home.reading": "Reading your local records…",
   "home.nothingUrgent": "Nothing urgent. You're on track.",
@@ -189,6 +198,11 @@ export const en = {
   "alerts.none": "No alerts. Nothing needs attention.",
   "alerts.restore": "Restore dismissed alerts",
   "alerts.title": "Alerts",
+  "alerts.needsAttention": "Needs attention",
+  "alerts.comingUp": "Coming up",
+  "alerts.completed": "Completed",
+  "alerts.completedEmptyTitle": "Nothing completed yet",
+  "alerts.completedEmptyBody": "Items you mark as handled will show up here.",
   "alerts.emptyTitle": "Nothing needs attention",
   "alerts.emptyBody": "When something gets urgent or overdue, it will show up here.",
   "alerts.restoreShort": "Restore",
@@ -304,6 +318,11 @@ export const en = {
   "prof.name": "Display name",
   "prof.nameHint": "Livanta greets you with this name. Leave it empty for a time-of-day greeting.",
   "prof.namePlaceholder": "e.g. Temmy",
+  "profile.help": "Help & support",
+  "profile.helpSub": "Frequently asked questions and guides",
+  "profile.about": "About Livanta",
+  "profile.aboutSub": "Version, credits and terms",
+  "profile.more": "More",
 
   /* ---------- thing row ---------- */
   "row.completed": "Completed",
@@ -321,14 +340,15 @@ export const en = {
   "ob.language": "Choose your language",
   "ob.continue": "Continue",
   "ob.back": "Back",
-  "ob.howTitle": "Stay ahead, not overwhelmed.",
-  "ob.howBody": "Livanta keeps your responsibilities in one place and warns you before a date becomes a problem.",
-  "ob.remember": "Remember",
-  "ob.rememberBody": "Bills, renewals and dates you cannot afford to forget.",
-  "ob.notified": "Get reminded",
-  "ob.notifiedBody": "Early alerts on your phone, days before it is due.",
-  "ob.organized": "Stay organized",
-  "ob.organizedBody": "Everything you are responsible for, in one clear place.",
+  "ob.howTitle": "Stay ahead of everyday life.",
+  "ob.howBody": "Keep your important responsibilities, documents, bills and deadlines organized in one place.",
+  "ob.remember": "Know what needs your attention",
+  "ob.rememberBody": "Livanta spots upcoming deadlines before they become urgent problems.",
+  "ob.notified": "Take action with confidence",
+  "ob.notifiedBody": "Track what matters and stay prepared for what is coming next.",
+  "ob.organized": "Everything in one place",
+  "ob.organizedBody": "Bills, documents, vehicles, family dates and tasks — clearly organized.",
+  "ob.demo": "Open with demo data",
   "ob.whatManage": "What would you like to manage?",
   "ob.pickAll": "Select everything that applies.",
   "ob.skipNow": "Skip for now",

@@ -29,9 +29,9 @@ import type { ModuleId } from "@/components/maps";
 
 const TABS = [
   { id: "home", label: "Home", icon: "home" },
-  { id: "things", label: "Things", icon: "list" },
+  { id: "life", label: "Life", icon: "layers" },
+  { id: "alerts", label: "Alerts", icon: "bell" },
   { id: "calendar", label: "Calendar", icon: "calendar" },
-  { id: "services", label: "Services", icon: "layers" },
   { id: "profile", label: "Profile", icon: "user" },
 ] as const;
 
@@ -195,7 +195,7 @@ export function PhoneHome({ now }: { now: Date }) {
   );
 }
 
-/** The real Things screen, with its search and filter row intact. */
+/** The real list screen, with its search and filter row intact. */
 export function PhoneThings({ now }: { now: Date }) {
   return (
     <ThingsScreen
@@ -415,7 +415,7 @@ export function PhoneAdd() {
   );
 }
 
-/** The notifications screen, reusing the real alert cards. */
+/** The alerts screen, reusing the real alert cards. */
 export function PhoneAlerts({ now }: { now: Date }) {
   // No dayDiff here: makeShowcase already handed it to buildAlerts, which is
   // where the "in 2 days" wording in these messages comes from.
@@ -424,7 +424,7 @@ export function PhoneAlerts({ now }: { now: Date }) {
     <>
       <div className="appbar">
         <div className="appbar__actions">
-          <span className="section-label">Notifications</span>
+          <span className="section-label">{desk.t("alerts.title")}</span>
         </div>
       </div>
       <section className="section">

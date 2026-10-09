@@ -33,7 +33,7 @@ export const SEED_THINGS: Seed[] = [
     category: "home",
     kind: "rent",
     amount: 1_200_000,
-    dueDate: iso(30),
+    dueDate: iso(18),
     lastHandledDate: null,
     recurrence: { frequency: "annual", interval: 1 },
     serviceIntervalDays: null,

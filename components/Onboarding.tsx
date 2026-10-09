@@ -61,20 +61,20 @@ const HOW_CARDS: {
   bodyKey: TKey;
 }[] = [
   {
-    icon: "calendar",
-    color: "var(--brand-700)",
+    icon: "bell",
+    color: "var(--warn)",
     titleKey: "ob.remember",
     bodyKey: "ob.rememberBody",
   },
   {
-    icon: "bell",
-    color: "var(--warn)",
+    icon: "checkCircle",
+    color: "var(--ok)",
     titleKey: "ob.notified",
     bodyKey: "ob.notifiedBody",
   },
   {
-    icon: "checkCircle",
-    color: "var(--ok)",
+    icon: "layers",
+    color: "var(--brand-700)",
     titleKey: "ob.organized",
     bodyKey: "ob.organizedBody",
   },
@@ -126,12 +126,14 @@ export default function Onboarding({
   onStepChange,
   onDone,
   onSignIn,
+  onDemo,
 }: {
   locale: Locale;
   step: number;
   onStepChange: (step: number) => void;
   onDone: (result: OnboardingResult) => void;
   onSignIn: () => void;
+  onDemo: (locale: Locale) => void;
 }) {
   const [locale, setLocale] = useState<Locale>(initialLocale);
   const [picked, setPicked] = useState<Category[]>([]);
@@ -205,6 +207,14 @@ export default function Onboarding({
             onClick={onSignIn}
           >
             {t("ob.signInAccount")}
+          </button>
+
+          <button
+            className="btn btn--ghost btn--block"
+            style={{ marginTop: "0.5rem" }}
+            onClick={() => onDemo(locale)}
+          >
+            {t("ob.demo")}
           </button>
         </>
       ) : null}

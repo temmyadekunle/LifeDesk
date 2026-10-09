@@ -30,11 +30,10 @@ import { useCloudSync } from "@/lib/useCloudSync";
 import { greetingKeyFor, useDayPart } from "@/lib/useDayPart";
 import { useLivanta } from "@/lib/useLivanta";
 
-type Tab = "home" | "things" | "calendar" | "services" | "profile";
+type Tab = "home" | "life" | "alerts" | "calendar" | "profile";
 
 type Route =
   | { kind: "module"; id: ModuleId }
-  | { kind: "notifications" }
   | { kind: "auth" };
 
 /* Everything behind a tap is code-split out of the first paint. The home tab,
@@ -44,20 +43,16 @@ type Route =
    service worker cache after that. ssr: false keeps the static export from
    preloading them, which would quietly undo the split. */
 const ModuleScreen = dynamic(() => import("./ModuleScreen"), { ssr: false });
-const ThingsScreen = dynamic(
-  () => import("./screens/ThingsScreen").then((m) => ({ default: m.ThingsScreen })),
+const LifeScreen = dynamic(
+  () => import("./screens/LifeScreen").then((m) => ({ default: m.LifeScreen })),
+  { ssr: false },
+);
+const AlertsScreen = dynamic(
+  () => import("./screens/AlertsScreen").then((m) => ({ default: m.AlertsScreen })),
   { ssr: false },
 );
 const CalendarScreen = dynamic(
   () => import("./screens/CalendarScreen").then((m) => ({ default: m.CalendarScreen })),
-  { ssr: false },
-);
-const ServicesScreen = dynamic(
-  () => import("./screens/ServicesScreen").then((m) => ({ default: m.ServicesScreen })),
-  { ssr: false },
-);
-const NotificationsScreen = dynamic(
-  () => import("./screens/NotificationsScreen").then((m) => ({ default: m.NotificationsScreen })),
   { ssr: false },
 );
 const ProfileScreen = dynamic(
@@ -67,9 +62,9 @@ const ProfileScreen = dynamic(
 
 const TABS: { id: Tab; labelKey: TKey; icon: IconName }[] = [
   { id: "home", labelKey: "tab.home", icon: "home" },
-  { id: "things", labelKey: "tab.things", icon: "list" },
+  { id: "life", labelKey: "tab.life", icon: "layers" },
+  { id: "alerts", labelKey: "tab.alerts", icon: "bell" },
   { id: "calendar", labelKey: "tab.calendar", icon: "calendar" },
-  { id: "services", labelKey: "tab.services", icon: "layers" },
   { id: "profile", labelKey: "tab.profile", icon: "user" },
 ];
 
@@ -246,6 +241,15 @@ const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
               onStepChange={setObStep}
               onDone={(result) => void desk.completeOnboarding(result)}
               onSignIn={() => setObAuthOpen(true)}
+              onDemo={(locale) =>
+                void desk
+                  .completeOnboarding({
+                    categories: [],
+                    firstThings: [],
+                    locale,
+                  })
+                  .then(() => desk.loadSampleData())
+              }
             />
           </div>
           {obAuthOpen ? (
@@ -293,15 +297,12 @@ const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
     return (
       <div className="app" lang={desk.settings.locale}>
         <div className="app__col">
-            <header className="appbar">
-            <div className="appbar__lead">
-              <span className="appbar__brand">{t("app.brand")}</span>
-            </div>
-          </header>
-          <div className="app__body">
-            <div className="card">
-              <p className="card-meta">{t("app.loading")}</p>
-            </div>
+          <div className="app__body splash" role="status" aria-live="polite">
+            <span className="splash__logo">
+              <Logo variant="wordmark" priority />
+            </span>
+            <p className="splash__slogan">{t("app.slogan")}</p>
+            <span className="sr-only">{t("app.loading")}</span>
           </div>
         </div>
       </div>
@@ -333,7 +334,10 @@ const route: Route | null = recovering
 route={route}
           canGoBack={!recovering}
           onBack={pop}
-          onOpenNotifications={() => push({ kind: "notifications" })}
+          onOpenAlerts={() => {
+            setStack([]);
+            setTab("alerts");
+          }}
           onOpenProfile={() => {
             setStack([]);
             setTab("profile");
@@ -349,6 +353,15 @@ route={route}
                   <strong>{t("app.error.title")}</strong>
                   <br />
                   {desk.error}
+                  <div style={{ marginTop: "0.625rem" }}>
+                    <button
+                      className="btn btn--soft btn--sm"
+                      onClick={() => void refresh()}
+                    >
+                      <Icon name="refresh" size={16} />
+                      {t("app.retry")}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -370,15 +383,9 @@ route={route}
                 t={t}
                 onOpenThing={(thing) => {
                   setStack([]);
-                  setTab("things");
+                  setTab("life");
                   openThing(thing);
                 }}
-              />
-            ) : route?.kind === "notifications" ? (
-              <NotificationsScreen
-                desk={desk}
-                onOpenThing={openThing}
-                onAdd={() => startAdd()}
               />
             ) : route?.kind === "auth" ? (
               <AuthScreen
@@ -394,22 +401,21 @@ route={route}
                 onAdd={startAdd}
                 onAddMore={() => startAdd()}
                 onOpenModule={(id) => push({ kind: "module", id })}
-                onOpenNotifications={() => push({ kind: "notifications" })}
+                onOpenAlerts={() => {
+                  setStack([]);
+                  setTab("alerts");
+                }}
                 onOpenCalendar={() => {
                   setStack([]);
                   setTab("calendar");
                 }}
-                onOpenThings={() => {
+                onOpenLife={() => {
                   setStack([]);
-                  setTab("things");
+                  setTab("life");
                 }}
               />
-            ) : tab === "things" ? (
-              <ThingsScreen desk={desk} onOpenThing={openThing} onAdd={() => startAdd()} />
-            ) : tab === "calendar" ? (
-              <CalendarScreen desk={desk} onOpenThing={openThing} onAdd={() => startAdd()} />
-            ) : tab === "services" ? (
-              <ServicesScreen
+            ) : tab === "life" ? (
+              <LifeScreen
                 desk={desk}
                 onOpenModule={(id) => push({ kind: "module", id })}
                 onOpenThing={openThing}
@@ -418,6 +424,14 @@ route={route}
                 }
                 onAdd={() => startAdd()}
               />
+            ) : tab === "alerts" ? (
+              <AlertsScreen
+                desk={desk}
+                onOpenThing={openThing}
+                onAdd={() => startAdd()}
+              />
+            ) : tab === "calendar" ? (
+              <CalendarScreen desk={desk} onOpenThing={openThing} onAdd={() => startAdd()} />
             ) : (
               <ProfileScreen
                 desk={desk}
@@ -554,7 +568,7 @@ function Header({
 route,
   canGoBack,
   onBack,
-  onOpenNotifications,
+  onOpenAlerts,
   onOpenProfile,
 }: {
   desk: ReturnType<typeof useLivanta>;
@@ -563,7 +577,7 @@ route: Route | null;
   /** False for a derived route, such as password recovery, that cannot be popped. */
   canGoBack: boolean;
   onBack: () => void;
-  onOpenNotifications: () => void;
+  onOpenAlerts: () => void;
   onOpenProfile: () => void;
 }) {
   const { t } = desk;
@@ -576,9 +590,6 @@ route: Route | null;
     const mod = MODULES.find((m) => m.id === route.id);
     title = mod ? t(mod.labelKey) : "";
     sub = t("ui.lifeArea");
-  } else if (route?.kind === "notifications") {
-    title = t("alerts.title");
-    sub = t.n("alerts.count", desk.alerts.length, { status: desk.status.label });
   } else if (route?.kind === "auth") {
     title = t("account.title");
     sub = t("account.subtitle");
@@ -589,15 +600,18 @@ route: Route | null;
       day: "numeric",
       month: "long",
     });
-  } else if (tab === "things") {
-    title = t("tab.things");
-    sub = t.n("things.count", desk.things.filter((x) => x.status === "active").length);
+  } else if (tab === "life") {
+    title = t("life.title");
+    sub = t("life.subtitle");
+  } else if (tab === "alerts") {
+    title = t("alerts.title");
+    sub =
+      desk.alerts.length > 0
+        ? t.n("alerts.count", desk.alerts.length, { status: desk.status.label })
+        : t("alerts.emptyTitle");
   } else if (tab === "calendar") {
     title = t("tab.calendar");
     sub = t("cal.subtitle");
-  } else if (tab === "services") {
-    title = t("tab.services");
-    sub = t("svc.subtitle");
   } else {
     title = t("tab.profile");
     sub = name;
@@ -626,7 +640,7 @@ route: Route | null;
       <div className="appbar__actions">
         <button
           className="iconbtn"
-          onClick={onOpenNotifications}
+          onClick={onOpenAlerts}
           aria-label={t("alerts.title")}
         >
           <Icon name="bell" size={21} />

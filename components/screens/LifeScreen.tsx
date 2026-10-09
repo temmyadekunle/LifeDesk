@@ -4,14 +4,15 @@ import { useMemo } from "react";
 
 import { Icon } from "../Icons";
 import { EmptyState, IconTile } from "../ui";
-import { CATEGORY_META, MODULE_ICON, MODULES, moduleThings, type ModuleId } from "../maps";
+import { MODULE_ICON, MODULES, moduleThings, type ModuleId } from "../maps";
 import { TINT_SOFT, tint } from "@/lib/color";
-import type { Category, Thing } from "@/lib/types";
+import type { Thing } from "@/lib/types";
 import type { useLivanta } from "@/lib/useLivanta";
+import { ThingsScreen } from "./ThingsScreen";
 
 type Desk = ReturnType<typeof useLivanta>;
 
-export function ServicesScreen({
+export function LifeScreen({
   desk,
   onOpenModule,
   onOpenThing,
@@ -44,11 +45,7 @@ export function ServicesScreen({
 
   return (
     <>
-      <p className="card-meta" style={{ margin: "0 0 0.875rem" }}>
-        {t("svc.blurb")}
-      </p>
-
-      <section className="section" style={{ marginTop: 0 }}>
+      <section className="section">
         <div className="section__head">
           <h2 className="section__title">{t("svc.areas")}</h2>
         </div>
@@ -57,12 +54,23 @@ export function ServicesScreen({
             <button
               key={m.id}
               className="card"
-              style={{ display: "flex", gap: "0.75rem", alignItems: "center", textAlign: "left", width: "100%" }}
+              style={{
+                display: "flex",
+                gap: "0.75rem",
+                alignItems: "center",
+                textAlign: "left",
+                width: "100%",
+              }}
               onClick={() => onOpenModule(m.id)}
             >
               <span
                 className="module-ico"
-                style={{ color: m.color, background: tint(m.color, TINT_SOFT), marginBottom: 0, flex: "none" }}
+                style={{
+                  color: m.color,
+                  background: tint(m.color, TINT_SOFT),
+                  marginBottom: 0,
+                  flex: "none",
+                }}
               >
                 <Icon name={MODULE_ICON[m.id]} size={20} />
               </span>
@@ -80,6 +88,13 @@ export function ServicesScreen({
           ))}
         </div>
       </section>
+
+      <ThingsScreen
+        desk={desk}
+        onOpenThing={onOpenThing}
+        onAdd={onAdd}
+        excludeProviders
+      />
 
       <section className="section">
         <div className="section__head">
@@ -133,34 +148,12 @@ export function ServicesScreen({
         )}
       </section>
 
-      <section className="section">
-        <div className="section__head">
-          <h2 className="section__title">{t("svc.byCategory")}</h2>
-        </div>
-        <div className="grid grid--2">
-          {(Object.keys(CATEGORY_META) as Category[]).map((id) => {
-            const meta = CATEGORY_META[id];
-            const count = desk.things.filter(
-              (x) => x.status === "active" && x.category === id && x.kind !== "asset",
-            ).length;
-            return (
-              <div key={id} className="card card--quiet">
-                <div className="rowline">
-                  <IconTile icon={meta.icon} color={meta.color} size={18} />
-                  <div className="listrow__body">
-                    <p className="listrow__title">{t(meta.labelKey)}</p>
-                    <p className="listrow__sub">{t.n("svc.items", count)}</p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <button className="btn btn--secondary btn--block" style={{ marginTop: "0.625rem" }} onClick={onAdd}>
+      <div className="section">
+        <button className="btn btn--soft btn--block" onClick={onAdd}>
           <Icon name="plus" size={18} />
           {t("home.quickAdd")}
         </button>
-      </section>
+      </div>
     </>
   );
 }

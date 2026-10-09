@@ -133,9 +133,9 @@ await step("onboarding completes", async () => {
 
 // --- tabs -------------------------------------------------------------------
 const screens = [
-  ["Things", ".searchbar"],
+  ["Life", ".searchbar"],
+  ["Alerts", '.appbar__title:has-text("Alerts")'],
   ["Calendar", ".month__grid"],
-  ["Services", "text=Service providers"],
   ["Profile", ".profile-id"],
   ["Home", ".hero"],
 ];
@@ -152,6 +152,22 @@ await step("Module screen renders", async () => {
   await page.click('.module-grid button:has-text("Bills")');
   await settle();
   await page.waitForSelector('.appbar__title:has-text("Bills")', { timeout: 8000 });
+});
+
+// --- route segment flight files ----------------------------------------------
+// On Windows, Next's export writes these nested (__next.landing/__PAGE__.txt)
+// while the client requests them dotted. fix-rsc-segments.mjs flattens them;
+// this asserts the URL the router actually asks for resolves to flight data.
+await step("segment flight file resolves", async () => {
+  const res = await fetch(
+    `http://localhost:${PORT}/landing/__next.landing.__PAGE__.txt`,
+  );
+  const body = await res.text();
+  if (res.status !== 200 || !body.includes("buildId")) {
+    throw new Error(
+      `expected flight data, got status ${res.status} at /landing/__next.landing.__PAGE__.txt`,
+    );
+  }
 });
 
 // --- report -----------------------------------------------------------------
